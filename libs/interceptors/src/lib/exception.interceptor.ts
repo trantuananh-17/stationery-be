@@ -7,7 +7,6 @@ import {
   NestInterceptor,
 } from '@nestjs/common';
 import { Observable, map, catchError } from 'rxjs';
-
 import { Request } from 'express';
 import { MetadataKeys } from '@common/constants/common.constant';
 import { ResponseDto } from '@common/interfaces/gateway/response.interface';

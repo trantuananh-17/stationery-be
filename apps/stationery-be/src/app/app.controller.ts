@@ -1,3 +1,5 @@
+import { Response } from '@common/interfaces/tcp/common/response.interface';
+import { Request } from '@common/interfaces/tcp/common/request.interface';
 import { TcpLoggingInterceptor } from '@common/interceptors/tcpLogging.interceptor';
 import { Controller, Get, UseInterceptors } from '@nestjs/common';
 import { AppService } from './app.service';
@@ -14,7 +16,7 @@ export class AppController {
   }
 
   @MessagePattern('get_stationery')
-  getStationery(id: number): string {
-    return `Stationery with Id: ${id}`;
+  getStationery(data: Request<object>): Response<string> {
+    return Response.success<string>(`Stationery with id ${data.data}`);
   }
 }
