@@ -2,7 +2,8 @@ import { Controller, Get, Inject } from '@nestjs/common';
 import { AppService } from './app.service';
 import { ResponseDto } from '@common/interfaces/gateway/response.interface';
 import { TcpClient } from '@common/interfaces/tcp/common/tcp-client.interface';
-import { firstValueFrom, map } from 'rxjs';
+import { ProcessId } from '@common/decorators/processId.decorator';
+import { map } from 'rxjs';
 
 @Controller('app')
 export class AppController {
@@ -19,11 +20,9 @@ export class AppController {
   }
 
   @Get('stationery')
-  async getStationery() {
-    return await firstValueFrom(
-      this.stationeryClient
-        .send('get_stationery', { processId: 1, data: 100 })
-        .pipe(map((data) => new ResponseDto({ data }))),
-    );
+  getStationery(@ProcessId() processId: string) {
+    return this.stationeryClient
+      .send('get_stationery', { processId: processId, data: 100 })
+      .pipe(map((data) => new ResponseDto({ data })));
   }
 }
