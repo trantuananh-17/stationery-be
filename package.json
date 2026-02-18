@@ -6,7 +6,9 @@
     "prepare": "husky",
     "nx:reset": "nx reset",
     "nx:run-many": "nx run-many",
-    "docker:start:provider": "docker compose -f docker-compose.provider.yaml up -d",
+    "docker:up:provider": "docker compose -f docker/docker-compose.provider.yaml up -d",
+    "docker:down:provider": "docker compose -f docker/docker-compose.provider.yaml down",
+    "docker:clear": "docker system prune -af",
     "dev": "pnpm nx:reset && pnpm nx:run-many -t serve",
     "dev-lite": "pnpm dev --projects=bff"
   },
@@ -19,13 +21,16 @@
     "@nestjs/mongoose": "^11.0.4",
     "@nestjs/platform-express": "^11.0.0",
     "@nestjs/swagger": "^11.2.6",
+    "@nestjs/typeorm": "^11.0.0",
     "axios": "^1.6.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
     "express": "^5.2.1",
     "mongoose": "^9.2.1",
+    "pg": "^8.18.0",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.0",
+    "typeorm": "^0.3.28",
     "uuid": "^13.0.0"
   },
   "devDependencies": {
