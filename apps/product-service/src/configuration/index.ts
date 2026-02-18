@@ -1,11 +1,13 @@
-import { BaseConfiguration } from '@common/configuration/base.config';
+import { TcpConfiguration } from '@common/configuration/tcp.config';
 import { AppConfiguration } from '@common/configuration/app.config';
+import { BaseConfiguration } from '@common/configuration/base.config';
+import { MongoConfiguration } from '@common/configuration/mongo.config';
 import { ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { TcpConfiguration } from '@common/configuration/tcp.config';
-// import { TypeOrmConfiguration } from '@common/configuration/type-orm.config';
 
 class Configuration extends BaseConfiguration {
+  // ValidateNested(): validate các field bên trong class AppConfiguration
+  // Type(): chuyển đổi kiểu dữ liệu sang class AppConfiguration
   @ValidateNested()
   @Type(() => AppConfiguration)
   APP_CONFIG = new AppConfiguration();
@@ -14,9 +16,9 @@ class Configuration extends BaseConfiguration {
   @Type(() => TcpConfiguration)
   TCP_SERV = new TcpConfiguration();
 
-  // @ValidateNested()
-  // @Type(() => TypeOrmConfiguration)
-  // TYPEORM_CONFIG = new TypeOrmConfiguration();
+  @ValidateNested()
+  @Type(() => MongoConfiguration)
+  MONGO_CONFIG = new MongoConfiguration();
 }
 
 export const CONFIGURATION = new Configuration();
