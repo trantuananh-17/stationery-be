@@ -8,9 +8,11 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ExceptionInterceptor } from '@common/interceptors/exception.interceptor';
 import { ClientsModule } from '@nestjs/microservices';
 import { TCP_SERVICES, TcpProvider } from '@common/configuration/tcp.config';
+import { ProductModule } from './modules/products/product.module';
 
 @Module({
   imports: [
+    ProductModule,
     ConfigModule.forRoot({ isGlobal: true, load: [() => CONFIGURATION] }),
     ClientsModule.registerAsync([TcpProvider(TCP_SERVICES.STATIONARY_SERVICE)]),
   ],
