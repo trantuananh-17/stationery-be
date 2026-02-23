@@ -7,23 +7,28 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { ConfigService } from '@nestjs/config';
+import { CONFIGURATION } from './configuration';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const CONFIG = CONFIGURATION();
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
+
+  const configService = app.get(ConfigService);
 
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.TCP,
     options: {
-      host: AppModule.CONFIGURATION.TCP_SERV.TCP_PRODUCT_SERVICE.options.host,
-      port: AppModule.CONFIGURATION.TCP_SERV.TCP_PRODUCT_SERVICE.options.port,
+      host: configService.get<string>('TCP_SERV.TCP_PRODUCT_SERVICE.options.host'),
+      port: configService.get<number>('TCP_SERV.TCP_PRODUCT_SERVICE.options.port'),
     },
   });
 
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
-  const port = process.env.PRODUCT_PORT || 3000;
+  const port = CONFIG.APP_CONFIG.PORT;
 
   await app.startAllMicroservices();
   await app.listen(port);

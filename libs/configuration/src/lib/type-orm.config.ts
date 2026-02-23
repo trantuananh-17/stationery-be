@@ -29,11 +29,11 @@ export class TypeOrmConfiguration {
 
   constructor(data?: Partial<TypeOrmConfiguration>) {
     this.HOST = data?.HOST || process.env['TYPEORM_HOST'] || 'localhost';
-    this.PORT = data?.PORT || Number(process.env['TYPEORM_PORT']) || 5432;
+    this.PORT = data?.PORT || Number(process.env['TYPEORM_PORT']);
     this.USERNAME = data?.USERNAME || process.env['TYPEORM_USERNAME'] || 'postgres';
     this.PASSWORD = data?.PASSWORD || process.env['TYPEORM_PASSWORD'] || 'postgres';
-    this.DATABASE = data?.DATABASE || process.env['TYPEORM_DATABASE'] || 'stationery-app';
-    this.TYPE = data?.TYPE || (process.env['TYPEORM_TYPE'] as DatabaseType) || 'postgres';
+    this.DATABASE = data?.DATABASE || process.env['TYPEORM_DATABASE'] || 'product_db';
+    this.TYPE = data?.TYPE || (process.env['TYPEORM_TYPE'] as DatabaseType);
   }
 }
 

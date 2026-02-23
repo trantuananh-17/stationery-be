@@ -1,7 +1,7 @@
 import { BaseConfiguration } from '@common/configuration/base.config';
 import { AppConfiguration } from '@common/configuration/app.config';
 import { ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
+import { plainToInstance, Type } from 'class-transformer';
 import { TcpConfiguration } from '@common/configuration/tcp.config';
 import { TypeOrmConfiguration } from '@common/configuration/type-orm.config';
 
@@ -19,8 +19,12 @@ class Configuration extends BaseConfiguration {
   TYPEORM_CONFIG = new TypeOrmConfiguration();
 }
 
-export const CONFIGURATION = new Configuration();
+export const CONFIGURATION = () => {
+  const config = plainToInstance(Configuration, {});
 
-export type TConfiguration = typeof CONFIGURATION;
+  config.validate();
 
-CONFIGURATION.validate();
+  return config;
+};
+
+export type TConfiguration = ReturnType<typeof CONFIGURATION>;

@@ -7,11 +7,15 @@ import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { CONFIGURATION } from './configuration';
 
 async function bootstrap() {
   try {
     const app = await NestFactory.create(AppModule);
-    const globalPrefix = AppModule.CONFIGURATION.GLOBAL_PREFIX;
+    const CONFIG = CONFIGURATION();
+
+    const globalPrefix = CONFIG.GLOBAL_PREFIX;
+
     app.setGlobalPrefix(globalPrefix);
     // Điều kiện để validate và chuyển đổi kiểu dữ liệu
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
@@ -37,7 +41,7 @@ async function bootstrap() {
     const documentFactory = () => SwaggerModule.createDocument(app, config);
     SwaggerModule.setup(`${globalPrefix}/docs`, app, documentFactory);
 
-    const port = AppModule.CONFIGURATION.APP_CONFIG.PORT;
+    const port = CONFIG.APP_CONFIG.PORT;
     await app.listen(port);
     Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`);
     Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}/docs`);

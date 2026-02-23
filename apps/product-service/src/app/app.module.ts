@@ -1,13 +1,18 @@
 import { Module } from '@nestjs/common';
-import { CONFIGURATION, TConfiguration } from '../configuration';
+import { CONFIGURATION } from '../configuration';
 import { ConfigModule } from '@nestjs/config';
 import { ProductModule } from './modules/product.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true, load: [() => CONFIGURATION] }), ProductModule],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['apps/product-service/.env', '.env'],
+      load: [CONFIGURATION],
+    }),
+    ProductModule,
+  ],
   controllers: [],
   providers: [],
 })
-export class AppModule {
-  static CONFIGURATION: TConfiguration = CONFIGURATION;
-}
+export class AppModule {}
