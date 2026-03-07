@@ -1,13 +1,12 @@
 import { TypeOrmProvider } from '@common/configuration/type-orm.config';
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-import { UserController } from './presentation/controllers/user.controller';
-import { CreateUserHandler } from './application/commands/handlers/create-user.handler';
+import { AuthController } from './presentation/controllers/auth.controller';
 
 @Module({
   imports: [CqrsModule, TypeOrmProvider],
-  controllers: [UserController],
-  providers: [CreateUserHandler],
+  controllers: [AuthController],
+  providers: [],
   exports: [],
 })
 export class UserModule {}

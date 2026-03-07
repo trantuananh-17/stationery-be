@@ -26,6 +26,17 @@ async function bootstrap() {
     },
   });
 
+  Logger.debug('GRPC CONFIG', JSON.stringify(configService.get('GRPC_SERV.GRPC_USER_SERVICE')));
+
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.GRPC,
+    options: {
+      package: configService.get<string>('GRPC_SERV.GRPC_USER_SERVICE.name'),
+      protoPath: configService.get<string>('GRPC_SERV.GRPC_USER_SERVICE.options.protoPath'),
+      url: configService.get<string>('GRPC_SERV.GRPC_USER_SERVICE.options.url'),
+    },
+  });
+
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
   const port = CONFIG.APP_CONFIG.PORT;

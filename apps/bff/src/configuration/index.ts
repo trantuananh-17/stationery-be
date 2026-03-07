@@ -3,6 +3,7 @@ import { AppConfiguration } from '@common/configuration/app.config';
 import { BaseConfiguration } from '@common/configuration/base.config';
 import { ValidateNested } from 'class-validator';
 import { plainToInstance, Type } from 'class-transformer';
+import { GrpcConfiguration } from '@common/configuration/grpc.config';
 
 class Configuration extends BaseConfiguration {
   // ValidateNested(): validate các field bên trong class AppConfiguration
@@ -14,6 +15,10 @@ class Configuration extends BaseConfiguration {
   @ValidateNested()
   @Type(() => TcpConfiguration)
   TCP_SERV = new TcpConfiguration();
+
+  @ValidateNested()
+  @Type(() => GrpcConfiguration)
+  GRPC_SERV = new GrpcConfiguration();
 }
 export const CONFIGURATION = () => {
   const config = plainToInstance(Configuration, {}, { enableImplicitConversion: true });
