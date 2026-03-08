@@ -8,6 +8,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { CONFIGURATION } from './configuration';
+import { ExceptionInterceptor } from '@common/interceptors/exception.interceptor';
 
 async function bootstrap() {
   try {
@@ -15,6 +16,8 @@ async function bootstrap() {
     const CONFIG = CONFIGURATION();
 
     const globalPrefix = CONFIG.GLOBAL_PREFIX;
+
+    app.useGlobalInterceptors(new ExceptionInterceptor());
 
     app.setGlobalPrefix(globalPrefix);
     // Điều kiện để validate và chuyển đổi kiểu dữ liệu

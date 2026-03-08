@@ -10,7 +10,7 @@
     "docker:down:provider": "docker compose -f docker/docker-compose.provider.yaml down",
     "docker:clear": "docker system prune -af",
     "dev": "pnpm nx:reset && pnpm nx:run-many -t serve",
-    "dev-lite": "pnpm dev --projects=bff,user-service"
+    "dev-lite": "pnpm dev --projects=bff,auth-service"
   },
   "private": true,
   "dependencies": {
@@ -20,12 +20,14 @@
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.0",
     "@nestjs/cqrs": "^11.0.3",
+    "@nestjs/jwt": "^11.0.2",
     "@nestjs/microservices": "^11.1.13",
     "@nestjs/mongoose": "^11.0.4",
     "@nestjs/platform-express": "^11.0.0",
     "@nestjs/swagger": "^11.2.6",
     "@nestjs/typeorm": "^11.0.0",
     "axios": "^1.6.0",
+    "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.3",
     "express": "^5.2.1",
@@ -54,6 +56,7 @@
     "@swc-node/register": "~1.9.1",
     "@swc/core": "~1.5.7",
     "@swc/helpers": "~0.5.11",
+    "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
     "@types/node": "20.19.9",

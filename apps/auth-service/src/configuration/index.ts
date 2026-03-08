@@ -4,6 +4,7 @@ import { ValidateNested } from 'class-validator';
 import { plainToInstance, Type } from 'class-transformer';
 import { TcpConfiguration } from '@common/configuration/tcp.config';
 import { TypeOrmConfiguration } from '@common/configuration/type-orm.config';
+import { GrpcConfiguration } from '@common/configuration/grpc.config';
 
 class Configuration extends BaseConfiguration {
   @ValidateNested()
@@ -17,6 +18,10 @@ class Configuration extends BaseConfiguration {
   @ValidateNested()
   @Type(() => TypeOrmConfiguration)
   TYPEORM_CONFIG = new TypeOrmConfiguration();
+
+  @ValidateNested()
+  @Type(() => GrpcConfiguration)
+  GRPC_SERV = new GrpcConfiguration();
 }
 
 export const CONFIGURATION = () => {

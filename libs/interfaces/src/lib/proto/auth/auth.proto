@@ -3,12 +3,25 @@ syntax = "proto3";
 
 package GRPC_AUTH_SERVICE;
 
-import "user-access.proto";
+import "user.proto";
 
 
 service AuthorizerService {
+  rpc registerUser (UserPayload) returns (UserResponse);
   rpc verifyUserToken (VerifyUserTokenRequest) returns (VerifyUserTokenResponse);
 }
+
+message UserPayload {
+  string email = 1;
+  string password = 2;
+  string firstName = 3;
+  string lastName = 4;
+}
+
+message UserResponse {
+  string userId = 1;
+}
+
 
 message VerifyUserTokenRequest {
   string token = 1;
