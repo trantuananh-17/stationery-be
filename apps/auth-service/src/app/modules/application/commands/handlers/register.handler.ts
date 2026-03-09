@@ -1,9 +1,9 @@
-import { status } from '@grpc/grpc-js';
-import { Logger } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { RpcException } from '@nestjs/microservices';
-import { Credential } from '../../../domain/entities/credential.entity';
 import { RegisterCommand } from '../register.command';
+import { Credential } from '../../../domain/entities/credential.entity';
+import { Logger } from '@nestjs/common';
+import { RpcException } from '@nestjs/microservices';
+import { status } from '@grpc/grpc-js';
 
 @CommandHandler(RegisterCommand)
 export class RegisterHandler implements ICommandHandler<RegisterCommand> {
@@ -20,10 +20,10 @@ export class RegisterHandler implements ICommandHandler<RegisterCommand> {
 
     const userId = 'response.id';
 
-    throw new RpcException({
-      code: status.INVALID_ARGUMENT,
-      message: 'Email already exists',
-    });
+    // throw new RpcException({
+    //   code: status.INVALID_ARGUMENT,
+    //   message: 'Email already exists',
+    // });
 
     const credential = Credential.create(userId, email, password);
 
