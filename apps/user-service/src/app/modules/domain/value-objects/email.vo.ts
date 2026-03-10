@@ -1,3 +1,5 @@
+import { InvalidEmail } from '../errors/email-invalid.error';
+
 export class Email {
   private constructor(private readonly value: string) {}
 
@@ -7,7 +9,7 @@ export class Email {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     if (!regex.test(normalized)) {
-      throw new Error('Invalid email format');
+      throw new InvalidEmail();
     }
 
     return new Email(normalized);

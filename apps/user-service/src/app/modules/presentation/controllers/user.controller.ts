@@ -6,6 +6,7 @@ import { GrpcMethod, Payload, RpcException } from '@nestjs/microservices';
 import { CreateUserCommand } from '../../application/commands/create-user.command';
 import { EmailAlreadyExistsError } from '../../domain/errors/email-already-exists.error';
 import { CreateUserDto } from '../dtos/create-user.dto';
+import { InvalidEmail } from '../../domain/errors/email-invalid.error';
 
 @Controller()
 @UseInterceptors(GrpcLoggingInterceptor)
@@ -26,6 +27,12 @@ export class UserController {
       if (e instanceof EmailAlreadyExistsError) {
         throw new RpcException({
           code: status.ALREADY_EXISTS,
+          message: e.message,
+        });
+      }
+      if (e instanceof InvalidEmail) {
+        throw new RpcException({
+          code: status.INVALID_ARGUMENT,
           message: e.message,
         });
       }
