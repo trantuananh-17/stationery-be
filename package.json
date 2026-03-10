@@ -10,7 +10,7 @@
     "docker:down:provider": "docker compose -f docker/docker-compose.provider.yaml down",
     "docker:clear": "docker system prune -af",
     "dev": "pnpm nx:reset && pnpm nx:run-many -t serve",
-    "dev-lite": "pnpm dev --projects=bff,auth-service"
+    "dev-lite": "pnpm dev --projects=bff,auth-service,user-service"
   },
   "private": true,
   "dependencies": {

@@ -4,9 +4,9 @@ export class BaseEntity {
   @PrimaryColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ name: 'created_at' })
   createdAt: Date;
 
-  @Column()
+  @Column({ name: 'updated_at' })
   updatedAt: Date;
 }

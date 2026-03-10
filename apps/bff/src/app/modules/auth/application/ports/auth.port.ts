@@ -1,4 +1,3 @@
-import { Response } from '@common/interfaces/grpc/common/response.interface';
 import { RegisterUserBodyDto, UserResponse } from './dtos/auth.dto';
 
 export abstract class AuthPort {

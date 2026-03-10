@@ -1,10 +1,12 @@
 import { Gender } from '../enums/gender.enum';
+import { Email } from '../value-objects/email.vo';
 
 export type UserParams = {
   readonly id: string;
   firstName: string;
   lastName: string;
-  email: string;
+  email: Email;
+  roleId: string;
   gender?: Gender;
   dateOfBirth?: Date;
   phone?: string;
@@ -17,13 +19,14 @@ export type UserParams = {
 export class User {
   constructor(private params: UserParams) {}
 
-  static create(email: string, firstName: string, lastName: string) {
+  static create(email: Email, firstName: string, lastName: string, roleId: string) {
     const now = new Date();
     return new User({
       id: crypto.randomUUID(),
       email,
       firstName,
       lastName,
+      roleId,
       createdAt: now,
       updatedAt: now,
     });
@@ -44,8 +47,13 @@ export class User {
   get lastName(): string {
     return this.params.lastName;
   }
-  get email(): string {
+
+  get email(): Email {
     return this.params.email;
+  }
+
+  get roleId(): string {
+    return this.params.roleId;
   }
 
   get gender(): Gender | undefined {

@@ -1,13 +1,7 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  InternalServerErrorException,
-  OnModuleInit,
-} from '@nestjs/common';
+import { GRPC_SERVICES } from '@common/configuration/grpc.config';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { GRPC_SERVICES } from '@common/configuration/grpc.config';
 import { AuthPort } from '../../application/ports/auth.port';
 import { RegisterUserBodyDto, UserResponse } from '../../application/ports/dtos/auth.dto';
 import { AuthGrpcService } from './auth-grpc.interface';

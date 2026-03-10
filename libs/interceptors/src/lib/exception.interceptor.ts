@@ -14,9 +14,11 @@ import { status } from '@grpc/grpc-js';
 
 export const GRPC_HTTP_STATUS: Record<number, HttpStatus> = {
   [status.INVALID_ARGUMENT]: HttpStatus.BAD_REQUEST,
+  [status.ALREADY_EXISTS]: HttpStatus.CONFLICT,
   [status.NOT_FOUND]: HttpStatus.NOT_FOUND,
   [status.PERMISSION_DENIED]: HttpStatus.FORBIDDEN,
   [status.UNAUTHENTICATED]: HttpStatus.UNAUTHORIZED,
+  [status.INTERNAL]: HttpStatus.INTERNAL_SERVER_ERROR,
   [status.UNAVAILABLE]: HttpStatus.SERVICE_UNAVAILABLE,
 };
 
@@ -50,10 +52,14 @@ export class ExceptionInterceptor implements NestInterceptor {
       }),
 
       catchError((error) => {
-        if (error?.code !== undefined) {
+        const grpcCode = Number(error?.code);
+
+        const isGrpcError = !Number.isNaN(grpcCode);
+
+        if (isGrpcError) {
           this.logger.error({
             type: 'GRPC_ERROR',
-            code: error?.code,
+            code: grpcCode,
             message: error?.details || error?.message,
             path: request.url,
             processId,
@@ -62,11 +68,8 @@ export class ExceptionInterceptor implements NestInterceptor {
 
         const duration = Date.now() - startTime;
 
-        const grpcCode = Number(error?.code);
-
         const statusCode =
           GRPC_HTTP_STATUS[grpcCode] ??
-          error?.code ??
           error?.statusCode ??
           error?.response?.statusCode ??
           HttpStatus.INTERNAL_SERVER_ERROR;

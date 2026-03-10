@@ -2,7 +2,7 @@ import { ResponseDto } from '@common/interfaces/gateway/response.interface';
 import { Body, Controller, Get, Inject, Logger, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RegisterReponseDto } from '../dtos/register-response.dto';
-import { RegisterDto } from '../dtos/register.dto';
+import { CreateUserDto } from '../dtos/create-user.dto';
 import { UserPort } from '../../application/ports/user.port';
 
 @ApiTags('User')
@@ -13,7 +13,7 @@ export class UserController {
   @Post()
   @ApiOkResponse({ type: ResponseDto<RegisterReponseDto> })
   @ApiOperation({ summary: 'Create a new user' })
-  register(@Body() body: RegisterDto) {
+  register(@Body() body: CreateUserDto) {
     const result = this.userPort.createUser(body);
     Logger.log(`User registration request: ${JSON.stringify(result)}`);
     return result;

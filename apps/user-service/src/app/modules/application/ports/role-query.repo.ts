@@ -1,7 +1,6 @@
 import { Role } from '../../domain/entities/role.entity';
+import { RoleName } from '../../domain/enums/role.enum';
 
 export abstract class IRoleQueryRepository {
-  abstract getAll(page: number, limit: number): Promise<Role[]>;
-  abstract getById(): Promise<Role | null>;
-  abstract getByName(): Promise<Role | null>;
+  abstract getByName(roleName: RoleName): Promise<Role | null>;
 }

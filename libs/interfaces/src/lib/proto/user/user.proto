@@ -12,10 +12,12 @@ message Role {
   repeated string permissions = 3;
 }
 
+
 message CreateUserRequest {
   string email = 1;
   string firstName = 2;
   string lastName = 3;
+  string roleName = 4;
 }
 
 message UserIdResponse {

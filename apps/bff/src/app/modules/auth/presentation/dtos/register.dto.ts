@@ -1,8 +1,7 @@
-import { CreateUserRequest } from '@common/interfaces/proto/user/user.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class RegisterDto implements CreateUserRequest {
+export class RegisterDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()

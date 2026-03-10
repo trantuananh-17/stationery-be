@@ -1,0 +1,112 @@
+{
+  "collection": "rbac",
+  "migration": [
+    "CREATE EXTENSION IF NOT EXISTS \"pgcrypto\"",
+
+    "DO $$ BEGIN CREATE TYPE role_name_enum AS ENUM ('ADMIN','MANAGER','STAFF','CUSTOMER'); EXCEPTION WHEN duplicate_object THEN null; END $$",
+
+    "CREATE TABLE IF NOT EXISTS roles (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), name role_name_enum UNIQUE NOT NULL, description varchar, created_at timestamp DEFAULT now(), updated_at timestamp DEFAULT now())",
+
+    "CREATE TABLE IF NOT EXISTS permissions (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), name varchar UNIQUE NOT NULL, description varchar, created_at timestamp DEFAULT now(), updated_at timestamp DEFAULT now())",
+
+    "CREATE TABLE IF NOT EXISTS role_permissions (role_id uuid REFERENCES roles(id) ON DELETE CASCADE, permission_id uuid REFERENCES permissions(id) ON DELETE CASCADE, PRIMARY KEY (role_id, permission_id))"
+  ],
+
+  "permissions": [
+    "product.create",
+    "product.get_by_id",
+    "product.get_all",
+    "product.update",
+    "product.delete",
+
+    "category.create",
+    "category.get_all",
+    "category.update",
+    "category.delete",
+
+    "order.create",
+    "order.get_by_id",
+    "order.get_all",
+    "order.update_status",
+    "order.cancel",
+
+    "cart.add_item",
+    "cart.remove_item",
+    "cart.get",
+
+    "user.create",
+    "user.get_by_id",
+    "user.get_all",
+    "user.update",
+    "user.delete",
+
+    "role.create",
+    "role.get_by_id",
+    "role.get_all",
+    "role.update",
+    "role.delete",
+
+    "inventory.update",
+    "report.get_sales"
+  ],
+
+  "roles": [
+    {
+      "name": "ADMIN",
+      "description": "system administrator with full permissions",
+      "permissions": "ALL"
+    },
+    {
+      "name": "MANAGER",
+      "description": "store manager",
+      "permissions": [
+        "product.create",
+        "product.get_by_id",
+        "product.get_all",
+        "product.update",
+        "product.delete",
+
+        "category.create",
+        "category.get_all",
+        "category.update",
+        "category.delete",
+
+        "order.get_all",
+        "order.get_by_id",
+        "order.update_status",
+
+        "inventory.update"
+      ]
+    },
+    {
+      "name": "STAFF",
+      "description": "store staff handles orders",
+      "permissions": [
+        "order.get_all",
+        "order.get_by_id",
+        "order.update_status",
+
+        "product.get_by_id",
+        "product.get_all",
+
+        "inventory.update"
+      ]
+    },
+    {
+      "name": "CUSTOMER",
+      "description": "customer using the store",
+      "permissions": [
+        "product.get_by_id",
+        "product.get_all",
+
+        "cart.add_item",
+        "cart.remove_item",
+        "cart.get",
+
+        "order.create",
+        "order.get_by_id",
+        "order.cancel"
+      ]
+    }
+  ]
+}

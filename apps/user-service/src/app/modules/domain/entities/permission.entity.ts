@@ -1,21 +1,19 @@
-import { RoleName } from '../enums/role.enum';
-
-export type RoleParams = {
+export type PermissionParams = {
   readonly id: string;
-  name: RoleName;
+  name: string;
   description?: string;
   readonly createdAt: Date;
   updatedAt: Date;
 };
 
-export class Role {
-  constructor(private params: RoleParams) {}
+export class Permission {
+  constructor(private params: PermissionParams) {}
 
   get id(): string {
     return this.params.id;
   }
 
-  get name(): RoleName {
+  get name(): string {
     return this.params.name;
   }
 
@@ -31,9 +29,18 @@ export class Role {
     return this.params.updatedAt;
   }
 
+  updateName(name: string) {
+    this.params.name = name;
+    this.setUpdatedAt();
+  }
+
   updateDescription(description?: string) {
     this.params.description = description;
     this.setUpdatedAt();
+  }
+
+  equals(permission: Permission): boolean {
+    return this.params.id === permission.id;
   }
 
   private setUpdatedAt() {
