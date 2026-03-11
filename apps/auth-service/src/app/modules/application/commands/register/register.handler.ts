@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { RegisterCommand } from '../register.command';
+import { RegisterCommand } from '../register/register.command';
 import { Credential } from '../../../domain/entities/credential.entity';
 import { Logger } from '@nestjs/common';
 import { UserPort } from '../../ports/grpc/user-grpc.port';

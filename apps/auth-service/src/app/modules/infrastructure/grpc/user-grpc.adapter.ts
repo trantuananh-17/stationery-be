@@ -1,10 +1,14 @@
+import { GRPC_SERVICES } from '@common/configuration/grpc.config';
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { ClientGrpc } from '@nestjs/microservices';
+import { firstValueFrom } from 'rxjs';
+import {
+  CreateUserRequest,
+  UserAuthResponse,
+  UserResponse,
+} from '../../application/ports/dtos/user.dto';
 import { UserPort } from '../../application/ports/grpc/user-grpc.port';
 import { UserGrpcService } from './user-grpc.interface';
-import { GRPC_SERVICES } from '@common/configuration/grpc.config';
-import { CreateUserRequest, UserResponse } from '../../application/ports/dtos/user.dto';
-import { ClientGrpc } from '@nestjs/microservices';
-import { catchError, firstValueFrom, throwError } from 'rxjs';
 
 @Injectable()
 export class UserGrpcAdapter implements UserPort, OnModuleInit {
@@ -21,5 +25,9 @@ export class UserGrpcAdapter implements UserPort, OnModuleInit {
 
   createUser(data: CreateUserRequest): Promise<UserResponse> {
     return firstValueFrom(this.userService.createUser(data));
+  }
+
+  getUserAuth(data: { userId: string }): Promise<UserAuthResponse> {
+    return firstValueFrom(this.userService.getUserAuth(data));
   }
 }

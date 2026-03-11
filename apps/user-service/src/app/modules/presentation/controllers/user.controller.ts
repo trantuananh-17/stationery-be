@@ -24,8 +24,8 @@ export class UserController {
     );
   }
 
-  getPayload(@Payload() payload: { userId: string }) {
-    const { userId } = payload;
+  @GrpcMethod('UserService', 'getUserAuth')
+  getUserAuth(@Payload() { userId }: { userId: string }) {
     return this.queryBus.execute(new GetUserAuthQuery(userId));
   }
 }

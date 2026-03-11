@@ -8,3 +8,9 @@ export interface CreateUserRequest {
 export interface UserResponse {
   userId: string;
 }
+
+export interface UserAuthResponse {
+  userId: string;
+  role: string;
+  permissions: string[];
+}

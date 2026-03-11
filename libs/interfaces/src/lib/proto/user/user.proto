@@ -4,14 +4,18 @@ package GRPC_USER_SERVICE;
 
 service UserService {
   rpc createUser (CreateUserRequest) returns (UserIdResponse);
+  rpc getUserAuth (UserAuthRequest) returns (UserAuthResponse);
 }
 
-message Role {
-  string name = 1;
-  string description = 2;
+message UserAuthResponse {
+  string userId = 1;
+  string role = 2;
   repeated string permissions = 3;
 }
 
+message UserAuthRequest {
+  string userId = 1;
+}
 
 message CreateUserRequest {
   string email = 1;
@@ -21,25 +25,6 @@ message CreateUserRequest {
 }
 
 message UserIdResponse {
-  string userId = 1;
-}
-
-message User {
-  string _id = 1;
-  string id = 2;
-  string firstName = 3;
-  string lastName = 4;
-  string email = 5;
-  repeated Role roles = 6; 
-}
-
-message UserResponse {
-  string code = 1;
-  User data = 2;
-  string error = 3;
-}
-
-message UserById {
   string userId = 1;
 }
 

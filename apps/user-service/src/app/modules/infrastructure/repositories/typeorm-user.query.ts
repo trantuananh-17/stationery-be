@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { IUserQueryRepository } from '../../application/ports/repositories/user-query.repo';
 import { GetUserAuthDto } from '../../application/queries/get-user-auth/get-user-auth.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,9 +12,9 @@ export class TypeOrmUserQueryRepository implements IUserQueryRepository {
   async getPayload(userId: string): Promise<GetUserAuthDto | null> {
     const rows = await this.repo
       .createQueryBuilder('u')
-      .select(['u.id AS user_id', 'r.name AS role', 'p.name AS permission'])
       .leftJoin('u.role', 'r')
       .leftJoin('r.permissions', 'p')
+      .select(['u.id AS user_id', 'r.name AS role', 'p.name AS permission'])
       .where('u.id = :userId', { userId })
       .getRawMany();
 

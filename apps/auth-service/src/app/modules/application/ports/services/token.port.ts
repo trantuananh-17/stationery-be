@@ -1,10 +1,12 @@
-interface TokenBodyDto {
+export interface TokenPayloadDto {
   userId: string;
   email: string;
+  role: string;
+  permissions: string[];
 }
 
 export abstract class ITokenService {
-  abstract generateAccessToken(userId: TokenBodyDto): Promise<string>;
+  abstract generateAccessToken(payload: TokenPayloadDto): Promise<string>;
 
-  abstract generateRefreshToken(userId: TokenBodyDto): Promise<string>;
+  abstract generateRefreshToken(payload: TokenPayloadDto): Promise<string>;
 }

@@ -17,6 +17,7 @@ export const GRPC_HTTP_STATUS: Record<number, HttpStatus> = {
   [status.ALREADY_EXISTS]: HttpStatus.CONFLICT,
   [status.NOT_FOUND]: HttpStatus.NOT_FOUND,
   [status.PERMISSION_DENIED]: HttpStatus.FORBIDDEN,
+  [status.FAILED_PRECONDITION]: HttpStatus.FORBIDDEN,
   [status.UNAUTHENTICATED]: HttpStatus.UNAUTHORIZED,
   [status.INTERNAL]: HttpStatus.INTERNAL_SERVER_ERROR,
   [status.UNAVAILABLE]: HttpStatus.SERVICE_UNAVAILABLE,
@@ -33,6 +34,8 @@ export class ExceptionInterceptor implements NestInterceptor {
       [MetadataKeys.START_TIME]: number;
     } = ctx.getRequest();
 
+    const response = ctx.getResponse();
+
     const processId = request[MetadataKeys.PROCESS_ID];
     const startTime = request[MetadataKeys.START_TIME];
 
@@ -45,7 +48,7 @@ export class ExceptionInterceptor implements NestInterceptor {
         return new ResponseDto({
           data,
           message: 'Success',
-          statusCode: HttpStatus.OK,
+          statusCode: response.statusCode,
           processID: processId,
           duration: `${duration} ms`,
         });
