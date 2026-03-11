@@ -19,4 +19,34 @@ export class CredentialOrmEntity extends BaseEntity {
 
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive: boolean;
+
+  @Column({
+    name: 'verification_token',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  verificationToken?: string;
+
+  @Column({
+    name: 'verification_expires',
+    type: 'timestamp',
+    nullable: true,
+  })
+  verificationExpires?: Date;
+
+  @Column({
+    name: 'reset_password_token',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  resetPasswordToken?: string;
+
+  @Column({
+    name: 'reset_password_expires',
+    type: 'timestamp',
+    nullable: true,
+  })
+  resetPasswordExpires?: Date;
 }

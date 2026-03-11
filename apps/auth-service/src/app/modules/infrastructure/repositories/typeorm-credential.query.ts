@@ -26,18 +26,19 @@ export class TypeOrmCredentialQueryRepository implements ICredentialQueryReposit
   }
 
   private _toDomain(typeormCredential: CredentialOrmEntity): Credential {
-    const { id, userId, email, passwordHash, isEmailVerified, isActive, createdAt, updatedAt } =
-      typeormCredential;
-
     return new Credential({
-      id,
-      userId,
-      email,
-      passwordHash,
-      isEmailVerified,
-      isActive,
-      createdAt,
-      updatedAt,
+      id: typeormCredential.id,
+      userId: typeormCredential.userId,
+      email: typeormCredential.email,
+      passwordHash: typeormCredential.passwordHash,
+      isEmailVerified: typeormCredential.isEmailVerified,
+      isActive: typeormCredential.isActive,
+      verificationToken: typeormCredential.verificationToken,
+      verificationExpires: typeormCredential.verificationExpires,
+      resetPasswordToken: typeormCredential.resetPasswordToken,
+      resetPasswordExpires: typeormCredential.resetPasswordExpires,
+      createdAt: typeormCredential.createdAt,
+      updatedAt: typeormCredential.updatedAt,
     });
   }
 }
