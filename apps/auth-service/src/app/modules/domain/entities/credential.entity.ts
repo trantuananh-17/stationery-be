@@ -1,10 +1,14 @@
 export type CredentialParams = {
   readonly id: string;
   readonly userId: string;
-  email: string;
+  readonly email: string;
   passwordHash: string;
   isEmailVerified: boolean;
   isActive: boolean;
+  verificationToken?: string;
+  verificationExpires?: Date;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
   readonly createdAt: Date;
   updatedAt: Date;
 };
@@ -27,13 +31,112 @@ export class Credential {
     });
   }
 
-  private setUpdatedAt() {
-    this.params.updatedAt = new Date();
+  activate() {
+    this.params.isActive = true;
+    this.setUpdatedAt();
+  }
+
+  deactivate() {
+    this.params.isActive = false;
+    this.setUpdatedAt();
+  }
+
+  changePassword(oldHash: string, newHash: string) {
+    if (this.params.passwordHash !== oldHash) {
+      throw new Error('Invalid current password');
+    }
+
+    this.params.passwordHash = newHash;
+    this.setUpdatedAt();
   }
 
   updatePassword(passwordHash: string) {
     this.params.passwordHash = passwordHash;
     this.setUpdatedAt();
+  }
+
+  setVerificationToken(token: string, expires: Date) {
+    if (this.params.isEmailVerified) {
+      throw new Error('Email already verified');
+    }
+
+    this.params.verificationToken = token;
+    this.params.verificationExpires = expires;
+
+    this.setUpdatedAt();
+  }
+
+  canResendVerification(): boolean {
+    if (this.params.isEmailVerified) return false;
+
+    if (!this.params.verificationExpires) return true;
+
+    return this.params.verificationExpires < new Date();
+  }
+
+  verifyEmail(token: string) {
+    if (!this.params.verificationToken) {
+      throw new Error('Verification token not found');
+    }
+
+    if (this.params.verificationToken !== token) {
+      throw new Error('Invalid verification token');
+    }
+
+    if (this.params.verificationExpires && this.params.verificationExpires < new Date()) {
+      throw new Error('Verification token expired');
+    }
+
+    this.params.isEmailVerified = true;
+
+    this.clearVerificationToken();
+
+    this.setUpdatedAt();
+  }
+
+  clearVerificationToken() {
+    this.params.verificationToken = undefined;
+    this.params.verificationExpires = undefined;
+  }
+
+  setResetPasswordToken(token: string, expires: Date) {
+    this.params.resetPasswordToken = token;
+    this.params.resetPasswordExpires = expires;
+
+    this.setUpdatedAt();
+  }
+
+  resetPassword(token: string, passwordHash: string) {
+    if (!this.params.isActive) {
+      throw new Error('Account is inactive');
+    }
+
+    if (!this.params.resetPasswordToken) {
+      throw new Error('Reset token not found');
+    }
+
+    if (this.params.resetPasswordToken !== token) {
+      throw new Error('Invalid reset token');
+    }
+
+    if (this.params.resetPasswordExpires && this.params.resetPasswordExpires < new Date()) {
+      throw new Error('Reset token expired');
+    }
+
+    this.params.passwordHash = passwordHash;
+
+    this.clearResetPasswordToken();
+
+    this.setUpdatedAt();
+  }
+
+  clearResetPasswordToken() {
+    this.params.resetPasswordToken = undefined;
+    this.params.resetPasswordExpires = undefined;
+  }
+
+  private setUpdatedAt() {
+    this.params.updatedAt = new Date();
   }
 
   get id(): string {
@@ -66,5 +169,21 @@ export class Credential {
 
   get updatedAt(): Date {
     return this.params.updatedAt;
+  }
+
+  get verificationToken(): string | undefined {
+    return this.params.verificationToken;
+  }
+
+  get verificationExpires(): Date | undefined {
+    return this.params.verificationExpires;
+  }
+
+  get resetPasswordToken(): string | undefined {
+    return this.params.resetPasswordToken;
+  }
+
+  get resetPasswordExpires(): Date | undefined {
+    return this.params.resetPasswordExpires;
   }
 }
