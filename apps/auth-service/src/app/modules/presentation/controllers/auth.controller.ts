@@ -1,12 +1,14 @@
 import { GrpcLoggingInterceptor } from '@common/interceptors/grpcLogging.interceptor';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { GrpcMethod, Payload, RpcException } from '@nestjs/microservices';
+import { GrpcMethod, Payload } from '@nestjs/microservices';
 import { RegisterDto } from '../dtos/register.dto';
 import { RegisterCommand } from '../../application/commands/register.command';
-import { Controller, UseInterceptors } from '@nestjs/common';
+import { Controller, UseFilters, UseInterceptors } from '@nestjs/common';
+import { AuthGrpcExceptionFilter } from '../filters/auth-grpc-exception.filter';
 
 @Controller()
 @UseInterceptors(GrpcLoggingInterceptor)
+@UseFilters(AuthGrpcExceptionFilter)
 export class AuthController {
   constructor(
     private readonly commandBus: CommandBus,
@@ -15,17 +17,7 @@ export class AuthController {
 
   @GrpcMethod('AuthorizerService', 'registerUser')
   async create(@Payload() body: RegisterDto) {
-    try {
-      const { email, password, firstName, lastName } = body;
-      return await this.commandBus.execute(
-        new RegisterCommand(email, password, firstName, lastName),
-      );
-    } catch (error) {
-      console.log(JSON.stringify(error, null, 2));
-      throw new RpcException({
-        code: error.code ?? error.error.code,
-        message: error.details || error.message,
-      });
-    }
+    const { email, password, firstName, lastName } = body;
+    return await this.commandBus.execute(new RegisterCommand(email, password, firstName, lastName));
   }
 }

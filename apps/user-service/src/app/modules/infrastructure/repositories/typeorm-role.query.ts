@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RoleOrmEntity } from '../entities/typeorm-role.entity';
-import { IRoleQueryRepository } from '../../application/ports/role-query.repo';
+import { IRoleQueryRepository } from '../../application/ports/repositories/role-query.repo';
 import { Role } from '../../domain/entities/role.entity';
 import { RoleName } from '../../domain/enums/role.enum';
 

@@ -1,11 +1,11 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { CreateUserCommand } from '../create-user.command';
+import { CreateUserCommand } from './create-user.command';
 import { User } from '../../../domain/entities/user.entity';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Logger } from '@nestjs/common';
-import { IUserCommandRepository } from '../../ports/user-command.repo';
+import { IUserCommandRepository } from '../../ports/repositories/user-command.repo';
 import { EmailAlreadyExistsError } from '../../../domain/errors/email-already-exists.error';
-import { IRoleQueryRepository } from '../../ports/role-query.repo';
+import { IRoleQueryRepository } from '../../ports/repositories/role-query.repo';
 
 @CommandHandler(CreateUserCommand)
 export class CreateUserHandler implements ICommandHandler<CreateUserCommand> {

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IUserCommandRepository } from '../../application/ports/user-command.repo';
+import { IUserCommandRepository } from '../../application/ports/repositories/user-command.repo';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserOrmEntity } from '../entities/typeorm-user.entity';
 import { Repository } from 'typeorm';
