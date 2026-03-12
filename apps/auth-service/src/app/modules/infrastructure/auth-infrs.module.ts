@@ -9,19 +9,17 @@ import { CredentialOrmEntity } from './entities/typeorm-credential.entity';
 import { UserGrpcAdapter } from './grpc/user-grpc.adapter';
 import { TypeOrmCredentialCommandRepository } from './repositories/typeorm-credential.command';
 import { PasswordService } from './services/password.service';
-import { JwtModule } from '@nestjs/jwt';
 import { ITokenService } from '../application/ports/services/token.port';
 import { TokenService } from './services/token.service';
 import { ICredentialQueryRepository } from '../application/ports/repositories/credential-query.repo';
 import { TypeOrmCredentialQueryRepository } from './repositories/typeorm-credential.query';
+import { JwtProvider } from '@common/configuration/jwt.config';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([CredentialOrmEntity]),
     ClientsModule.registerAsync([GrpcProvider(GRPC_SERVICES.USER_SERVICE)]),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
-    }),
+    JwtProvider,
   ],
   providers: [
     UserGrpcAdapter,

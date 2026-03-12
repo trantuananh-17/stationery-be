@@ -2,9 +2,9 @@ import { BaseConfiguration } from '@common/configuration/base.config';
 import { AppConfiguration } from '@common/configuration/app.config';
 import { ValidateNested } from 'class-validator';
 import { plainToInstance, Type } from 'class-transformer';
-import { TcpConfiguration } from '@common/configuration/tcp.config';
 import { TypeOrmConfiguration } from '@common/configuration/type-orm.config';
 import { GrpcConfiguration } from '@common/configuration/grpc.config';
+import { JwtConfiguration } from '@common/configuration/jwt.config';
 
 class Configuration extends BaseConfiguration {
   @ValidateNested()
@@ -12,8 +12,8 @@ class Configuration extends BaseConfiguration {
   APP_CONFIG = new AppConfiguration();
 
   @ValidateNested()
-  @Type(() => TcpConfiguration)
-  TCP_SERV = new TcpConfiguration();
+  @Type(() => AppConfiguration)
+  JWT_CONFIG = new JwtConfiguration();
 
   @ValidateNested()
   @Type(() => TypeOrmConfiguration)
