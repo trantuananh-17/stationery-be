@@ -8,6 +8,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { CONFIGURATION } from './configuration';
+import { GlobalExceptionFilter } from '@common/filters/global-exception.filter';
 
 async function bootstrap() {
   try {
@@ -19,6 +20,7 @@ async function bootstrap() {
     app.setGlobalPrefix(globalPrefix);
     // Điều kiện để validate và chuyển đổi kiểu dữ liệu
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
+    app.useGlobalFilters(new GlobalExceptionFilter());
 
     app.enableCors({
       origin: '*',

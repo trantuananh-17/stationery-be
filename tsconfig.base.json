@@ -23,7 +23,9 @@
       "@common/interfaces/*": ["libs/interfaces/src/lib/*"],
       "@common/interceptors/*": ["libs/interceptors/src/lib/*"],
       "@common/decorators/*": ["libs/decorators/src/lib/*"],
-      "@common/databases/*": ["libs/databases/src/lib/*"]
+      "@common/databases/*": ["libs/databases/src/lib/*"],
+      "@common/guards/*": ["libs/guards/src/lib/*"],
+      "@common/filters/*": ["libs/filters/src/lib/*"]
     }
   },
   "exclude": ["node_modules", "tmp"]
