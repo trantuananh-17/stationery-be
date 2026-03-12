@@ -4,6 +4,7 @@ import { BaseConfiguration } from '@common/configuration/base.config';
 import { ValidateNested } from 'class-validator';
 import { plainToInstance, Type } from 'class-transformer';
 import { GrpcConfiguration } from '@common/configuration/grpc.config';
+import { JwtConfiguration } from '@common/configuration/jwt.config';
 
 class Configuration extends BaseConfiguration {
   // ValidateNested(): validate các field bên trong class AppConfiguration
@@ -11,6 +12,10 @@ class Configuration extends BaseConfiguration {
   @ValidateNested()
   @Type(() => AppConfiguration)
   APP_CONFIG = new AppConfiguration();
+
+  @ValidateNested()
+  @Type(() => AppConfiguration)
+  JWT_CONFIG = new JwtConfiguration();
 
   @ValidateNested()
   @Type(() => TcpConfiguration)

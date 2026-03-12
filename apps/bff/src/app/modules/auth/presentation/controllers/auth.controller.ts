@@ -1,13 +1,12 @@
 import { ResponseDto } from '@common/interfaces/gateway/response.interface';
-import { Body, Controller, HttpCode, HttpStatus, Logger, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Logger, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { LoginUserUseCase } from '../../application/login-user.usecase';
+import { LoginUserResponse } from '../../application/ports/dtos/auth.dto';
+import { RegisterUserUseCase } from '../../application/register-user.usecase';
+import { LoginDto } from '../dtos/login.dto';
 import { RegisterReponseDto } from '../dtos/register-response.dto';
 import { RegisterDto } from '../dtos/register.dto';
-import { RegisterUserUseCase } from '../../application/register-user.usecase';
-import { LoginUserResponse } from '../../application/ports/dtos/auth.dto';
-import { LoginDto } from '../dtos/login.dto';
-import { LoginUserUseCase } from '../../application/login-user.usecase';
-import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 
 @ApiTags('Auth')
 @Controller('auths')
@@ -27,7 +26,6 @@ export class AuthController {
     return result;
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post('login')
   @ApiOkResponse({ type: ResponseDto<LoginUserResponse> })
   @ApiOperation({ summary: 'Login account' })
