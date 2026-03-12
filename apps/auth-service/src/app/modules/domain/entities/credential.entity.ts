@@ -1,3 +1,13 @@
+import { AccountInactiveError } from '../errors/account-inactive.error';
+import { EmailAlreadyVerifiedError } from '../errors/email-already-verified.error';
+import { InvalidCurrentPasswordError } from '../errors/invalid-current-password.error';
+import { InvalidResetTokenError } from '../errors/invalid-reset-token.error';
+import { InvalidVerificationTokenError } from '../errors/invalid-verification-token.error';
+import { ResetTokenExpiredError } from '../errors/reset-token-expired.error';
+import { ResetTokenNotFoundError } from '../errors/reset-token-not-found.error';
+import { VerificationTokenExpiredError } from '../errors/verification-token-expired.error';
+import { VerificationTokenNotFoundError } from '../errors/verification-token-not-found.error';
+
 export type CredentialParams = {
   readonly id: string;
   readonly userId: string;
@@ -43,7 +53,7 @@ export class Credential {
 
   changePassword(oldHash: string, newHash: string) {
     if (this.params.passwordHash !== oldHash) {
-      throw new Error('Invalid current password');
+      throw new InvalidCurrentPasswordError();
     }
 
     this.params.passwordHash = newHash;
@@ -57,7 +67,7 @@ export class Credential {
 
   setVerificationToken(token: string, expires: Date) {
     if (this.params.isEmailVerified) {
-      throw new Error('Email already verified');
+      throw new EmailAlreadyVerifiedError();
     }
 
     this.params.verificationToken = token;
@@ -76,15 +86,15 @@ export class Credential {
 
   verifyEmail(token: string) {
     if (!this.params.verificationToken) {
-      throw new Error('Verification token not found');
+      throw new VerificationTokenNotFoundError();
     }
 
     if (this.params.verificationToken !== token) {
-      throw new Error('Invalid verification token');
+      throw new InvalidVerificationTokenError();
     }
 
     if (this.params.verificationExpires && this.params.verificationExpires < new Date()) {
-      throw new Error('Verification token expired');
+      throw new VerificationTokenExpiredError();
     }
 
     this.params.isEmailVerified = true;
@@ -108,19 +118,19 @@ export class Credential {
 
   resetPassword(token: string, passwordHash: string) {
     if (!this.params.isActive) {
-      throw new Error('Account is inactive');
+      throw new AccountInactiveError();
     }
 
     if (!this.params.resetPasswordToken) {
-      throw new Error('Reset token not found');
+      throw new ResetTokenNotFoundError();
     }
 
     if (this.params.resetPasswordToken !== token) {
-      throw new Error('Invalid reset token');
+      throw new InvalidResetTokenError();
     }
 
     if (this.params.resetPasswordExpires && this.params.resetPasswordExpires < new Date()) {
-      throw new Error('Reset token expired');
+      throw new ResetTokenExpiredError();
     }
 
     this.params.passwordHash = passwordHash;

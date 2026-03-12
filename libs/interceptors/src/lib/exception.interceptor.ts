@@ -13,14 +13,23 @@ import { ResponseDto } from '@common/interfaces/gateway/response.interface';
 import { status } from '@grpc/grpc-js';
 
 export const GRPC_HTTP_STATUS: Record<number, HttpStatus> = {
+  [status.OK]: HttpStatus.OK,
+  [status.CANCELLED]: HttpStatus.BAD_REQUEST,
+  [status.UNKNOWN]: HttpStatus.INTERNAL_SERVER_ERROR,
   [status.INVALID_ARGUMENT]: HttpStatus.BAD_REQUEST,
-  [status.ALREADY_EXISTS]: HttpStatus.CONFLICT,
+  [status.DEADLINE_EXCEEDED]: HttpStatus.GATEWAY_TIMEOUT,
   [status.NOT_FOUND]: HttpStatus.NOT_FOUND,
+  [status.ALREADY_EXISTS]: HttpStatus.CONFLICT,
   [status.PERMISSION_DENIED]: HttpStatus.FORBIDDEN,
-  [status.FAILED_PRECONDITION]: HttpStatus.FORBIDDEN,
-  [status.UNAUTHENTICATED]: HttpStatus.UNAUTHORIZED,
+  [status.RESOURCE_EXHAUSTED]: HttpStatus.TOO_MANY_REQUESTS,
+  [status.FAILED_PRECONDITION]: HttpStatus.PRECONDITION_FAILED,
+  [status.ABORTED]: HttpStatus.CONFLICT,
+  [status.OUT_OF_RANGE]: HttpStatus.BAD_REQUEST,
+  [status.UNIMPLEMENTED]: HttpStatus.NOT_IMPLEMENTED,
   [status.INTERNAL]: HttpStatus.INTERNAL_SERVER_ERROR,
   [status.UNAVAILABLE]: HttpStatus.SERVICE_UNAVAILABLE,
+  [status.DATA_LOSS]: HttpStatus.INTERNAL_SERVER_ERROR,
+  [status.UNAUTHENTICATED]: HttpStatus.UNAUTHORIZED,
 };
 
 export class ExceptionInterceptor implements NestInterceptor {
