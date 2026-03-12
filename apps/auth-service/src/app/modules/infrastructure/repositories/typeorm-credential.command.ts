@@ -11,6 +11,12 @@ export class TypeOrmCredentialCommandRepository implements ICredentialCommandRep
   constructor(
     @InjectRepository(CredentialOrmEntity) private readonly repo: Repository<CredentialOrmEntity>,
   ) {}
+
+  async save(credential: Credential): Promise<void> {
+    const orm = this.toOrmEntity(credential);
+    await this.repo.save(orm);
+  }
+
   async create(credential: Credential): Promise<void> {
     const entity = this.repo.create({
       id: credential.id,
@@ -32,5 +38,24 @@ export class TypeOrmCredentialCommandRepository implements ICredentialCommandRep
 
   updatePassword(userId: string, passwordHash: string): Promise<void> {
     throw new Error('Method not implemented.');
+  }
+
+  private toOrmEntity(domain: Credential): CredentialOrmEntity {
+    const orm = new CredentialOrmEntity();
+
+    orm.id = domain.id;
+    orm.userId = domain.userId;
+    orm.email = domain.email;
+    orm.passwordHash = domain.passwordHash;
+    orm.isEmailVerified = domain.isEmailVerified;
+    orm.isActive = domain.isActive;
+    orm.verificationToken = domain.verificationToken;
+    orm.verificationExpires = domain.verificationExpires;
+    orm.resetPasswordToken = domain.resetPasswordToken;
+    orm.resetPasswordExpires = domain.resetPasswordExpires;
+    orm.createdAt = domain.createdAt;
+    orm.updatedAt = domain.updatedAt;
+
+    return orm;
   }
 }

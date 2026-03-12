@@ -9,4 +9,6 @@ export abstract class ITokenService {
   abstract generateAccessToken(payload: TokenPayloadDto): Promise<string>;
 
   abstract generateRefreshToken(payload: TokenPayloadDto): Promise<string>;
+
+  abstract generateRandomToken(length?: number): string;
 }

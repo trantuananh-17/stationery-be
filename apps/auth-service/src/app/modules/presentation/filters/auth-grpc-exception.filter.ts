@@ -1,19 +1,22 @@
 import { status } from '@grpc/grpc-js';
-import { Catch, RpcExceptionFilter } from '@nestjs/common';
+import { RpcExceptionFilter } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
-import { AccountLockedError } from '../../domain/errors/account-locked.error';
-import { EmailAlreadyVerifiedError } from '../../domain/errors/email-already-verified.error';
-import { EmailNotVerifiedError } from '../../domain/errors/email-not-verified.error';
-import { InvalidCredentialError } from '../../domain/errors/invalid-credential.error';
-import { InvalidCurrentPasswordError } from '../../domain/errors/invalid-current-password.error';
-import { InvalidResetTokenError } from '../../domain/errors/invalid-reset-token.error';
-import { InvalidVerificationTokenError } from '../../domain/errors/invalid-verification-token.error';
-import { ResetTokenExpiredError } from '../../domain/errors/reset-token-expired.error';
-import { ResetTokenNotFoundError } from '../../domain/errors/reset-token-not-found.error';
-import { VerificationTokenExpiredError } from '../../domain/errors/verification-token-expired.error';
-import { VerificationTokenNotFoundError } from '../../domain/errors/verification-token-not-found.error';
+import {
+  AccountLockedError,
+  CredentialNotFoundError,
+  EmailAlreadyVerifiedError,
+  EmailNotVerifiedError,
+  InvalidCredentialError,
+  InvalidCurrentPasswordError,
+  InvalidResetTokenError,
+  InvalidVerificationTokenError,
+  ResetTokenExpiredError,
+  ResetTokenNotFoundError,
+  VerificationCooldownError,
+  VerificationTokenExpiredError,
+  VerificationTokenNotFoundError,
+} from '../../domain/errors/credential.error';
 
-@Catch()
 export class AuthGrpcExceptionFilter implements RpcExceptionFilter {
   catch(exception: any): Observable<any> {
     if (exception?.code && typeof exception.code === 'number') {
@@ -26,6 +29,13 @@ export class AuthGrpcExceptionFilter implements RpcExceptionFilter {
     if (exception instanceof InvalidCredentialError) {
       return throwError(() => ({
         code: status.UNAUTHENTICATED,
+        message: exception.message,
+      }));
+    }
+
+    if (exception instanceof VerificationCooldownError) {
+      return throwError(() => ({
+        code: status.RESOURCE_EXHAUSTED,
         message: exception.message,
       }));
     }
@@ -64,7 +74,8 @@ export class AuthGrpcExceptionFilter implements RpcExceptionFilter {
 
     if (
       exception instanceof VerificationTokenNotFoundError ||
-      exception instanceof ResetTokenNotFoundError
+      exception instanceof ResetTokenNotFoundError ||
+      exception instanceof CredentialNotFoundError
     ) {
       return throwError(() => ({
         code: status.NOT_FOUND,

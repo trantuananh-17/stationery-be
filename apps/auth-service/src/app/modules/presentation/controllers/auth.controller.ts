@@ -1,12 +1,19 @@
 import { GrpcLoggingInterceptor } from '@common/interceptors/grpcLogging.interceptor';
+import { Controller, UseFilters, UseInterceptors } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { GrpcMethod, Payload } from '@nestjs/microservices';
-import { RegisterDto } from '../dtos/register.dto';
-import { RegisterCommand } from '../../application/commands/register/register.command';
-import { Controller, UseFilters, UseInterceptors } from '@nestjs/common';
-import { AuthGrpcExceptionFilter } from '../filters/auth-grpc-exception.filter';
-import { LoginPayloadDto } from '../dtos/login.dto';
 import { LoginCommand } from '../../application/commands/login/login.command';
+import { RegisterCommand } from '../../application/commands/register/register.command';
+import { ResendVerificationCommand } from '../../application/commands/resend-verification/resend-verification.command';
+import { ResetPasswordCommand } from '../../application/commands/reset-password/reset-password.command';
+import { VerifyEmailCommand } from '../../application/commands/verify-email/verify-email.command';
+import { EmailPayloadDto } from '../dtos/email.dto';
+import { LoginPayloadDto } from '../dtos/login.dto';
+import { RegisterDto } from '../dtos/register.dto';
+import { ResetPasswordPayloadDto } from '../dtos/reset-pass.dto';
+import { TokenPayloadDto } from '../dtos/token.dto';
+import { AuthGrpcExceptionFilter } from '../filters/auth-grpc-exception.filter';
+import { ForgotPasswordCommand } from '../../application/commands/forgot-password/forgot-password.command';
 
 @Controller()
 @UseInterceptors(GrpcLoggingInterceptor)
@@ -27,5 +34,29 @@ export class AuthController {
   async login(@Payload() payload: LoginPayloadDto) {
     const { email, password } = payload;
     return await this.commandBus.execute(new LoginCommand(email, password));
+  }
+
+  @GrpcMethod('AuthorizerService', 'verifyEmail')
+  async verifyEmail(@Payload() payload: TokenPayloadDto) {
+    const { token } = payload;
+    return await this.commandBus.execute(new VerifyEmailCommand(token));
+  }
+
+  @GrpcMethod('AuthorizerService', 'resendEmail')
+  async resendEmail(@Payload() payload: EmailPayloadDto) {
+    const { email } = payload;
+    return await this.commandBus.execute(new ResendVerificationCommand(email));
+  }
+
+  @GrpcMethod('AuthorizerService', 'resetPassword')
+  async resetPassword(@Payload() payload: ResetPasswordPayloadDto) {
+    const { token, password } = payload;
+    return await this.commandBus.execute(new ResetPasswordCommand(token, password));
+  }
+
+  @GrpcMethod('AuthorizerService', 'forgotPassword')
+  async forgotPassword(@Payload() payload: EmailPayloadDto) {
+    const { email } = payload;
+    return await this.commandBus.execute(new ForgotPasswordCommand(email));
   }
 }

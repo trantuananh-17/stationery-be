@@ -1,12 +1,14 @@
-import { AccountInactiveError } from '../errors/account-inactive.error';
-import { EmailAlreadyVerifiedError } from '../errors/email-already-verified.error';
-import { InvalidCurrentPasswordError } from '../errors/invalid-current-password.error';
-import { InvalidResetTokenError } from '../errors/invalid-reset-token.error';
-import { InvalidVerificationTokenError } from '../errors/invalid-verification-token.error';
-import { ResetTokenExpiredError } from '../errors/reset-token-expired.error';
-import { ResetTokenNotFoundError } from '../errors/reset-token-not-found.error';
-import { VerificationTokenExpiredError } from '../errors/verification-token-expired.error';
-import { VerificationTokenNotFoundError } from '../errors/verification-token-not-found.error';
+import {
+  AccountInactiveError,
+  EmailAlreadyVerifiedError,
+  InvalidCurrentPasswordError,
+  InvalidResetTokenError,
+  InvalidVerificationTokenError,
+  ResetTokenExpiredError,
+  ResetTokenNotFoundError,
+  VerificationTokenExpiredError,
+  VerificationTokenNotFoundError,
+} from '../errors/credential.error';
 
 export type CredentialParams = {
   readonly id: string;
@@ -85,6 +87,10 @@ export class Credential {
   }
 
   verifyEmail(token: string) {
+    if (this.params.isEmailVerified) {
+      throw new EmailAlreadyVerifiedError();
+    }
+
     if (!this.params.verificationToken) {
       throw new VerificationTokenNotFoundError();
     }

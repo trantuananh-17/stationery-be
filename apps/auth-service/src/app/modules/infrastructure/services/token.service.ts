@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ITokenService, TokenPayloadDto } from '../../application/ports/services/token.port';
 import { JwtService } from '@nestjs/jwt';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class TokenService implements ITokenService {
@@ -12,5 +13,9 @@ export class TokenService implements ITokenService {
 
   async generateRefreshToken(payload: TokenPayloadDto): Promise<string> {
     return this.jwtService.signAsync(payload, { expiresIn: '7d' });
+  }
+
+  generateRandomToken(length?: number): string {
+    return randomBytes(length).toString('hex');
   }
 }

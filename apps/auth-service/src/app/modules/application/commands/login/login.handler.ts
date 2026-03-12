@@ -4,9 +4,11 @@ import { IPasswordService } from '../../ports/services/password.port';
 import { LoginCommand } from './login.command';
 import { ICredentialQueryRepository } from '../../ports/repositories/credential-query.repo';
 import { ITokenService } from '../../ports/services/token.port';
-import { InvalidCredentialError } from '../../../domain/errors/invalid-credential.error';
-import { EmailNotVerifiedError } from '../../../domain/errors/email-not-verified.error';
-import { AccountLockedError } from '../../../domain/errors/account-locked.error';
+import {
+  AccountLockedError,
+  EmailNotVerifiedError,
+  InvalidCredentialError,
+} from '../../../domain/errors/credential.error';
 
 @CommandHandler(LoginCommand)
 export class LoginHandler implements ICommandHandler<LoginCommand> {
