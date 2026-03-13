@@ -1,13 +1,17 @@
-import { Controller, Get, Inject, UseGuards } from '@nestjs/common';
-import { AppService } from './app.service';
+import { ProcessId } from '@common/decorators/processId.decorator';
+import { UserData } from '@common/decorators/user-data.decorator';
+import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
+import { OwnerGuard } from '@common/guards/owner.guard';
+import { JwtPayload } from '@common/interfaces/common/jwt-payload.interface';
 import { ResponseDto } from '@common/interfaces/gateway/response.interface';
 import { TcpClient } from '@common/interfaces/tcp/common/tcp-client.interface';
-import { ProcessId } from '@common/decorators/processId.decorator';
-import { map } from 'rxjs';
-import { UserData } from '@common/decorators/user-data.decorator';
-import { JwtPayload } from '@common/interfaces/common/jwt-payload.interface';
-import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
+import { Controller, Get, Inject, Param, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { map } from 'rxjs';
+import { AppService } from './app.service';
+import { Permissions } from '@common/decorators/permission.decorator';
+import { PERMISSION } from '@common/constants/enums/permissions.enum';
+import { PermissionGuard } from '@common/guards/permission.guard';
 
 @Controller('app')
 export class AppController {
@@ -17,10 +21,16 @@ export class AppController {
   ) {}
 
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
-  @Get()
-  getData(@UserData() user: JwtPayload) {
-    console.log(user);
+  @Permissions([PERMISSION.USER_DELETE])
+  @UseGuards(JwtAuthGuard, OwnerGuard, PermissionGuard)
+  @Get('test-owner/:id')
+  testOwner(@UserData() user: JwtPayload, @Param('id') id: string) {
+    console.log('JWT USER:', user);
+    console.log('PARAM ID:', id);
+
+    return {
+      message: 'OwnerGuard passed',
+    };
   }
 
   @Get('stationery')
