@@ -81,6 +81,72 @@
       "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
       "outFiles": ["${workspaceFolder}/apps/auth-service/dist/**/*.(m|c|)js", "!**/node_modules/**"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug inventory-service with Nx",
+      "runtimeExecutable": "pnpm exec",
+      "runtimeArgs": ["nx", "serve", "inventory-service"],
+      "env": {
+        "NODE_OPTIONS": "--inspect=9234"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"],
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceFolder}/apps/inventory-service/dist/**/*.(m|c|)js",
+        "!**/node_modules/**"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug cart-service with Nx",
+      "runtimeExecutable": "pnpm exec",
+      "runtimeArgs": ["nx", "serve", "cart-service"],
+      "env": {
+        "NODE_OPTIONS": "--inspect=9235"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"],
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/apps/cart-service/dist/**/*.(m|c|)js", "!**/node_modules/**"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug cart-service with Nx",
+      "runtimeExecutable": "pnpm exec",
+      "runtimeArgs": ["nx", "serve", "cart-service"],
+      "env": {
+        "NODE_OPTIONS": "--inspect=9236"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"],
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/apps/cart-service/dist/**/*.(m|c|)js", "!**/node_modules/**"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug order-service with Nx",
+      "runtimeExecutable": "pnpm exec",
+      "runtimeArgs": ["nx", "serve", "order-service"],
+      "env": {
+        "NODE_OPTIONS": "--inspect=9237"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"],
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceFolder}/apps/order-service/dist/**/*.(m|c|)js",
+        "!**/node_modules/**"
+      ]
     }
   ]
 }

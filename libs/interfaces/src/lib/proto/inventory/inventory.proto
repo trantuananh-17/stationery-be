@@ -1,0 +1,14 @@
+
+syntax = "proto3";
+
+package GRPC_INVENTORY_SERVICE;
+
+service InventoryService {
+  rpc Ping (PingRequest) returns (PingResponse);
+}
+
+message PingRequest {}
+
+message PingResponse {
+  string message = 1;
+}
