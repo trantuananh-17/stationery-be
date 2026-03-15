@@ -34,4 +34,12 @@ export class VariantAttribute {
   get attributeValueId() {
     return this.params.attributeValueId;
   }
+
+  get createdAt() {
+    return this.params.createdAt;
+  }
+
+  get updatedAt() {
+    return this.params.updatedAt;
+  }
 }

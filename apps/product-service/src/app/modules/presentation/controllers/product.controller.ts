@@ -2,7 +2,7 @@ import { Controller, Logger, UseInterceptors } from '@nestjs/common';
 import { TcpLoggingInterceptor } from '@common/interceptors/tcpLogging.interceptor';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { CreateProductCommand } from '../../application/commands/create-product.command';
+import { CreateProductCommand } from '../../application/commands/products/create-product.command.ts/create-product.command';
 import { CreateProductDto } from '../dtos/create-product.dto';
 
 @Controller()

@@ -1,0 +1,68 @@
+{
+  "collection": "attribute_values",
+  "migration": [
+    "CREATE EXTENSION IF NOT EXISTS \"pgcrypto\"",
+    "CREATE TABLE IF NOT EXISTS attribute_values (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), attribute_id uuid NOT NULL REFERENCES attributes(id) ON DELETE CASCADE, value varchar NOT NULL, slug varchar NOT NULL, sort_order integer DEFAULT 0, created_at timestamp DEFAULT now(), updated_at timestamp DEFAULT now(), UNIQUE(attribute_id, slug))"
+  ],
+  "data": [
+    { "attributeSlug": "brand", "value": "Thiên Long", "slug": "thien-long", "sortOrder": 1 },
+    { "attributeSlug": "brand", "value": "Deli", "slug": "deli", "sortOrder": 2 },
+    { "attributeSlug": "brand", "value": "Double A", "slug": "double-a", "sortOrder": 3 },
+
+    { "attributeSlug": "origin", "value": "Việt Nam", "slug": "vietnam", "sortOrder": 1 },
+    { "attributeSlug": "origin", "value": "Nhật Bản", "slug": "japan", "sortOrder": 2 },
+    { "attributeSlug": "origin", "value": "Thái Lan", "slug": "thailand", "sortOrder": 3 },
+
+    { "attributeSlug": "color", "value": "Đen", "slug": "black", "sortOrder": 1 },
+    { "attributeSlug": "color", "value": "Xanh", "slug": "blue", "sortOrder": 2 },
+    { "attributeSlug": "color", "value": "Đỏ", "slug": "red", "sortOrder": 3 },
+
+    { "attributeSlug": "material", "value": "Nhựa", "slug": "plastic", "sortOrder": 1 },
+    { "attributeSlug": "material", "value": "Kim loại", "slug": "metal", "sortOrder": 2 },
+    { "attributeSlug": "material", "value": "Gỗ", "slug": "wood", "sortOrder": 3 },
+
+    { "attributeSlug": "size", "value": "Nhỏ", "slug": "small", "sortOrder": 1 },
+    { "attributeSlug": "size", "value": "Trung bình", "slug": "medium", "sortOrder": 2 },
+    { "attributeSlug": "size", "value": "Lớn", "slug": "large", "sortOrder": 3 },
+
+    { "attributeSlug": "paper_size", "value": "A3", "slug": "a3", "sortOrder": 1 },
+    { "attributeSlug": "paper_size", "value": "A4", "slug": "a4", "sortOrder": 2 },
+    { "attributeSlug": "paper_size", "value": "A5", "slug": "a5", "sortOrder": 3 },
+
+    { "attributeSlug": "gsm", "value": "60gsm", "slug": "60gsm", "sortOrder": 1 },
+    { "attributeSlug": "gsm", "value": "70gsm", "slug": "70gsm", "sortOrder": 2 },
+    { "attributeSlug": "gsm", "value": "80gsm", "slug": "80gsm", "sortOrder": 3 },
+
+    {
+      "attributeSlug": "paper_type",
+      "value": "Giấy thường",
+      "slug": "normal-paper",
+      "sortOrder": 1
+    },
+    {
+      "attributeSlug": "paper_type",
+      "value": "Giấy cao cấp",
+      "slug": "premium-paper",
+      "sortOrder": 2
+    },
+
+    { "attributeSlug": "sheet_count", "value": "100 tờ", "slug": "100-sheets", "sortOrder": 1 },
+    { "attributeSlug": "sheet_count", "value": "200 tờ", "slug": "200-sheets", "sortOrder": 2 },
+    { "attributeSlug": "sheet_count", "value": "500 tờ", "slug": "500-sheets", "sortOrder": 3 },
+
+    { "attributeSlug": "pen_type", "value": "Bút bi", "slug": "ballpoint", "sortOrder": 1 },
+    { "attributeSlug": "pen_type", "value": "Bút gel", "slug": "gel-pen", "sortOrder": 2 },
+    { "attributeSlug": "pen_type", "value": "Bút dạ quang", "slug": "highlighter", "sortOrder": 3 },
+
+    { "attributeSlug": "ink_type", "value": "Mực dầu", "slug": "oil-ink", "sortOrder": 1 },
+    { "attributeSlug": "ink_type", "value": "Mực gel", "slug": "gel-ink", "sortOrder": 2 },
+
+    { "attributeSlug": "binding_type", "value": "Lò xo", "slug": "spiral", "sortOrder": 1 },
+    { "attributeSlug": "binding_type", "value": "Đóng keo", "slug": "glue", "sortOrder": 2 },
+    { "attributeSlug": "binding_type", "value": "Khâu chỉ", "slug": "stitched", "sortOrder": 3 },
+
+    { "attributeSlug": "file_type", "value": "Bìa còng", "slug": "lever-arch", "sortOrder": 1 },
+    { "attributeSlug": "file_type", "value": "Bìa lá", "slug": "clear-book", "sortOrder": 2 },
+    { "attributeSlug": "file_type", "value": "File hộp", "slug": "box-file", "sortOrder": 3 }
+  ]
+}

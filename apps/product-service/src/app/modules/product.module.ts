@@ -8,7 +8,7 @@ import { IProductCommandRepository } from './application/ports/product-command.r
 import { TypeOrmProductCommandRepository } from './infrastructure/repositories/typeorm-product-command.repo';
 import { IProductQueryRepository } from './application/ports/product-query.repo';
 import { TypeOrmProductQueryRepository } from './infrastructure/repositories/typeorm-product-query.repo';
-import { CreateProductHandler } from './application/commands/handlers/create-product.handler';
+import { CreateProductHandler } from './application/commands/products/create-product.command.ts/create-product.handler';
 
 @Module({
   imports: [CqrsModule, TypeOrmProvider, TypeOrmModule.forFeature([ProductOrmEntity])],

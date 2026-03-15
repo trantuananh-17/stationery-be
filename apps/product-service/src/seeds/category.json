@@ -1,0 +1,158 @@
+{
+  "collection": "categories",
+  "migration": [
+    "CREATE EXTENSION IF NOT EXISTS \"pgcrypto\"",
+    "CREATE TABLE IF NOT EXISTS categories (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), name varchar NOT NULL, slug varchar UNIQUE NOT NULL, parent_id uuid REFERENCES categories(id) ON DELETE SET NULL, position integer DEFAULT 0, is_active boolean DEFAULT true, created_at timestamp DEFAULT now(), updated_at timestamp DEFAULT now())"
+  ],
+  "data": [
+    { "name": "Giấy – Sản phẩm từ giấy", "slug": "giay", "position": 1 },
+
+    {
+      "name": "Giấy in – Bìa – Mica",
+      "slug": "giay-in-bia-mica",
+      "parentSlug": "giay",
+      "position": 1
+    },
+    {
+      "name": "Giấy note – Phân trang",
+      "slug": "giay-note-phan-trang",
+      "parentSlug": "giay",
+      "position": 2
+    },
+    {
+      "name": "Giấy can ảnh – Giấy dán giá",
+      "slug": "giay-can-anh-giay-dan-gia",
+      "parentSlug": "giay",
+      "position": 3
+    },
+    {
+      "name": "Giấy fax – Film fax – Giấy than",
+      "slug": "giay-fax-film-fax-giay-than",
+      "parentSlug": "giay",
+      "position": 4
+    },
+    { "name": "Phong bì", "slug": "phong-bi", "parentSlug": "giay", "position": 5 },
+
+    { "name": "Bút", "slug": "but", "position": 2 },
+
+    {
+      "name": "Bút bi – Bút bi nước (Bút gel)",
+      "slug": "but-bi-but-bi-nuoc",
+      "parentSlug": "but",
+      "position": 1
+    },
+    { "name": "Bút dạ – Bút nhớ", "slug": "but-da-but-nho", "parentSlug": "but", "position": 2 },
+    {
+      "name": "Bút xóa – Băng xóa",
+      "slug": "but-xoa-bang-xoa",
+      "parentSlug": "but",
+      "position": 3
+    },
+    { "name": "Bút ký", "slug": "but-ky", "parentSlug": "but", "position": 4 },
+    { "name": "Bút trình chiếu", "slug": "but-trinh-chieu", "parentSlug": "but", "position": 5 },
+    {
+      "name": "Tẩy – Thước kẻ – Compa – Bút chì",
+      "slug": "tay-thuoc-ke-compa-but-chi",
+      "parentSlug": "but",
+      "position": 6
+    },
+
+    { "name": "File hồ sơ", "slug": "file-ho-so", "position": 3 },
+
+    {
+      "name": "File nhiều ngăn – Nhiều tầng",
+      "slug": "file-nhieu-ngan-nhieu-tang",
+      "parentSlug": "file-ho-so",
+      "position": 1
+    },
+    {
+      "name": "Cặp lá – Clear – Chia file các loại",
+      "slug": "cap-la-clear-chia-file-cac-loai",
+      "parentSlug": "file-ho-so",
+      "position": 2
+    },
+    {
+      "name": "Cặp hộp – Cặp 3 dây – Trình ký",
+      "slug": "cap-hop-cap-3-day-trinh-ky",
+      "parentSlug": "file-ho-so",
+      "position": 3
+    },
+    {
+      "name": "Cặp lỗ – Cặp càng cua – File ống",
+      "slug": "cap-lo-cap-cang-cua-file-ong",
+      "parentSlug": "file-ho-so",
+      "position": 4
+    },
+    { "name": "Sơ mi lỗ", "slug": "so-mi-lo", "parentSlug": "file-ho-so", "position": 5 },
+
+    { "name": "Sổ – Vở", "slug": "so-vo", "position": 4 },
+
+    { "name": "Sổ da", "slug": "so-da", "parentSlug": "so-vo", "position": 1 },
+    { "name": "Sổ lò xo", "slug": "so-lo-xo", "parentSlug": "so-vo", "position": 2 },
+    {
+      "name": "Sổ kế toán – Sổ thu chi",
+      "slug": "so-ke-toan-so-thu-chi",
+      "parentSlug": "so-vo",
+      "position": 3
+    },
+    { "name": "Vở học sinh", "slug": "vo-hoc-sinh", "parentSlug": "so-vo", "position": 4 },
+
+    { "name": "Dụng cụ văn phòng", "slug": "dung-cu-van-phong", "position": 5 },
+
+    {
+      "name": "Dập ghim – Đục lỗ – Ghim – Kẹp",
+      "slug": "dap-ghim-duc-lo-ghim-kep",
+      "parentSlug": "dung-cu-van-phong",
+      "position": 1
+    },
+    { "name": "Máy tính", "slug": "may-tinh", "parentSlug": "dung-cu-van-phong", "position": 2 },
+    {
+      "name": "Dao – Kéo – Hộp bút",
+      "slug": "dao-keo-hop-but",
+      "parentSlug": "dung-cu-van-phong",
+      "position": 3
+    },
+    {
+      "name": "Băng dính – Dao cắt băng dính",
+      "slug": "bang-dinh-dao-cat-bang-dinh",
+      "parentSlug": "dung-cu-van-phong",
+      "position": 4
+    },
+    {
+      "name": "Dấu – Mực dấu",
+      "slug": "dau-muc-dau",
+      "parentSlug": "dung-cu-van-phong",
+      "position": 5
+    },
+    {
+      "name": "Keo – Hồ dán",
+      "slug": "keo-ho-dan",
+      "parentSlug": "dung-cu-van-phong",
+      "position": 6
+    },
+    {
+      "name": "Pin – Chuột – Bàn Phím – USB – Đĩa",
+      "slug": "pin-chuot-ban-phim-usb-dia",
+      "parentSlug": "dung-cu-van-phong",
+      "position": 7
+    },
+    {
+      "name": "Tẩy – Thước kẻ – Compa – Bút chì",
+      "slug": "tay-thuoc-ke-compa-but-chi-dung-cu",
+      "parentSlug": "dung-cu-van-phong",
+      "position": 8
+    },
+    {
+      "name": "Lịch các loại",
+      "slug": "lich-cac-loai",
+      "parentSlug": "dung-cu-van-phong",
+      "position": 9
+    },
+    {
+      "name": "Thẻ nhân viên – Dây đeo thẻ",
+      "slug": "the-nhan-vien-day-deo-the",
+      "parentSlug": "dung-cu-van-phong",
+      "position": 10
+    }
+  ]
+}
