@@ -7,8 +7,8 @@ export type ProductParams = {
   readonly id: string;
   name: string;
   slug: string;
-  readonly categoryId: string;
-  readonly brandId: string;
+  categoryId: string;
+  brandId: string;
   description: string;
   shortDescription: string;
   images: string[];
@@ -83,6 +83,39 @@ export class Product {
     this.specifications.push(spec);
   }
 
+  syncSpecifications(inputs: Array<{ id?: string; attributeId: string; value: string }>) {
+    const nextSpecifications: Specification[] = [];
+
+    for (const input of inputs) {
+      if (input.id) {
+        const existingSpec = this.specifications.find((spec) => spec.id === input.id);
+
+        if (!existingSpec) {
+          throw new Error(`Specification with id ${input.id} not found`);
+        }
+
+        existingSpec.update({
+          attributeId: input.attributeId,
+          value: input.value,
+        });
+
+        nextSpecifications.push(existingSpec);
+        continue;
+      }
+
+      const newSpec = Specification.create({
+        productId: this.id,
+        attributeId: input.attributeId,
+        value: input.value,
+      });
+
+      nextSpecifications.push(newSpec);
+    }
+
+    this.specifications = nextSpecifications;
+    this.setUpdatedAt();
+  }
+
   addVariant(data: {
     name: string;
     sku: string;
@@ -113,11 +146,121 @@ export class Product {
     this.variants.push(variant);
   }
 
-  updateInfo(data: { name?: string; description?: string; shortDescription?: string }) {
-    if (data.name !== undefined) this.params.name = data.name.trim();
-    if (data.description !== undefined) this.params.description = data.description.trim();
+  syncVariants(
+    inputs: Array<{
+      id?: string;
+      name: string;
+      price: number;
+      compareAtPrice?: number;
+      images?: string;
+      sortOrder?: number;
+      isDefault?: boolean;
+      attributeValueIds: string[];
+      sku?: string;
+    }>,
+  ) {
+    const inputIds = new Set(inputs.filter((x) => x.id).map((x) => x.id));
+
+    // variant cũ không còn trong input => soft delete
+    for (const variant of this.variants) {
+      if (!variant.deletedAt && !inputIds.has(variant.id)) {
+        variant.remove();
+      }
+    }
+
+    // update existing / add new
+    for (const input of inputs) {
+      if (input.id) {
+        const existingVariant = this.variants.find((v) => v.id === input.id);
+
+        if (!existingVariant) {
+          throw new Error(`Variant with id ${input.id} not found`);
+        }
+
+        existingVariant.restore();
+        existingVariant.updateInfo({
+          price: input.price,
+          compareAtPrice: input.compareAtPrice,
+          images: input.images,
+          sortOrder: input.sortOrder,
+          isDefault: input.isDefault,
+        });
+
+        continue;
+      }
+
+      const newVariant = Variant.create({
+        productId: this.id,
+        name: input.name,
+        sku: input.sku,
+        price: input.price,
+        compareAtPrice: input.compareAtPrice,
+        images: input.images,
+        sortOrder: input.sortOrder,
+        isDefault: input.isDefault,
+      });
+
+      input.attributeValueIds.forEach((attributeValueId) => {
+        newVariant.addAttribute(attributeValueId);
+      });
+
+      this.variants.push(newVariant);
+    }
+
+    this.ensureSingleDefaultVariant();
+    this.setUpdatedAt();
+  }
+
+  updateProductInfo(data: {
+    name?: string;
+    description?: string;
+    shortDescription?: string;
+    slug?: string;
+    images?: string[];
+    thumbnail?: string;
+    featured?: boolean;
+    searchKeywords?: string[];
+    seoTitle?: string;
+    seoDescription?: string;
+  }) {
+    if (data.name !== undefined) {
+      this.params.name = data.name.trim();
+    }
+
+    if (data.description !== undefined) {
+      this.params.description = data.description.trim();
+    }
+
     if (data.shortDescription !== undefined) {
       this.params.shortDescription = data.shortDescription.trim();
+    }
+
+    if (data.slug !== undefined) {
+      this.params.slug = data.slug.trim();
+    }
+
+    if (data.images !== undefined) {
+      this.params.images = data.images;
+    }
+
+    if (data.thumbnail !== undefined) {
+      this.params.thumbnail = data.thumbnail;
+    }
+
+    if (data.featured !== undefined) {
+      this.params.featured = data.featured;
+    }
+
+    if (data.seoTitle !== undefined) {
+      this.params.seoTitle = data.seoTitle.trim();
+    }
+
+    if (data.seoDescription !== undefined) {
+      this.params.seoDescription = data.seoDescription.trim();
+    }
+
+    if (data.searchKeywords !== undefined) {
+      this.params.searchKeywords = data.searchKeywords;
     }
 
     this.setUpdatedAt();
@@ -167,6 +310,30 @@ export class Product {
   deactivate() {
     this.params.status = ProductStatus.INACTIVE;
     this.setUpdatedAt();
+  }
+
+  private ensureSingleDefaultVariant() {
+    const activeVariants = this.variants.filter((v) => !v.deletedAt);
+    const defaultVariants = activeVariants.filter((v) => v.isDefault);
+
+    if (defaultVariants.length <= 1) {
+      return;
+    }
+
+    let keepFirst = true;
+
+    for (const variant of activeVariants) {
+      if (!variant.isDefault) {
+        continue;
+      }
+
+      if (keepFirst) {
+        keepFirst = false;
+        continue;
+      }
+
+      variant.unsetDefault();
+    }
   }
 
   private setUpdatedAt() {

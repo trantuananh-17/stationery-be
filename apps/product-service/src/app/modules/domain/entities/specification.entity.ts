@@ -3,8 +3,8 @@ import { randomUUID } from 'crypto';
 export type SpecificationParams = {
   readonly id: string;
   readonly productId: string;
-  readonly attributeId: string;
-  readonly value: string;
+  attributeId: string;
+  value: string;
   readonly createdAt: Date;
   updatedAt: Date;
 };
@@ -25,6 +25,21 @@ export class Specification {
     });
   }
 
+  update(data: { attributeId?: string; value?: string }) {
+    if (data.attributeId !== undefined) {
+      this.params.attributeId = data.attributeId.trim();
+    }
+
+    if (data.value !== undefined) {
+      this.params.value = data.value.trim();
+    }
+
+    this.setUpdatedAt();
+  }
+
+  private setUpdatedAt() {
+    this.params.updatedAt = new Date();
+  }
   get id() {
     return this.params.id;
   }

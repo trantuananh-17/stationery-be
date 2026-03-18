@@ -32,6 +32,9 @@ export class VariantOrmEntity extends BaseEntity {
   @Column({ name: 'is_available', default: true })
   isAvailable: boolean;
 
+  @Column({ name: 'deleted_at', default: null, nullable: true })
+  deletedAt?: Date;
+
   @ManyToOne(() => ProductOrmEntity, (product) => product.variants)
   @JoinColumn({ name: 'product_id' })
   product: ProductOrmEntity;

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { IProductCommandRepository } from '../../application/ports/repositories/product-command.repo';
 import { Product } from '../../domain/entities/product.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { ProductOrmEntity } from '../entities/typeorm-product.entity';
 import { VariantOrmEntity } from '../entities/typeorm-variant.entity';
 import { SpecificationOrmEntity } from '../entities/typeorm-specification.enity';
@@ -32,11 +32,8 @@ export class TypeOrmProductCommandRepository implements IProductCommandRepositor
     const manager = getManager();
 
     const productRepo = manager ? manager.getRepository(ProductOrmEntity) : this.repo;
-
     const variantRepo = manager ? manager.getRepository(VariantOrmEntity) : this.variantRepo;
-
     const specRepo = manager ? manager.getRepository(SpecificationOrmEntity) : this.specRepo;
-
     const attrRepo = manager ? manager.getRepository(VariantAttributeOrmEntity) : this.attrRepo;
 
     const productOrm = this.toProductOrm(product);
@@ -53,6 +50,94 @@ export class TypeOrmProductCommandRepository implements IProductCommandRepositor
     await variantRepo.save(variantOrms);
     await specRepo.save(specOrms);
     await attrRepo.save(attrOrms);
+  }
+
+  async update(product: Product): Promise<void> {
+    const manager = getManager();
+
+    const productRepo = manager ? manager.getRepository(ProductOrmEntity) : this.repo;
+    const variantRepo = manager ? manager.getRepository(VariantOrmEntity) : this.variantRepo;
+    const specRepo = manager ? manager.getRepository(SpecificationOrmEntity) : this.specRepo;
+    const attrRepo = manager ? manager.getRepository(VariantAttributeOrmEntity) : this.attrRepo;
+
+    const productOrm = this.toProductOrm(product);
+
+    const variants = product.getVariants();
+    const specs = product.getSpecifications();
+
+    const variantOrms = variants.map((v) => this.toVariantOrm(v));
+    const specOrms = specs.map((s) => this.toSpecOrm(s));
+    const attrOrms = variants.flatMap((v) => v.getAttributes().map((attr) => this.toAttrOrm(attr)));
+
+    await productRepo.save(productOrm);
+
+    await this.syncSpecifications(product.id, specOrms, specRepo);
+
+    await this.syncVariants(variantOrms, variantRepo);
+
+    await this.syncVariantAttributes(
+      variants.map((v) => v.id),
+      attrOrms,
+      attrRepo,
+    );
+  }
+
+  private async syncSpecifications(
+    productId: string,
+    nextSpecs: SpecificationOrmEntity[],
+    specRepo: Repository<SpecificationOrmEntity>,
+  ): Promise<void> {
+    const existingSpecs = await specRepo.find({
+      where: { productId },
+      select: ['id'],
+    });
+
+    const nextSpecIds = new Set(nextSpecs.map((s) => s.id));
+    const specIdsToDelete = existingSpecs.filter((s) => !nextSpecIds.has(s.id)).map((s) => s.id);
+
+    if (nextSpecs.length > 0) {
+      await specRepo.save(nextSpecs);
+    }
+
+    if (specIdsToDelete.length > 0) {
+      await specRepo.delete(specIdsToDelete);
+    }
+  }
+
+  private async syncVariants(
+    nextVariants: VariantOrmEntity[],
+    variantRepo: Repository<VariantOrmEntity>,
+  ): Promise<void> {
+    if (nextVariants.length === 0) return;
+
+    await variantRepo.save(nextVariants);
+  }
+
+  private async syncVariantAttributes(
+    variantIds: string[],
+    nextAttrs: VariantAttributeOrmEntity[],
+    attrRepo: Repository<VariantAttributeOrmEntity>,
+  ): Promise<void> {
+    if (variantIds.length === 0) return;
+
+    const existingAttrs = await attrRepo.find({
+      where: { variantId: In(variantIds) },
+      select: ['id', 'variantId', 'attributeValueId'],
+    });
+
+    const nextKeys = new Set(nextAttrs.map((attr) => `${attr.variantId}:${attr.attributeValueId}`));
+
+    const attrIdsToDelete = existingAttrs
+      .filter((attr) => !nextKeys.has(`${attr.variantId}:${attr.attributeValueId}`))
+      .map((attr) => attr.id);
+
+    if (attrIdsToDelete.length > 0) {
+      await attrRepo.delete(attrIdsToDelete);
+    }
+
+    if (nextAttrs.length > 0) {
+      await attrRepo.save(nextAttrs);
+    }
   }
 
   private toProductOrm(product: Product): ProductOrmEntity {
@@ -95,6 +180,7 @@ export class TypeOrmProductCommandRepository implements IProductCommandRepositor
     orm.isAvailable = variant.isAvailable;
     orm.createdAt = variant.createdAt;
     orm.updatedAt = variant.updatedAt;
+    orm.deletedAt = variant.deletedAt;
 
     return orm;
   }

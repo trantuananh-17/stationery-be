@@ -58,21 +58,13 @@ export class Variant {
   }
 
   updateInfo(data: {
-    name?: string;
-    sku?: string;
     price?: number;
     compareAtPrice?: number;
     images?: string;
     sortOrder?: number;
+    isDefault?: boolean;
+    isAvailable?: boolean;
   }) {
-    if (data.name !== undefined) {
-      this.params.name = data.name;
-    }
-
-    if (data.sku !== undefined) {
-      this.params.sku = data.sku;
-    }
-
     if (data.price !== undefined) {
       if (data.price < 0) {
         throw new Error('Price cannot be negative');
@@ -92,7 +84,15 @@ export class Variant {
       this.params.sortOrder = data.sortOrder;
     }
 
-    this.touch();
+    if (data.isDefault !== undefined) {
+      this.params.isDefault = data.isDefault;
+    }
+
+    if (data.isAvailable !== undefined) {
+      this.params.isAvailable = data.isAvailable;
+    }
+
+    this.setUpdatedAt();
   }
 
   addAttribute(attributeValueId: string) {
@@ -104,31 +104,45 @@ export class Variant {
     this.attributes.push(attr);
   }
 
+  loadAttribute(attribute: VariantAttribute) {
+    this.attributes.push(attribute);
+  }
+
   getAttributes() {
     return [...this.attributes];
   }
 
   setDefault() {
     this.params.isDefault = true;
-    this.touch();
+    this.setUpdatedAt();
   }
 
   unsetDefault() {
     this.params.isDefault = false;
-    this.touch();
+    this.setUpdatedAt();
   }
 
   activate() {
     this.params.isAvailable = true;
-    this.touch();
+    this.setUpdatedAt();
   }
 
   deactivate() {
     this.params.isAvailable = false;
-    this.touch();
+    this.setUpdatedAt();
   }
 
-  private touch() {
+  remove() {
+    this.params.deletedAt = new Date();
+    this.setUpdatedAt();
+  }
+
+  restore() {
+    this.params.deletedAt = null;
+    this.setUpdatedAt();
+  }
+
+  private setUpdatedAt() {
     this.params.updatedAt = new Date();
   }
 
