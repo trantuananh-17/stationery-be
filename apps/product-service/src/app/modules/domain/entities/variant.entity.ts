@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import { VariantAttribute } from './variant-attribute.entity';
 
 export type VariantParams = {
   readonly id: string;
@@ -13,9 +14,12 @@ export type VariantParams = {
   isAvailable: boolean;
   readonly createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date | null;
 };
 
 export class Variant {
+  private attributes: VariantAttribute[] = [];
+
   constructor(private params: VariantParams) {}
 
   static create(data: {
@@ -32,6 +36,9 @@ export class Variant {
       throw new Error('Price cannot be negative');
     }
 
+    if (!data.sku || !data.sku.trim()) {
+      throw new Error('SKU is required');
+    }
     const now = new Date();
 
     return new Variant({
@@ -86,6 +93,19 @@ export class Variant {
     }
 
     this.touch();
+  }
+
+  addAttribute(attributeValueId: string) {
+    const attr = VariantAttribute.create({
+      variantId: this.id,
+      attributeValueId,
+    });
+
+    this.attributes.push(attr);
+  }
+
+  getAttributes() {
+    return [...this.attributes];
   }
 
   setDefault() {
@@ -158,5 +178,9 @@ export class Variant {
 
   get updatedAt() {
     return this.params.updatedAt;
+  }
+
+  get deletedAt(): Date | null | undefined {
+    return this.params.deletedAt;
   }
 }

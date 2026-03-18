@@ -1,21 +1,20 @@
-import { Controller, Logger, UseInterceptors } from '@nestjs/common';
-import { TcpLoggingInterceptor } from '@common/interceptors/tcpLogging.interceptor';
-import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { Body, Controller, Post } from '@nestjs/common';
+import { CommandBus } from '@nestjs/cqrs';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateProductCommand } from '../../application/commands/products/create-product.command.ts/create-product.command';
 import { CreateProductDto } from '../dtos/create-product.dto';
 
-@Controller()
-@UseInterceptors(TcpLoggingInterceptor)
+@ApiTags('Products')
+@Controller('products')
 export class ProductController {
-  constructor(
-    private readonly commandBus: CommandBus,
-    private readonly queryBus: QueryBus,
-  ) {}
+  constructor(private readonly commandBus: CommandBus) {}
 
-  @MessagePattern('create_product')
-  async create(@Payload() body: CreateProductDto) {
-    const { name, categoryId } = body;
-    return this.commandBus.execute(new CreateProductCommand(name, categoryId));
+  @Post()
+  @ApiOperation({ summary: 'Create product' })
+  @ApiResponse({ status: 201, description: 'Product created successfully' })
+  async create(@Body() body: CreateProductDto) {
+    const { product, specifications, variants } = body;
+
+    return this.commandBus.execute(new CreateProductCommand(product, specifications, variants));
   }
 }

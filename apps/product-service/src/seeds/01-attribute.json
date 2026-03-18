@@ -2,24 +2,72 @@
   "collection": "attributes",
   "migration": [
     "CREATE EXTENSION IF NOT EXISTS \"pgcrypto\"",
-    "CREATE TABLE IF NOT EXISTS attributes (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), name varchar NOT NULL, slug varchar UNIQUE NOT NULL, sort_order integer DEFAULT 0, is_active boolean DEFAULT true, created_at timestamp DEFAULT now(), updated_at timestamp DEFAULT now())"
+    "CREATE TABLE IF NOT EXISTS attributes (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), name varchar NOT NULL, slug varchar UNIQUE NOT NULL, type varchar NOT NULL DEFAULT 'spec', sort_order integer DEFAULT 0, is_active boolean DEFAULT true, created_at timestamp DEFAULT now(), updated_at timestamp DEFAULT now())"
   ],
   "data": [
-    { "name": "Thương hiệu", "slug": "brand", "sortOrder": 1, "isActive": true },
-    { "name": "Xuất xứ", "slug": "origin", "sortOrder": 2, "isActive": true },
-    { "name": "Màu sắc", "slug": "color", "sortOrder": 3, "isActive": true },
-    { "name": "Chất liệu", "slug": "material", "sortOrder": 4, "isActive": true },
-    { "name": "Kích thước", "slug": "size", "sortOrder": 5, "isActive": true },
-    { "name": "Trọng lượng", "slug": "weight", "sortOrder": 6, "isActive": true },
-    { "name": "Quy cách", "slug": "package", "sortOrder": 7, "isActive": true },
-    { "name": "Khổ giấy", "slug": "paper_size", "sortOrder": 8, "isActive": true },
-    { "name": "Định lượng giấy", "slug": "gsm", "sortOrder": 9, "isActive": true },
-    { "name": "Loại giấy", "slug": "paper_type", "sortOrder": 10, "isActive": true },
-    { "name": "Số tờ", "slug": "sheet_count", "sortOrder": 11, "isActive": true },
-    { "name": "Loại bút", "slug": "pen_type", "sortOrder": 12, "isActive": true },
-    { "name": "Loại mực", "slug": "ink_type", "sortOrder": 13, "isActive": true },
-    { "name": "Kiểu đóng", "slug": "binding_type", "sortOrder": 14, "isActive": true },
-    { "name": "Loại file", "slug": "file_type", "sortOrder": 15, "isActive": true },
-    { "name": "Mô tả khác", "slug": "description", "sortOrder": 16, "isActive": true }
+    { "name": "Thương hiệu", "slug": "brand", "type": "spec", "sortOrder": 1, "isActive": true },
+    { "name": "Xuất xứ", "slug": "origin", "type": "spec", "sortOrder": 2, "isActive": true },
+
+    { "name": "Màu sắc", "slug": "color", "type": "variant", "sortOrder": 3, "isActive": true },
+
+    { "name": "Chất liệu", "slug": "material", "type": "spec", "sortOrder": 4, "isActive": true },
+
+    { "name": "Kích thước", "slug": "size", "type": "variant", "sortOrder": 5, "isActive": true },
+
+    { "name": "Trọng lượng", "slug": "weight", "type": "spec", "sortOrder": 6, "isActive": true },
+    { "name": "Quy cách", "slug": "package", "type": "spec", "sortOrder": 7, "isActive": true },
+
+    {
+      "name": "Khổ giấy",
+      "slug": "paper_size",
+      "type": "variant",
+      "sortOrder": 8,
+      "isActive": true
+    },
+
+    { "name": "Định lượng giấy", "slug": "gsm", "type": "spec", "sortOrder": 9, "isActive": true },
+    {
+      "name": "Loại giấy",
+      "slug": "paper_type",
+      "type": "spec",
+      "sortOrder": 10,
+      "isActive": true
+    },
+    { "name": "Số tờ", "slug": "sheet_count", "type": "spec", "sortOrder": 11, "isActive": true },
+
+    { "name": "Loại bút", "slug": "pen_type", "type": "spec", "sortOrder": 12, "isActive": true },
+
+    {
+      "name": "Loại mực",
+      "slug": "ink_type",
+      "type": "variant",
+      "sortOrder": 13,
+      "isActive": true
+    },
+
+    {
+      "name": "Kiểu đóng",
+      "slug": "binding_type",
+      "type": "spec",
+      "sortOrder": 14,
+      "isActive": true
+    },
+    { "name": "Loại file", "slug": "file_type", "type": "spec", "sortOrder": 15, "isActive": true },
+
+    {
+      "name": "Màu mực",
+      "slug": "color_ink",
+      "type": "variant",
+      "sortOrder": 16,
+      "isActive": true
+    },
+
+    {
+      "name": "Mô tả khác",
+      "slug": "description",
+      "type": "spec",
+      "sortOrder": 17,
+      "isActive": true
+    }
   ]
 }

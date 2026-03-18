@@ -73,15 +73,16 @@ async function seedAttributes(client, rows) {
   for (const row of rows) {
     await client.query(
       `
-      INSERT INTO attributes(name, slug, sort_order, is_active)
-      VALUES ($1,$2,$3,$4)
+      INSERT INTO attributes(name, slug, type, sort_order, is_active)
+      VALUES ($1,$2,$3,$4,$5)
       ON CONFLICT(slug)
       DO UPDATE SET
         name = EXCLUDED.name,
         sort_order = EXCLUDED.sort_order,
-        is_active = EXCLUDED.is_active
+        is_active = EXCLUDED.is_active,
+        type = EXCLUDED.type
       `,
-      [row.name, row.slug, row.sortOrder || 0, row.isActive ?? true],
+      [row.name, row.slug, row.type, row.sortOrder || 0, row.isActive ?? true],
     );
   }
 }

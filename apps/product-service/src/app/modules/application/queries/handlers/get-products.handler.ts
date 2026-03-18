@@ -1,5 +1,5 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
-import { IProductQueryRepository } from '../../ports/product-query.repo';
+import { IProductQueryRepository } from '../../ports/repositories/product-query.repo';
 import { GetProductsQuery } from '../get-products.query';
 
 @QueryHandler(GetProductsQuery)

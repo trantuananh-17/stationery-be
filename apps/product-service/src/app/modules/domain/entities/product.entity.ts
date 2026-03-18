@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
-
-export type ProductStatus = 'active' | 'inactive' | 'draft';
+import { Variant } from './variant.entity';
+import { Specification } from './specification.entity';
+import { ProductStatus } from '../enum/product-status.enum';
 
 export type ProductParams = {
   readonly id: string;
@@ -23,75 +24,152 @@ export type ProductParams = {
 };
 
 export class Product {
+  private variants: Variant[] = [];
+  private specifications: Specification[] = [];
+
   constructor(private params: ProductParams) {}
 
-  static create(name: string, slug: string, categoryId: string, brandId: string): Product {
+  static create(data: {
+    name: string;
+    slug: string;
+    categoryId: string;
+    brandId: string;
+    description?: string;
+    shortDescription?: string;
+    thumbnail?: string;
+    images?: string[];
+    seoTitle?: string;
+    seoDescription?: string;
+    searchKeywords?: string[];
+    featured?: boolean;
+  }): Product {
     const now = new Date();
 
     return new Product({
       id: randomUUID(),
-      name,
-      slug,
-      categoryId,
-      brandId,
-      description: '',
-      shortDescription: '',
-      images: [],
-      status: 'draft',
-      featured: false,
-      searchKeywords: [],
-      baseName: name,
+      name: data.name.trim(),
+      slug: data.slug.trim(),
+      categoryId: data.categoryId,
+      brandId: data.brandId,
+      description: data.description?.trim() ?? '',
+      shortDescription: data.shortDescription?.trim() ?? '',
+      thumbnail: data.thumbnail,
+      images: data.images ?? [],
+      seoTitle: data.seoTitle?.trim(),
+      seoDescription: data.seoDescription?.trim(),
+      searchKeywords: data.searchKeywords ?? [],
+      featured: data.featured ?? false,
+      status: ProductStatus.INACTIVE,
       createdAt: now,
       updatedAt: now,
     });
   }
 
-  updateInfo(data: { name?: string; description?: string; shortDescription?: string }) {
-    if (data.name !== undefined) this.params.name = data.name;
-    if (data.description !== undefined) this.params.description = data.description;
-    if (data.shortDescription !== undefined) this.params.shortDescription = data.shortDescription;
+  addSpecification(data: { attributeId: string; value: string }) {
+    const spec = Specification.create({
+      productId: this.id,
+      ...data,
+    });
 
-    this.touch();
+    this.specifications.push(spec);
+    this.setUpdatedAt();
+  }
+
+  getSpecifications() {
+    return [...this.specifications];
+  }
+
+  loadSpecification(spec: Specification) {
+    this.specifications.push(spec);
+  }
+
+  addVariant(data: {
+    name: string;
+    sku: string;
+    price: number;
+    compareAtPrice?: number;
+    images?: string;
+    isDefault?: boolean;
+    attributeValueIds?: string[];
+  }) {
+    const variant = Variant.create({
+      productId: this.id,
+      ...data,
+    });
+
+    data.attributeValueIds?.forEach((attrId) => {
+      variant.addAttribute(attrId);
+    });
+
+    this.variants.push(variant);
+    this.setUpdatedAt();
+  }
+
+  getVariants() {
+    return [...this.variants];
+  }
+
+  loadVariant(variant: Variant) {
+    this.variants.push(variant);
+  }
+
+  updateInfo(data: { name?: string; description?: string; shortDescription?: string }) {
+    if (data.name !== undefined) this.params.name = data.name.trim();
+    if (data.description !== undefined) this.params.description = data.description.trim();
+    if (data.shortDescription !== undefined) {
+      this.params.shortDescription = data.shortDescription.trim();
+    }
+
+    this.setUpdatedAt();
+  }
+
+  setSlug(slug: string) {
+    this.params.slug = slug.trim();
+    this.setUpdatedAt();
   }
 
   setImages(images: string[]) {
     this.params.images = images;
-    this.touch();
+    this.setUpdatedAt();
   }
 
   setThumbnail(thumbnail: string) {
     this.params.thumbnail = thumbnail;
-    this.touch();
+    this.setUpdatedAt();
   }
 
   setSEO(data: { title?: string; description?: string; keywords?: string[] }) {
-    this.params.seoTitle = data.title;
-    this.params.seoDescription = data.description;
+    this.params.seoTitle = data.title?.trim();
+    this.params.seoDescription = data.description?.trim();
 
-    this.touch();
+    if (data.keywords !== undefined) {
+      this.params.searchKeywords = data.keywords;
+    }
+
+    this.setUpdatedAt();
   }
 
   setSearchKeywords(keywords: string[]) {
     this.params.searchKeywords = keywords;
-    this.touch();
+    this.setUpdatedAt();
   }
 
   setFeatured(featured: boolean) {
     this.params.featured = featured;
-    this.touch();
+    this.setUpdatedAt();
   }
 
   activate() {
-    this.params.status = 'active';
-    this.touch();
+    this.params.status = ProductStatus.ACTIVE;
+    this.setUpdatedAt();
   }
 
   deactivate() {
-    this.params.status = 'inactive';
-    this.touch();
+    this.params.status = ProductStatus.INACTIVE;
+    this.setUpdatedAt();
   }
 
-  private touch() {
+  private setUpdatedAt() {
     this.params.updatedAt = new Date();
   }
 
@@ -155,6 +233,9 @@ export class Product {
     return this.params.baseName;
   }
 
+  get isVariantProduct(): boolean {
+    return this.variants.filter((v) => !v.deletedAt).length >= 2;
+  }
   get createdAt(): Date {
     return this.params.createdAt;
   }

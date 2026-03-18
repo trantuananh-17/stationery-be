@@ -1,23 +1,25 @@
 import { randomUUID } from 'crypto';
 
-export type ProductAttributeParams = {
+export type SpecificationParams = {
   readonly id: string;
   readonly productId: string;
   readonly attributeId: string;
+  readonly value: string;
   readonly createdAt: Date;
   updatedAt: Date;
 };
 
-export class ProductAttribute {
-  constructor(private params: ProductAttributeParams) {}
+export class Specification {
+  constructor(private params: SpecificationParams) {}
 
-  static create(data: { productId: string; attributeId: string }): ProductAttribute {
+  static create(data: { productId: string; attributeId: string; value: string }): Specification {
     const now = new Date();
 
-    return new ProductAttribute({
+    return new Specification({
       id: randomUUID(),
       productId: data.productId,
       attributeId: data.attributeId,
+      value: data.value,
       createdAt: now,
       updatedAt: now,
     });
@@ -33,6 +35,10 @@ export class ProductAttribute {
 
   get attributeId() {
     return this.params.attributeId;
+  }
+
+  get value() {
+    return this.params.value;
   }
 
   get createdAt() {

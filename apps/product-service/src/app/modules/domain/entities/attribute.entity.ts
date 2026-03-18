@@ -6,6 +6,7 @@ export type AttributeParams = {
   slug: string;
   sortOrder: number;
   isActive: boolean;
+  type: 'variant' | 'spec';
   readonly createdAt: Date;
   updatedAt: Date;
 };
@@ -13,7 +14,12 @@ export type AttributeParams = {
 export class Attribute {
   constructor(private params: AttributeParams) {}
 
-  static create(data: { name: string; slug: string; sortOrder?: number }): Attribute {
+  static create(data: {
+    name: string;
+    slug: string;
+    sortOrder?: number;
+    type: 'variant' | 'spec';
+  }): Attribute {
     const now = new Date();
 
     return new Attribute({
@@ -21,6 +27,7 @@ export class Attribute {
       name: data.name,
       slug: data.slug,
       sortOrder: data.sortOrder ?? 0,
+      type: data.type,
       isActive: true,
       createdAt: now,
       updatedAt: now,
