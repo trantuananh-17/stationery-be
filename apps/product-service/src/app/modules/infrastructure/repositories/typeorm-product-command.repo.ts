@@ -176,6 +176,8 @@ export class TypeOrmProductCommandRepository implements IProductCommandRepositor
     orm.compareAtPrice = variant.compareAtPrice;
     orm.images = variant.images;
     orm.sortOrder = variant.sortOrder;
+    orm.stock = variant.stock;
+    orm.reservedStock = variant.reservedStock;
     orm.isDefault = variant.isDefault;
     orm.isAvailable = variant.isAvailable;
     orm.createdAt = variant.createdAt;

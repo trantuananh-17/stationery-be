@@ -106,6 +106,11 @@ class UpdateVariantDto {
 
   @ApiPropertyOptional()
   @IsOptional()
+  @IsNumber()
+  stock: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
   images: string;
 

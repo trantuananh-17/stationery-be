@@ -121,6 +121,7 @@ export class Product {
     sku: string;
     price: number;
     compareAtPrice?: number;
+    stock: number;
     images?: string;
     isDefault?: boolean;
     attributeValueIds?: string[];
@@ -157,6 +158,7 @@ export class Product {
       isDefault?: boolean;
       attributeValueIds: string[];
       sku?: string;
+      stock: number;
     }>,
   ) {
     const inputIds = new Set(inputs.filter((x) => x.id).map((x) => x.id));
@@ -184,6 +186,7 @@ export class Product {
           images: input.images,
           sortOrder: input.sortOrder,
           isDefault: input.isDefault,
+          stock: input.stock,
         });
 
         continue;
@@ -195,6 +198,7 @@ export class Product {
         sku: input.sku,
         price: input.price,
         compareAtPrice: input.compareAtPrice,
+        stock: input.stock,
         images: input.images,
         sortOrder: input.sortOrder,
         isDefault: input.isDefault,
@@ -207,7 +211,7 @@ export class Product {
       this.variants.push(newVariant);
     }
 
-    this.ensureSingleDefaultVariant();
+    this.singleDefaultVariant();
     this.setUpdatedAt();
   }
 
@@ -312,7 +316,7 @@ export class Product {
     this.setUpdatedAt();
   }
 
-  private ensureSingleDefaultVariant() {
+  private singleDefaultVariant() {
     const activeVariants = this.variants.filter((v) => !v.deletedAt);
     const defaultVariants = activeVariants.filter((v) => v.isDefault);
 

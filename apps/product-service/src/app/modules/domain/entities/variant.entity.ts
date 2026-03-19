@@ -8,6 +8,8 @@ export type VariantParams = {
   sku?: string;
   price: number;
   compareAtPrice?: number;
+  stock: number;
+  reservedStock: number;
   images?: string;
   sortOrder: number;
   isDefault: boolean;
@@ -28,6 +30,7 @@ export class Variant {
     sku?: string;
     price: number;
     compareAtPrice?: number;
+    stock: number;
     images?: string;
     sortOrder?: number;
     isDefault?: boolean;
@@ -38,6 +41,10 @@ export class Variant {
 
     if (!data.sku || !data.sku.trim()) {
       throw new Error('SKU is required');
+    }
+
+    if (data.stock < 0) {
+      throw new Error('Stock cannot be negative');
     }
     const now = new Date();
 
@@ -50,6 +57,8 @@ export class Variant {
       compareAtPrice: data.compareAtPrice,
       images: data.images,
       sortOrder: data.sortOrder ?? 0,
+      stock: data.stock,
+      reservedStock: 0,
       isDefault: data.isDefault ?? false,
       isAvailable: true,
       createdAt: now,
@@ -61,6 +70,7 @@ export class Variant {
     price?: number;
     compareAtPrice?: number;
     images?: string;
+    stock: number;
     sortOrder?: number;
     isDefault?: boolean;
     isAvailable?: boolean;
@@ -74,6 +84,14 @@ export class Variant {
 
     if (data.compareAtPrice !== undefined) {
       this.params.compareAtPrice = data.compareAtPrice;
+    }
+
+    if (data.stock !== undefined) {
+      if (data.stock < 0) {
+        throw new Error('Stock cannot be negative');
+      }
+
+      this.params.stock = data.stock;
     }
 
     if (data.images !== undefined) {
@@ -168,6 +186,14 @@ export class Variant {
 
   get compareAtPrice() {
     return this.params.compareAtPrice;
+  }
+
+  get stock() {
+    return this.params.stock;
+  }
+
+  get reservedStock() {
+    return this.params.reservedStock;
   }
 
   get images() {

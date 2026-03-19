@@ -80,6 +80,10 @@ class VariantDto {
   @IsNumber()
   price: number;
 
+  @ApiProperty()
+  @IsNumber()
+  stock: number;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsNumber()

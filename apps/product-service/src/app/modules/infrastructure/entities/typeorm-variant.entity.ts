@@ -20,6 +20,12 @@ export class VariantOrmEntity extends BaseEntity {
   @Column('decimal', { name: 'compare_at_price', nullable: true })
   compareAtPrice?: number;
 
+  @Column('int', { default: 0 })
+  stock: number;
+
+  @Column('int', { default: 0 })
+  reservedStock: number;
+
   @Column({ nullable: true })
   images?: string;
 

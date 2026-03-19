@@ -67,6 +67,7 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
               sku,
               price: variant.price,
               compareAtPrice: variant.compareAtPrice,
+              stock: variant.stock,
               images: variant.images,
               sortOrder: variant.sortOrder ?? index,
               isDefault: variant.isDefault,
