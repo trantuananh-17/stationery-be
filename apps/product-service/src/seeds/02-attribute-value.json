@@ -2,7 +2,9 @@
   "collection": "attribute_values",
   "migration": [
     "CREATE EXTENSION IF NOT EXISTS \"pgcrypto\"",
-    "CREATE TABLE IF NOT EXISTS attribute_values (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), attribute_id uuid NOT NULL REFERENCES attributes(id) ON DELETE CASCADE, value varchar NOT NULL, slug varchar NOT NULL, sort_order integer DEFAULT 0, created_at timestamp DEFAULT now(), updated_at timestamp DEFAULT now(), UNIQUE(attribute_id, slug))"
+    "CREATE TABLE IF NOT EXISTS attribute_values (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), attribute_id uuid NOT NULL REFERENCES attributes(id) ON DELETE CASCADE, value varchar NOT NULL, slug varchar NOT NULL, sort_order integer DEFAULT 0, created_at timestamp DEFAULT now(), updated_at timestamp DEFAULT now(), UNIQUE(attribute_id, slug))",
+    "CREATE INDEX IF NOT EXISTS idx_attribute_values_attribute_id ON attribute_values(attribute_id)",
+    "CREATE INDEX IF NOT EXISTS idx_attribute_values_attribute_id_sort_order ON attribute_values(attribute_id, sort_order)"
   ],
   "data": [
     { "attributeSlug": "brand", "value": "Thiên Long", "slug": "thien-long", "sortOrder": 1 },

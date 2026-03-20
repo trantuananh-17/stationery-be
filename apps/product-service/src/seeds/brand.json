@@ -1,0 +1,130 @@
+{
+  "collection": "brands",
+  "migration": [
+    "CREATE EXTENSION IF NOT EXISTS \"pgcrypto\"",
+    "CREATE TABLE IF NOT EXISTS brands (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), name varchar NOT NULL, slug varchar UNIQUE NOT NULL, is_active boolean DEFAULT true, created_at timestamp DEFAULT now(), updated_at timestamp DEFAULT now())",
+    "CREATE INDEX IF NOT EXISTS idx_brands_slug ON brands(slug)"
+  ],
+  "data": [
+    {
+      "name": "Thiên Long",
+      "slug": "thien-long",
+      "isActive": true
+    },
+    {
+      "name": "Deli",
+      "slug": "deli",
+      "isActive": true
+    },
+    {
+      "name": "Hồng Hà",
+      "slug": "hong-ha",
+      "isActive": true
+    },
+    {
+      "name": "Flexoffice",
+      "slug": "flexoffice",
+      "isActive": true
+    },
+    {
+      "name": "Trà My",
+      "slug": "tra-my",
+      "isActive": true
+    },
+    {
+      "name": "Double A",
+      "slug": "double-a",
+      "isActive": true
+    },
+    {
+      "name": "Casio",
+      "slug": "casio",
+      "isActive": true
+    },
+    {
+      "name": "Pentel",
+      "slug": "pentel",
+      "isActive": true
+    },
+    {
+      "name": "Kw Trio",
+      "slug": "kw-trio",
+      "isActive": true
+    },
+    {
+      "name": "King Jim",
+      "slug": "king-jim",
+      "isActive": true
+    },
+    {
+      "name": "Staedtler",
+      "slug": "staedtler",
+      "isActive": true
+    },
+    {
+      "name": "Pronoti",
+      "slug": "pronoti",
+      "isActive": true
+    },
+    {
+      "name": "Plus",
+      "slug": "plus",
+      "isActive": true
+    },
+    {
+      "name": "Bảo Kiên",
+      "slug": "bao-kien",
+      "isActive": true
+    },
+    {
+      "name": "Hải Tiến",
+      "slug": "hai-tien",
+      "isActive": true
+    },
+    {
+      "name": "IK Paper",
+      "slug": "ik-paper",
+      "isActive": true
+    },
+    {
+      "name": "Mickey",
+      "slug": "mickey",
+      "isActive": true
+    },
+    {
+      "name": "King Star",
+      "slug": "king-star",
+      "isActive": true
+    },
+    {
+      "name": "Elephant",
+      "slug": "elephant",
+      "isActive": true
+    },
+    {
+      "name": "Uni Ball",
+      "slug": "uni-ball",
+      "isActive": true
+    },
+    {
+      "name": "Hyphen",
+      "slug": "hyphen",
+      "isActive": true
+    },
+    {
+      "name": "Flexio",
+      "slug": "flexio",
+      "isActive": true
+    },
+    {
+      "name": "Shutter",
+      "slug": "shutter",
+      "isActive": true
+    },
+    {
+      "name": "Pagi",
+      "slug": "pagi",
+      "isActive": true
+    }
+  ]
+}

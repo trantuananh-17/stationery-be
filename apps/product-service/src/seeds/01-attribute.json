@@ -2,7 +2,9 @@
   "collection": "attributes",
   "migration": [
     "CREATE EXTENSION IF NOT EXISTS \"pgcrypto\"",
-    "CREATE TABLE IF NOT EXISTS attributes (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), name varchar NOT NULL, slug varchar UNIQUE NOT NULL, type varchar NOT NULL DEFAULT 'spec', sort_order integer DEFAULT 0, is_active boolean DEFAULT true, created_at timestamp DEFAULT now(), updated_at timestamp DEFAULT now())"
+    "CREATE TABLE IF NOT EXISTS attributes (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), name varchar NOT NULL, slug varchar UNIQUE NOT NULL, type varchar NOT NULL DEFAULT 'spec' CHECK (type IN ('spec', 'variant')), sort_order integer DEFAULT 0, is_active boolean DEFAULT true, created_at timestamp DEFAULT now(), updated_at timestamp DEFAULT now())",
+    "CREATE INDEX IF NOT EXISTS idx_attributes_type ON attributes(type)",
+    "CREATE INDEX IF NOT EXISTS idx_attributes_sort_order ON attributes(sort_order)"
   ],
   "data": [
     { "name": "Thương hiệu", "slug": "brand", "type": "spec", "sortOrder": 1, "isActive": true },

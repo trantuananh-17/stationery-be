@@ -69,6 +69,22 @@ async function seedCategories(client, rows) {
   }
 }
 
+async function seedBrands(client, rows) {
+  for (const row of rows) {
+    await client.query(
+      `
+      INSERT INTO brands(name, slug, is_active)
+      VALUES ($1,$2,$3)
+      ON CONFLICT(slug)
+      DO UPDATE SET
+        name = EXCLUDED.name,
+        is_active = EXCLUDED.is_active
+      `,
+      [row.name, row.slug, row.isActive ?? true],
+    );
+  }
+}
+
 async function seedAttributes(client, rows) {
   for (const row of rows) {
     await client.query(
@@ -122,6 +138,11 @@ async function processFile(filePath, client) {
 
   if (seed.collection === 'categories') {
     await seedCategories(client, seed.data);
+    return;
+  }
+
+  if (seed.collection === 'brands') {
+    await seedBrands(client, seed.data);
     return;
   }
 
