@@ -4,24 +4,37 @@ import { ICategoryQueryRepository } from '../../ports/repositories/category-quer
 import { ProductReadModel } from '../../read-models/product.read-model';
 import { IProductQueryRepository } from '../../ports/repositories/product-query.repo';
 import { PaginatedResult } from '@common/interfaces/common/pagination.interface';
+import { CategoryNotFoundError } from '../../../domain/errors/category.error';
+import { BrandNotFoundError } from '../../../domain/errors/brand.error';
+import { IBrandQueryRepository } from '../../ports/repositories/brand-query.repo';
 
 @QueryHandler(GetProductsQuery)
 export class GetProductsHandler implements IQueryHandler<GetProductsQuery> {
   constructor(
-    private readonly categoryRepo: ICategoryQueryRepository,
     private readonly productRepo: IProductQueryRepository,
+    private readonly categoryRepo: ICategoryQueryRepository,
+    private readonly brandRepo: IBrandQueryRepository,
   ) {}
 
   async execute(query: GetProductsQuery): Promise<PaginatedResult<ProductReadModel>> {
     const { search, brandSlug, categorySlug, orderBy, page, limit } = query;
 
     let categoryId: string | undefined;
+    let brandId: string | undefined;
 
     if (categorySlug?.trim()) {
       categoryId = await this.categoryRepo.findBySlug(categorySlug.trim());
 
       if (!categoryId) {
-        throw new Error('Category not found');
+        throw new CategoryNotFoundError();
+      }
+    }
+
+    if (brandSlug?.trim()) {
+      brandId = await this.brandRepo.findBySlug(brandSlug.trim());
+
+      if (!brandId) {
+        throw new BrandNotFoundError();
       }
     }
 
@@ -30,7 +43,7 @@ export class GetProductsHandler implements IQueryHandler<GetProductsQuery> {
     const result = await this.productRepo.findAll({
       keywords,
       category: categoryId,
-      brand: brandSlug?.trim() || undefined,
+      brand: brandId,
       orderBy,
       page,
       limit,

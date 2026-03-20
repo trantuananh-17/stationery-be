@@ -11,6 +11,8 @@ import { Variant } from '../../domain/entities/variant.entity';
 import { Specification } from '../../domain/entities/specification.entity';
 import { VariantAttribute } from '../../domain/entities/variant-attribute.entity';
 import { getManager } from '../helpers/get-manager.helper';
+import { CategoryOrmEntity } from '../entities/typeorm-category.entity';
+import { BrandOrmEntity } from '../entities/typeorm-brand.entity';
 
 @Injectable()
 export class TypeOrmProductCommandRepository implements IProductCommandRepository {
@@ -36,15 +38,17 @@ export class TypeOrmProductCommandRepository implements IProductCommandRepositor
     const specRepo = manager ? manager.getRepository(SpecificationOrmEntity) : this.specRepo;
     const attrRepo = manager ? manager.getRepository(VariantAttributeOrmEntity) : this.attrRepo;
 
-    const productOrm = this.toProductOrm(product);
+    const productOrm = this._toProductOrm(product);
 
     const variants = product.getVariants();
     const specs = product.getSpecifications();
 
-    const variantOrms = variants.map((v) => this.toVariantOrm(v));
-    const specOrms = specs.map((s) => this.toSpecOrm(s));
+    const variantOrms = variants.map((v) => this._toVariantOrm(v));
+    const specOrms = specs.map((s) => this._toSpecOrm(s));
 
-    const attrOrms = variants.flatMap((v) => v.getAttributes().map((attr) => this.toAttrOrm(attr)));
+    const attrOrms = variants.flatMap((v) =>
+      v.getAttributes().map((attr) => this._toAttrOrm(attr)),
+    );
 
     await productRepo.save(productOrm);
     await variantRepo.save(variantOrms);
@@ -60,14 +64,16 @@ export class TypeOrmProductCommandRepository implements IProductCommandRepositor
     const specRepo = manager ? manager.getRepository(SpecificationOrmEntity) : this.specRepo;
     const attrRepo = manager ? manager.getRepository(VariantAttributeOrmEntity) : this.attrRepo;
 
-    const productOrm = this.toProductOrm(product);
+    const productOrm = this._toProductOrm(product);
 
     const variants = product.getVariants();
     const specs = product.getSpecifications();
 
-    const variantOrms = variants.map((v) => this.toVariantOrm(v));
-    const specOrms = specs.map((s) => this.toSpecOrm(s));
-    const attrOrms = variants.flatMap((v) => v.getAttributes().map((attr) => this.toAttrOrm(attr)));
+    const variantOrms = variants.map((v) => this._toVariantOrm(v));
+    const specOrms = specs.map((s) => this._toSpecOrm(s));
+    const attrOrms = variants.flatMap((v) =>
+      v.getAttributes().map((attr) => this._toAttrOrm(attr)),
+    );
 
     await productRepo.save(productOrm);
 
@@ -140,14 +146,14 @@ export class TypeOrmProductCommandRepository implements IProductCommandRepositor
     }
   }
 
-  private toProductOrm(product: Product): ProductOrmEntity {
+  private _toProductOrm(product: Product): ProductOrmEntity {
     const orm = new ProductOrmEntity();
 
     orm.id = product.id;
     orm.name = product.name;
     orm.slug = product.slug;
-    orm.category.id = product.categoryId;
-    orm.brandId = product.brandId;
+    orm.category = { id: product.categoryId } as CategoryOrmEntity;
+    orm.brand = { id: product.brandId } as BrandOrmEntity;
     orm.description = product.description;
     orm.shortDescription = product.shortDescription;
     orm.images = product.images;
@@ -165,7 +171,7 @@ export class TypeOrmProductCommandRepository implements IProductCommandRepositor
     return orm;
   }
 
-  private toVariantOrm(variant: Variant): VariantOrmEntity {
+  private _toVariantOrm(variant: Variant): VariantOrmEntity {
     const orm = new VariantOrmEntity();
 
     orm.id = variant.id;
@@ -187,7 +193,7 @@ export class TypeOrmProductCommandRepository implements IProductCommandRepositor
     return orm;
   }
 
-  private toSpecOrm(spec: Specification): SpecificationOrmEntity {
+  private _toSpecOrm(spec: Specification): SpecificationOrmEntity {
     const orm = new SpecificationOrmEntity();
 
     orm.id = spec.id;
@@ -200,7 +206,7 @@ export class TypeOrmProductCommandRepository implements IProductCommandRepositor
     return orm;
   }
 
-  private toAttrOrm(attr: VariantAttribute): VariantAttributeOrmEntity {
+  private _toAttrOrm(attr: VariantAttribute): VariantAttributeOrmEntity {
     const orm = new VariantAttributeOrmEntity();
 
     orm.id = attr.id;

@@ -20,6 +20,9 @@ import { TypeOrmCategoryQueryRepository } from './repositories/typorm-category-q
 import { CategoryOrmEntity } from './entities/typeorm-category.entity';
 import { AttributeOrmEntity } from './entities/typeorm-attribute.entity';
 import { AttributeValueOrmEntity } from './entities/typeorm-attribute-value.entity';
+import { IBrandQueryRepository } from '../application/ports/repositories/brand-query.repo';
+import { TypeOrmBrandQueryRepository } from './repositories/typeorm-brand-query.repo';
+import { BrandOrmEntity } from './entities/typeorm-brand.entity';
 
 @Module({
   imports: [
@@ -31,6 +34,7 @@ import { AttributeValueOrmEntity } from './entities/typeorm-attribute-value.enti
       CategoryOrmEntity,
       AttributeOrmEntity,
       AttributeValueOrmEntity,
+      BrandOrmEntity,
     ]),
   ],
   providers: [
@@ -42,6 +46,10 @@ import { AttributeValueOrmEntity } from './entities/typeorm-attribute-value.enti
     {
       provide: ICategoryQueryRepository,
       useClass: TypeOrmCategoryQueryRepository,
+    },
+    {
+      provide: IBrandQueryRepository,
+      useClass: TypeOrmBrandQueryRepository,
     },
     {
       provide: ISlugService,
@@ -60,6 +68,7 @@ import { AttributeValueOrmEntity } from './entities/typeorm-attribute-value.enti
     IProductCommandRepository,
     IProductQueryRepository,
     ICategoryQueryRepository,
+    IBrandQueryRepository,
     ISlugService,
     IUnitOfWork,
     ISkuService,

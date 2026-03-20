@@ -18,8 +18,6 @@ export class TypeOrmCategoryQueryRepository implements ICategoryQueryRepository 
   }
 
   async findBySlug(categorySlug: string): Promise<string | null> {
-    console.log(categorySlug);
-
     const category = await this.repo.findOne({
       where: { slug: categorySlug },
       select: ['id'],

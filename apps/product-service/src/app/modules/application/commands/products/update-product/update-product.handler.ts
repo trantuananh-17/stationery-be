@@ -6,6 +6,10 @@ import { IUnitOfWork } from '../../../ports/services/unit-of-work.port';
 import { ISkuService } from '../../../ports/services/sku.port';
 import { ISlugService } from '../../../ports/services/slug.port';
 import { IProductQueryRepository } from '../../../ports/repositories/product-query.repo';
+import { ProductNotFoundError } from '../../../../domain/errors/product.error';
+import { IBrandQueryRepository } from '../../../ports/repositories/brand-query.repo';
+import { CategoryNotFoundError } from '../../../../domain/errors/category.error';
+import { BrandNotFoundError } from '../../../../domain/errors/brand.error';
 
 @CommandHandler(UpdateProductCommand)
 export class UpdateProductHandler implements ICommandHandler<UpdateProductCommand> {
@@ -13,7 +17,7 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
     private readonly productCommandRepo: IProductCommandRepository,
     private readonly productQueryRepo: IProductQueryRepository,
     private readonly categoryQueryRepo: ICategoryQueryRepository,
-    // private readonly brandQueryRepo: IBrandQueryRepository,
+    private readonly brandQueryRepo: IBrandQueryRepository,
     private readonly dataContext: IUnitOfWork,
     private readonly slugService: ISlugService,
     private readonly skuService: ISkuService,
@@ -23,11 +27,25 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
     return await this.dataContext.runInTransaction(async () => {
       const { productId, product, specifications, variants } = command;
 
+      const [category, brand] = await Promise.all([
+        this.categoryQueryRepo.findCategoryExist(product.categoryId),
+        this.brandQueryRepo.findBrandExist(product.brandId),
+      ]);
+
+      if (!category) {
+        throw new CategoryNotFoundError();
+      }
+
+      if (!brand) {
+        throw new BrandNotFoundError();
+      }
+
       const productAggregate = await this.productQueryRepo.findById(productId);
 
       if (!productAggregate) {
-        // throw new ProductNotFoundError();
+        throw new ProductNotFoundError();
       }
+
       let slug: string | undefined;
 
       if (product.name !== undefined && product.name.trim() !== productAggregate.name) {

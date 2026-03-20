@@ -4,6 +4,7 @@ import { VariantOrmEntity } from './typeorm-variant.entity';
 import { ProductStatus } from '../../domain/enum/product-status.enum';
 import { SpecificationOrmEntity } from './typeorm-specification.enity';
 import { CategoryOrmEntity } from './typeorm-category.entity';
+import { BrandOrmEntity } from './typeorm-brand.entity';
 
 @Entity({ name: 'products' })
 export class ProductOrmEntity extends BaseEntity {
@@ -17,8 +18,9 @@ export class ProductOrmEntity extends BaseEntity {
   @JoinColumn({ name: 'category_id' })
   category: CategoryOrmEntity;
 
-  @Column({ name: 'brand_id', type: 'uuid' })
-  brandId: string;
+  @ManyToOne(() => BrandOrmEntity)
+  @JoinColumn({ name: 'brand_id' })
+  brand: BrandOrmEntity;
 
   @Column({ type: 'text', nullable: true })
   description?: string;

@@ -15,7 +15,7 @@ export class CreateProductHandler implements ICommandHandler<CreateProductComman
   constructor(
     private readonly productCommandRepo: IProductCommandRepository,
     private readonly categoryQueryRepo: ICategoryQueryRepository,
-    // private readonly brandQueryRepo: IBrandQueryRepository,
+    private readonly brandQueryRepo: IBrandQueryRepository,
     private readonly dataContext: IUnitOfWork,
     private readonly slugService: ISlugService,
     private readonly skuService: ISkuService,
@@ -25,18 +25,18 @@ export class CreateProductHandler implements ICommandHandler<CreateProductComman
     return await this.dataContext.runInTransaction(async () => {
       const { product, specifications, variants } = command;
 
-      const [category] = await Promise.all([
+      const [category, brand] = await Promise.all([
         this.categoryQueryRepo.findCategoryExist(product.categoryId),
-        // this.brandQueryRepo.findBrandExist(product.brandId),
+        this.brandQueryRepo.findBrandExist(product.brandId),
       ]);
 
       if (!category) {
         throw new CategoryNotFoundError();
       }
 
-      // if (!brand) {
-      //   throw new BrandNotFoundError();
-      // }
+      if (!brand) {
+        throw new BrandNotFoundError();
+      }
 
       const slug = await this.slugService.generate(product.name);
 
@@ -69,8 +69,6 @@ export class CreateProductHandler implements ICommandHandler<CreateProductComman
           attributeValueIds: variant.attributeValueIds,
         });
       }
-
-      console.log(productAggregate);
 
       await this.productCommandRepo.save(productAggregate);
 

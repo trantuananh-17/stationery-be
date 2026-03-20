@@ -195,6 +195,8 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
     const orm = await this.productRepo.findOne({
       where: { id: productId },
       relations: {
+        category: true,
+        brand: true,
         specifications: true,
         variants: {
           attributes: true,
@@ -246,14 +248,14 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       );
     }
 
-    if (category?.trim()) {
-      qb.andWhere('p.categoryId = :category', {
+    if (category && category?.trim()) {
+      qb.andWhere('p.category_id = :category', {
         category,
       });
     }
 
-    if (brand?.trim()) {
-      qb.andWhere('p.brandId = :brand', {
+    if (brand && brand?.trim()) {
+      qb.andWhere('p.brand_id = :brand', {
         brand,
       });
     }
@@ -328,7 +330,7 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       name: orm.name,
       slug: orm.slug,
       categoryId: orm.category.id,
-      brandId: orm.brandId,
+      brandId: orm.brand.id,
       description: orm.description,
       shortDescription: orm.shortDescription,
       images: orm.images ?? [],
