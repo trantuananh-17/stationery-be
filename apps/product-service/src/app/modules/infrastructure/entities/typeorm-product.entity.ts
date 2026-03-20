@@ -42,14 +42,14 @@ export class ProductOrmEntity extends BaseEntity {
   @Column({ name: 'seo_description', nullable: true })
   seoDescription?: string;
 
-  @Column({ name: 'search_keywords', type: 'json', nullable: true })
+  @Column({ name: 'search_keywords', type: 'jsonb', nullable: true })
   searchKeywords: string[];
 
   @Column({ name: 'base_name', nullable: true })
   baseName: string;
 
-  @Column({ name: 'is_variant_product', default: false })
-  isVariantProduct: boolean;
+  @Column({ name: 'deleted_at', default: null, nullable: true })
+  deletedAt?: Date;
 
   @OneToMany(() => VariantOrmEntity, (variant) => variant.product)
   variants: VariantOrmEntity[];

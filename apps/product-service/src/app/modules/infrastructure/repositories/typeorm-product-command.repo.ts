@@ -158,9 +158,9 @@ export class TypeOrmProductCommandRepository implements IProductCommandRepositor
     orm.seoDescription = product.seoDescription;
     orm.searchKeywords = product.searchKeywords;
     orm.baseName = product.baseName;
-    orm.isVariantProduct = product.isVariantProduct;
     orm.createdAt = product.createdAt;
     orm.updatedAt = product.updatedAt;
+    orm.deletedAt = product.deletedAt;
 
     return orm;
   }

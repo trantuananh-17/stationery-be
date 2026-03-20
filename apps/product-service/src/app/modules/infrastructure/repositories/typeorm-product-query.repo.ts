@@ -10,6 +10,9 @@ import { Variant } from '../../domain/entities/variant.entity';
 import { VariantOrmEntity } from '../entities/typeorm-variant.entity';
 import { VariantAttribute } from '../../domain/entities/variant-attribute.entity';
 import { VariantAttributeOrmEntity } from '../entities/typeorm-variant-attribute.entity';
+import { ProductReadModel } from '../../application/read-models/product.read-model';
+import { ProductOrderBy } from '../../domain/enum/product-orderby.enum';
+import { QueryResult } from '@common/interfaces/common/pagination.interface';
 
 @Injectable()
 export class TypeOrmProductQueryRepository implements IProductQueryRepository {
@@ -34,12 +37,98 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
     return this._toProductDomain(orm);
   }
 
-  getAll(page: number, limit: number): Promise<Product[]> {
-    throw new Error('Method not implemented.');
-  }
+  async findAll(filters: {
+    keywords: string[];
+    category?: string;
+    brand?: string;
+    orderBy?: ProductOrderBy;
+    page: number;
+    limit: number;
+  }): Promise<QueryResult<ProductReadModel>> {
+    const { keywords, category, brand, orderBy, page, limit } = filters;
 
-  getById(): Promise<Product | null> {
-    throw new Error('Method not implemented.');
+    const qb = this.repo
+      .createQueryBuilder('p')
+      .innerJoin('p.variants', 'v', 'v.isDefault = :isDefault', {
+        isDefault: true,
+      })
+      .andWhere('p.deletedAt IS NULL');
+
+    if (keywords.length > 0) {
+      qb.andWhere(
+        `
+      to_tsvector(
+        'simple',
+        unaccent(
+          array_to_string(
+            ARRAY(
+              SELECT jsonb_array_elements_text(p.search_keywords)
+            ),
+            ' '
+          )
+        )
+      )
+      @@ plainto_tsquery('simple', unaccent(:query))
+      `,
+        {
+          query: keywords.join(' '),
+        },
+      );
+    }
+
+    if (category?.trim()) {
+      qb.andWhere('p.categoryId = :category', {
+        category,
+      });
+    }
+
+    if (brand?.trim()) {
+      qb.andWhere('p.brandId = :brand', {
+        brand,
+      });
+    }
+
+    const total = await qb.clone().getCount();
+
+    qb.select([
+      'p.id AS id',
+      'p.name AS name',
+      'p.slug AS slug',
+      'p.thumbnail AS thumbnail',
+      'p.images AS images',
+      'v.price AS price',
+      'v.compare_at_price AS "compareAtPrice"',
+    ]);
+
+    switch (orderBy) {
+      case ProductOrderBy.PRICE_ASC:
+        qb.orderBy('v.price', 'ASC');
+        break;
+
+      case ProductOrderBy.PRICE_DESC:
+        qb.orderBy('v.price', 'DESC');
+        break;
+
+      default:
+        qb.orderBy('p.createdAt', 'DESC');
+    }
+
+    qb.skip((page - 1) * limit).take(limit);
+
+    const raws = await qb.getRawMany();
+
+    return {
+      items: raws.map((r) => ({
+        id: r.id,
+        name: r.name,
+        slug: r.slug,
+        thumbnail: r.thumbnail,
+        images: r.images,
+        price: Number(r.price),
+        compareAtPrice: r.compareAtPrice ? Number(r.compareAtPrice) : undefined,
+      })),
+      total,
+    };
   }
 
   async findMaxSlug(prefix: string): Promise<string | null> {
@@ -82,6 +171,7 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       baseName: orm.baseName,
       createdAt: orm.createdAt,
       updatedAt: orm.updatedAt,
+      deletedAt: orm.deletedAt,
     });
 
     for (const specOrm of orm.specifications ?? []) {

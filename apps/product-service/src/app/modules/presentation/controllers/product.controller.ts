@@ -1,15 +1,21 @@
-import { Body, Controller, Param, Patch, Post } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateProductCommand } from '../../application/commands/products/create-product/create-product.command';
 import { CreateProductDto } from '../dtos/create-product.dto';
 import { UpdateProductDto } from '../dtos/update-product.dto';
 import { UpdateProductCommand } from '../../application/commands/products/update-product/update-product.command';
+import { ProductOrderBy } from '../../domain/enum/product-orderby.enum';
+import { GetProductsQuery } from '../../application/queries/get-products/get-products.query';
+import { GetProductsDto } from '../dtos/get-product.dto';
 
 @ApiTags('Products')
 @Controller('products')
 export class ProductController {
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create product' })
@@ -24,6 +30,23 @@ export class ProductController {
   async update(@Param('id') id: string, @Body() body: UpdateProductDto) {
     return this.commandBus.execute(
       new UpdateProductCommand(id, body.product, body.specifications, body.variants),
+    );
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Get list products' })
+  @ApiResponse({ status: 200, description: 'List products' })
+  async findAll(@Query() query: GetProductsDto) {
+    const { brand, category, search, orderBy, page, limit } = query;
+    return this.queryBus.execute(
+      new GetProductsQuery(
+        search,
+        category,
+        brand,
+        orderBy as ProductOrderBy,
+        Number(page),
+        Number(limit),
+      ),
     );
   }
 }

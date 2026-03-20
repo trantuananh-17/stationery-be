@@ -21,6 +21,7 @@ export type ProductParams = {
   baseName?: string;
   readonly createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date | null;
 };
 
 export class Product {
@@ -62,6 +63,7 @@ export class Product {
       status: ProductStatus.INACTIVE,
       createdAt: now,
       updatedAt: now,
+      deletedAt: null,
     });
   }
 
@@ -270,52 +272,6 @@ export class Product {
     this.setUpdatedAt();
   }
 
-  setSlug(slug: string) {
-    this.params.slug = slug.trim();
-    this.setUpdatedAt();
-  }
-
-  setImages(images: string[]) {
-    this.params.images = images;
-    this.setUpdatedAt();
-  }
-
-  setThumbnail(thumbnail: string) {
-    this.params.thumbnail = thumbnail;
-    this.setUpdatedAt();
-  }
-
-  setSEO(data: { title?: string; description?: string; keywords?: string[] }) {
-    this.params.seoTitle = data.title?.trim();
-    this.params.seoDescription = data.description?.trim();
-
-    if (data.keywords !== undefined) {
-      this.params.searchKeywords = data.keywords;
-    }
-
-    this.setUpdatedAt();
-  }
-
-  setSearchKeywords(keywords: string[]) {
-    this.params.searchKeywords = keywords;
-    this.setUpdatedAt();
-  }
-
-  setFeatured(featured: boolean) {
-    this.params.featured = featured;
-    this.setUpdatedAt();
-  }
-
-  activate() {
-    this.params.status = ProductStatus.ACTIVE;
-    this.setUpdatedAt();
-  }
-
-  deactivate() {
-    this.params.status = ProductStatus.INACTIVE;
-    this.setUpdatedAt();
-  }
-
   private singleDefaultVariant() {
     const activeVariants = this.variants.filter((v) => !v.deletedAt);
     const defaultVariants = activeVariants.filter((v) => v.isDefault);
@@ -337,6 +293,34 @@ export class Product {
       }
 
       variant.unsetDefault();
+    }
+  }
+
+  remove() {
+    if (this.params.deletedAt) {
+      return;
+    }
+
+    for (const variant of this.variants) {
+      variant.remove();
+    }
+
+    this.params.deletedAt = new Date();
+    this.setUpdatedAt();
+  }
+
+  restore() {
+    if (!this.params.deletedAt) {
+      return;
+    }
+
+    this.params.deletedAt = null;
+    this.setUpdatedAt();
+  }
+
+  notDeleted() {
+    if (this.params.deletedAt) {
+      throw new Error('Product has been deleted');
     }
   }
 
@@ -404,14 +388,19 @@ export class Product {
     return this.params.baseName;
   }
 
-  get isVariantProduct(): boolean {
-    return this.variants.filter((v) => !v.deletedAt).length >= 2;
-  }
   get createdAt(): Date {
     return this.params.createdAt;
   }
 
   get updatedAt(): Date {
     return this.params.updatedAt;
+  }
+
+  get deletedAt(): Date | null | undefined {
+    return this.params.deletedAt;
+  }
+
+  get isDeleted(): boolean {
+    return !!this.params.deletedAt;
   }
 }

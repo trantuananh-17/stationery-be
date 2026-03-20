@@ -5,11 +5,12 @@ import { CreateProductHandler } from './application/commands/products/create-pro
 import { UpdateProductHandler } from './application/commands/products/update-product/update-product.handler';
 import { ProductInfraModule } from './infrastructure/product-infra.module';
 import { ProductController } from './presentation/controllers/product.controller';
+import { GetProductsHandler } from './application/queries/get-products/get-products.handler';
 
 @Module({
   imports: [CqrsModule, TypeOrmProvider, ProductInfraModule],
   controllers: [ProductController],
-  providers: [CreateProductHandler, UpdateProductHandler],
+  providers: [CreateProductHandler, UpdateProductHandler, GetProductsHandler],
   exports: [],
 })
 export class ProductModule {}

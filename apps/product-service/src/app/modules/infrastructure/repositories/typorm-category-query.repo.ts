@@ -10,9 +10,21 @@ export class TypeOrmCategoryQueryRepository implements ICategoryQueryRepository 
     @InjectRepository(CategoryOrmEntity)
     private readonly repo: Repository<CategoryOrmEntity>,
   ) {}
+
   async findCategoryExist(categoryId: string): Promise<boolean> {
     return this.repo.exist({
       where: { id: categoryId },
     });
+  }
+
+  async findBySlug(categorySlug: string): Promise<string | null> {
+    console.log(categorySlug);
+
+    const category = await this.repo.findOne({
+      where: { slug: categorySlug },
+      select: ['id'],
+    });
+
+    return category?.id ?? null;
   }
 }
