@@ -92,7 +92,7 @@ class VariantDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  images?: string;
+  image?: string;
 
   @ApiPropertyOptional()
   @IsOptional()

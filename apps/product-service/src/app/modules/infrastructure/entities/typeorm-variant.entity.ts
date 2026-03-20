@@ -27,7 +27,7 @@ export class VariantOrmEntity extends BaseEntity {
   reservedStock: number;
 
   @Column({ nullable: true })
-  images?: string;
+  image?: string;
 
   @Column({ name: 'sort_order', default: 0 })
   sortOrder: number;

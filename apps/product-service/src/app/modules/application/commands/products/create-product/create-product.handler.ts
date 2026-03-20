@@ -64,7 +64,7 @@ export class CreateProductHandler implements ICommandHandler<CreateProductComman
           price: variant.price,
           compareAtPrice: variant.compareAtPrice,
           stock: variant.stock,
-          images: variant.images,
+          image: variant.image,
           isDefault: variant.isDefault,
           attributeValueIds: variant.attributeValueIds,
         });

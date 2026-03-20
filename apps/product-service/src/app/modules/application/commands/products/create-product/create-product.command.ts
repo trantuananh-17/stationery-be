@@ -24,7 +24,7 @@ export type VariantPayload = {
   price: number;
   compareAtPrice?: number;
   stock: number;
-  images?: string;
+  image?: string;
   sortOrder?: number;
   isDefault?: boolean;
   attributeValueIds: string[];

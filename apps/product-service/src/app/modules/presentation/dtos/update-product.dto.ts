@@ -112,7 +112,7 @@ class UpdateVariantDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  images: string;
+  image: string;
 
   @ApiPropertyOptional()
   @IsOptional()

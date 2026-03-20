@@ -10,7 +10,7 @@ export type VariantParams = {
   compareAtPrice?: number;
   stock: number;
   reservedStock: number;
-  images?: string;
+  image?: string;
   sortOrder: number;
   isDefault: boolean;
   isAvailable: boolean;
@@ -31,7 +31,7 @@ export class Variant {
     price: number;
     compareAtPrice?: number;
     stock: number;
-    images?: string;
+    image?: string;
     sortOrder?: number;
     isDefault?: boolean;
   }): Variant {
@@ -55,7 +55,7 @@ export class Variant {
       sku: data.sku,
       price: data.price,
       compareAtPrice: data.compareAtPrice,
-      images: data.images,
+      image: data.image,
       sortOrder: data.sortOrder ?? 0,
       stock: data.stock,
       reservedStock: 0,
@@ -69,7 +69,7 @@ export class Variant {
   updateInfo(data: {
     price?: number;
     compareAtPrice?: number;
-    images?: string;
+    image?: string;
     stock: number;
     sortOrder?: number;
     isDefault?: boolean;
@@ -94,8 +94,8 @@ export class Variant {
       this.params.stock = data.stock;
     }
 
-    if (data.images !== undefined) {
-      this.params.images = data.images;
+    if (data.image !== undefined) {
+      this.params.image = data.image;
     }
 
     if (data.sortOrder !== undefined) {
@@ -196,8 +196,8 @@ export class Variant {
     return this.params.reservedStock;
   }
 
-  get images() {
-    return this.params.images;
+  get image() {
+    return this.params.image;
   }
 
   get isAvailable() {

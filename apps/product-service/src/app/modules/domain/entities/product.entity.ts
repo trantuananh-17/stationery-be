@@ -124,7 +124,7 @@ export class Product {
     price: number;
     compareAtPrice?: number;
     stock: number;
-    images?: string;
+    image?: string;
     isDefault?: boolean;
     attributeValueIds?: string[];
   }) {
@@ -155,7 +155,7 @@ export class Product {
       name: string;
       price: number;
       compareAtPrice?: number;
-      images?: string;
+      image?: string;
       sortOrder?: number;
       isDefault?: boolean;
       attributeValueIds: string[];
@@ -185,7 +185,7 @@ export class Product {
         existingVariant.updateInfo({
           price: input.price,
           compareAtPrice: input.compareAtPrice,
-          images: input.images,
+          image: input.image,
           sortOrder: input.sortOrder,
           isDefault: input.isDefault,
           stock: input.stock,
@@ -201,7 +201,7 @@ export class Product {
         price: input.price,
         compareAtPrice: input.compareAtPrice,
         stock: input.stock,
-        images: input.images,
+        image: input.image,
         sortOrder: input.sortOrder,
         isDefault: input.isDefault,
       });

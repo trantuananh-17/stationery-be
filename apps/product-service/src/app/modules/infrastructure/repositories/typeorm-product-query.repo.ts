@@ -206,7 +206,7 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       compareAtPrice: orm.compareAtPrice,
       stock: orm.stock,
       reservedStock: orm.reservedStock,
-      images: orm.images,
+      image: orm.image,
       sortOrder: orm.sortOrder,
       isDefault: orm.isDefault,
       isAvailable: orm.isAvailable,
