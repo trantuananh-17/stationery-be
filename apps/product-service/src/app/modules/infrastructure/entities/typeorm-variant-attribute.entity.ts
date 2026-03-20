@@ -1,6 +1,7 @@
 import { Column, Entity, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from '@common/databases/base.entity';
 import { VariantOrmEntity } from './typeorm-variant.entity';
+import { AttributeValueOrmEntity } from './typeorm-attribute-value.entity';
 
 @Entity({ name: 'variant_attributes' })
 export class VariantAttributeOrmEntity extends BaseEntity {
@@ -13,4 +14,8 @@ export class VariantAttributeOrmEntity extends BaseEntity {
   @ManyToOne(() => VariantOrmEntity, (variant) => variant.attributes)
   @JoinColumn({ name: 'variant_id' })
   variant: VariantOrmEntity;
+
+  @ManyToOne(() => AttributeValueOrmEntity)
+  @JoinColumn({ name: 'attribute_value_id' })
+  attributeValue: AttributeValueOrmEntity;
 }

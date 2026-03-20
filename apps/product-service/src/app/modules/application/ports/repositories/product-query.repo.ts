@@ -1,5 +1,6 @@
 import { Product } from '../../../domain/entities/product.entity';
 import { ProductOrderBy } from '../../../domain/enum/product-orderby.enum';
+import { ProductInfoReadModel } from '../../read-models/product-info.read-model';
 import { ProductReadModel } from '../../read-models/product.read-model';
 import { QueryResult } from '@common/interfaces/common/pagination.interface';
 
@@ -14,4 +15,5 @@ export abstract class IProductQueryRepository {
   }): Promise<QueryResult<ProductReadModel>>;
   abstract findById(productId: string): Promise<Product | null>;
   abstract findMaxSlug(prefix: string): Promise<string>;
+  abstract getProductInfo(productId?: string, slug?: string): Promise<ProductInfoReadModel | null>;
 }

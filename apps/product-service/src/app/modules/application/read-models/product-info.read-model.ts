@@ -18,20 +18,18 @@ export interface ProductInfoReadModel {
     };
   };
 
-  brand: {
-    id: string;
-    name: string;
-    slug: string;
-  };
-
+  // brand: {
+  //   id: string;
+  //   name: string;
+  //   slug: string;
+  // };
   description: string;
   shortDescription: string;
-
   status: ProductStatus;
   featured: boolean;
-
   seoTitle?: string;
   seoDescription?: string;
+  baseName?: string;
 
   variants: {
     id: string;
@@ -41,14 +39,31 @@ export interface ProductInfoReadModel {
     compareAtPrice?: number;
     stock: number;
     reservedStock: number;
-    images?: string[];
+    image?: string;
     sortOrder: number;
     isDefault: boolean;
     isAvailable: boolean;
+    attributes: {
+      attributeId: string;
+      attributeName: string;
+      attributeValueId: string;
+      attributeValue: string;
+      attributeValueSlug: string;
+    }[];
+  }[];
+
+  variantOptions: {
+    attributeId: string;
+    attributeName: string;
+    values: {
+      id: string;
+      value: string;
+    }[];
   }[];
 
   specifications: {
     id: string;
+    attributeId: string;
     attributeName: string;
     value: string;
   }[];

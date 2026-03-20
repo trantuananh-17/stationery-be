@@ -18,6 +18,8 @@ import { SkuService } from './services/sku.service';
 import { ICategoryQueryRepository } from '../application/ports/repositories/category-query.repo';
 import { TypeOrmCategoryQueryRepository } from './repositories/typorm-category-query.repo';
 import { CategoryOrmEntity } from './entities/typeorm-category.entity';
+import { AttributeOrmEntity } from './entities/typeorm-attribute.entity';
+import { AttributeValueOrmEntity } from './entities/typeorm-attribute-value.entity';
 
 @Module({
   imports: [
@@ -27,6 +29,8 @@ import { CategoryOrmEntity } from './entities/typeorm-category.entity';
       VariantAttributeOrmEntity,
       VariantOrmEntity,
       CategoryOrmEntity,
+      AttributeOrmEntity,
+      AttributeValueOrmEntity,
     ]),
   ],
   providers: [

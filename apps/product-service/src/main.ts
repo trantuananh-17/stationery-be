@@ -48,7 +48,28 @@ async function bootstrap() {
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup(`${globalPrefix}/docs`, app, documentFactory);
+  SwaggerModule.setup(`${globalPrefix}/docs`, app, documentFactory, {
+    swaggerOptions: {
+      operationsSorter: (a, b) => {
+        const methodOrder = {
+          post: 1,
+          get: 2,
+          patch: 3,
+          put: 4,
+          delete: 5,
+        };
+
+        const aMethod = a.get('method');
+        const bMethod = b.get('method');
+
+        if (methodOrder[aMethod] !== methodOrder[bMethod]) {
+          return methodOrder[aMethod] - methodOrder[bMethod];
+        }
+
+        return a.get('path').localeCompare(b.get('path'));
+      },
+    },
+  });
 
   // const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);

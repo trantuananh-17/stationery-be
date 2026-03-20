@@ -1,8 +1,9 @@
-import { Column, Entity, OneToMany } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from '@common/databases/base.entity';
 import { VariantOrmEntity } from './typeorm-variant.entity';
 import { ProductStatus } from '../../domain/enum/product-status.enum';
 import { SpecificationOrmEntity } from './typeorm-specification.enity';
+import { CategoryOrmEntity } from './typeorm-category.entity';
 
 @Entity({ name: 'products' })
 export class ProductOrmEntity extends BaseEntity {
@@ -12,8 +13,9 @@ export class ProductOrmEntity extends BaseEntity {
   @Column({ unique: true })
   slug: string;
 
-  @Column({ name: 'category_id', type: 'uuid' })
-  categoryId: string;
+  @ManyToOne(() => CategoryOrmEntity)
+  @JoinColumn({ name: 'category_id' })
+  category: CategoryOrmEntity;
 
   @Column({ name: 'brand_id', type: 'uuid' })
   brandId: string;

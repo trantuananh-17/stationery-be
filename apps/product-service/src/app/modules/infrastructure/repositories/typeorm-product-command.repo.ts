@@ -146,7 +146,7 @@ export class TypeOrmProductCommandRepository implements IProductCommandRepositor
     orm.id = product.id;
     orm.name = product.name;
     orm.slug = product.slug;
-    orm.categoryId = product.categoryId;
+    orm.category.id = product.categoryId;
     orm.brandId = product.brandId;
     orm.description = product.description;
     orm.shortDescription = product.shortDescription;

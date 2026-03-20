@@ -8,6 +8,7 @@ import { UpdateProductCommand } from '../../application/commands/products/update
 import { ProductOrderBy } from '../../domain/enum/product-orderby.enum';
 import { GetProductsQuery } from '../../application/queries/get-products/get-products.query';
 import { GetProductsDto } from '../dtos/get-product.dto';
+import { GetProductInfoQuery } from '../../application/queries/get-product-id/get-product-info.query';
 
 @ApiTags('Products')
 @Controller('products')
@@ -48,5 +49,19 @@ export class ProductController {
         Number(limit),
       ),
     );
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get product by id' })
+  @ApiResponse({ status: 200, description: 'Product detail by id' })
+  async findById(@Param('id') id: string) {
+    return this.queryBus.execute(new GetProductInfoQuery(id, undefined));
+  }
+
+  @Get('slug/:slug')
+  @ApiOperation({ summary: 'Get product by slug' })
+  @ApiResponse({ status: 200, description: 'Product detail by slug' })
+  async findBySlug(@Param('slug') slug: string) {
+    return this.queryBus.execute(new GetProductInfoQuery(undefined, slug));
   }
 }
