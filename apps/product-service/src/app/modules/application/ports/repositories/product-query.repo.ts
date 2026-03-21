@@ -13,8 +13,6 @@ export abstract class IProductQueryRepository {
     page: number;
     limit: number;
   }): Promise<QueryResult<ProductReadModel>>;
-  abstract findById(productId: string): Promise<Product | null>;
-  abstract findMaxSlug(prefix: string): Promise<string>;
   abstract findProductInfo(productId?: string, slug?: string): Promise<ProductInfoReadModel | null>;
   abstract findFeaturedProducts(
     page: number,

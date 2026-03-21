@@ -1,6 +1,10 @@
 import { randomUUID } from 'crypto';
 import { StatusCart } from '../enums/status-cart.enum';
-import { CartItem } from './cart-item.entity';
+import {
+  CartItem,
+  CartItemAttributeSnapshot,
+  UpdateCartItemSnapshotParams,
+} from './cart-item.entity';
 
 export type CartParams = {
   readonly id: string;
@@ -18,6 +22,21 @@ type CreateCartParams = {
   sessionId?: string;
   currency: string;
   items?: CartItem[];
+};
+
+export type AddCartItemParams = {
+  productId: string;
+  variantId: string;
+  quantity: number;
+  productNameSnapshot: string;
+  productSlugSnapshot: string;
+  variantNameSnapshot: string;
+  skuSnapshot?: string;
+  productThumbnailSnapshot?: string;
+  imageVariantSnapshot?: string;
+  unitPriceSnapshot: number;
+  compareAtPriceSnapshot?: number;
+  attributesSnapshot: CartItemAttributeSnapshot[];
 };
 
 export class Cart {
@@ -59,6 +78,10 @@ export class Cart {
   }
 
   private validate(): void {
+    if (!this.params.id?.trim()) {
+      throw new Error('id is required');
+    }
+
     if (!this.params.userId && !this.params.sessionId) {
       throw new Error('userId or sessionId is required');
     }
@@ -72,14 +95,36 @@ export class Cart {
     this.params.updatedAt = new Date();
   }
 
-  addItem(item: CartItem): void {
-    const existedItem = this.cartItems.find((cartItem) => {
-      return cartItem.variantId === item.variantId;
-    });
+  private ensureCanModify(): void {
+    if (this.params.status !== StatusCart.ACTIVE) {
+      throw new Error('Cart is not active');
+    }
+  }
+
+  addItem(data: AddCartItemParams): void {
+    this.ensureCanModify();
+
+    const existedItem = this.cartItems.find((cartItem) => cartItem.variantId === data.variantId);
 
     if (existedItem) {
-      existedItem.increaseQuantity(item.quantity);
+      existedItem.increaseQuantity(data.quantity);
     } else {
+      const item = CartItem.create({
+        cartId: this.id,
+        productId: data.productId,
+        variantId: data.variantId,
+        quantity: data.quantity,
+        productNameSnapshot: data.productNameSnapshot,
+        productSlugSnapshot: data.productSlugSnapshot,
+        variantNameSnapshot: data.variantNameSnapshot,
+        skuSnapshot: data.skuSnapshot,
+        productThumbnailSnapshot: data.productThumbnailSnapshot,
+        imageVariantSnapshot: data.imageVariantSnapshot,
+        unitPriceSnapshot: data.unitPriceSnapshot,
+        compareAtPriceSnapshot: data.compareAtPriceSnapshot,
+        attributesSnapshot: data.attributesSnapshot,
+      });
+
       this.cartItems.push(item);
     }
 
@@ -87,6 +132,8 @@ export class Cart {
   }
 
   removeItem(cartItemId: string): void {
+    this.ensureCanModify();
+
     const index = this.cartItems.findIndex((item) => item.id === cartItemId);
 
     if (index === -1) {
@@ -98,6 +145,8 @@ export class Cart {
   }
 
   updateItemQuantity(cartItemId: string, quantity: number): void {
+    this.ensureCanModify();
+
     if (quantity <= 0) {
       this.removeItem(cartItemId);
       return;
@@ -113,17 +162,40 @@ export class Cart {
     this.setUpdatedAt();
   }
 
+  updateItemSnapshot(cartItemId: string, snapshot: UpdateCartItemSnapshotParams): void {
+    this.ensureCanModify();
+
+    const item = this.cartItems.find((cartItem) => cartItem.id === cartItemId);
+
+    if (!item) {
+      throw new Error('Cart item not found');
+    }
+
+    item.updateSnapshot(snapshot);
+    this.setUpdatedAt();
+  }
+
   clear(): void {
+    this.ensureCanModify();
+
     this.cartItems = [];
     this.setUpdatedAt();
   }
 
   expire(): void {
+    if (this.params.status === StatusCart.CHECK_OUT) {
+      throw new Error('Checked out cart cannot be expired');
+    }
+
     this.params.status = StatusCart.EXPIRED;
     this.setUpdatedAt();
   }
 
   checkout(): void {
+    if (this.params.status !== StatusCart.ACTIVE) {
+      throw new Error('Cart is not active');
+    }
+
     if (this.cartItems.length === 0) {
       throw new Error('Cart is empty');
     }
@@ -132,7 +204,9 @@ export class Cart {
     this.setUpdatedAt();
   }
 
-  mergeItems(items: CartItem[]): void {
+  mergeItems(items: AddCartItemParams[]): void {
+    this.ensureCanModify();
+
     for (const item of items) {
       this.addItem(item);
     }
@@ -144,6 +218,18 @@ export class Cart {
 
   getItems(): CartItem[] {
     return [...this.cartItems];
+  }
+
+  getItemById(cartItemId: string): CartItem | undefined {
+    return this.cartItems.find((item) => item.id === cartItemId);
+  }
+
+  getItemByVariantId(variantId: string): CartItem | undefined {
+    return this.cartItems.find((item) => item.variantId === variantId);
+  }
+
+  get subtotal(): number {
+    return this.cartItems.reduce((total, item) => total + item.subtotal, 0);
   }
 
   get id(): string {

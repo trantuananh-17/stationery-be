@@ -1,5 +1,10 @@
 import { randomUUID } from 'crypto';
 
+export type CartItemAttributeSnapshot = {
+  name: string;
+  value: string;
+};
+
 export type CartItemParams = {
   readonly id: string;
   readonly cartId: string;
@@ -7,28 +12,44 @@ export type CartItemParams = {
   readonly variantId: string;
   quantity: number;
   productNameSnapshot: string;
+  productSlugSnapshot: string;
   variantNameSnapshot: string;
   skuSnapshot?: string;
-  imageSnapshot?: string;
+  productThumbnailSnapshot?: string;
   imageVariantSnapshot?: string;
   unitPriceSnapshot: number;
   compareAtPriceSnapshot?: number;
+  attributesSnapshot: CartItemAttributeSnapshot[];
   readonly createdAt: Date;
   updatedAt: Date;
 };
 
-type CreateCartItemParams = {
+export type CartItemSnapshot = {
   cartId: string;
   productId: string;
   variantId: string;
   quantity: number;
   productNameSnapshot: string;
+  productSlugSnapshot: string;
   variantNameSnapshot: string;
   skuSnapshot?: string;
-  imageSnapshot?: string;
+  productThumbnailSnapshot?: string;
   imageVariantSnapshot?: string;
   unitPriceSnapshot: number;
   compareAtPriceSnapshot?: number;
+  attributesSnapshot: CartItemAttributeSnapshot[];
+};
+
+export type UpdateCartItemSnapshotParams = {
+  productNameSnapshot: string;
+  productSlugSnapshot: string;
+  variantNameSnapshot: string;
+  skuSnapshot?: string;
+  productThumbnailSnapshot?: string;
+  imageVariantSnapshot?: string;
+  unitPriceSnapshot: number;
+  compareAtPriceSnapshot?: number;
+  attributesSnapshot: CartItemAttributeSnapshot[];
 };
 
 export class CartItem {
@@ -36,7 +57,7 @@ export class CartItem {
     this.validate();
   }
 
-  static create(data: CreateCartItemParams): CartItem {
+  static create(data: CartItemSnapshot): CartItem {
     const now = new Date();
 
     return new CartItem({
@@ -46,12 +67,14 @@ export class CartItem {
       variantId: data.variantId,
       quantity: data.quantity,
       productNameSnapshot: data.productNameSnapshot,
+      productSlugSnapshot: data.productSlugSnapshot,
       variantNameSnapshot: data.variantNameSnapshot,
       skuSnapshot: data.skuSnapshot,
-      imageSnapshot: data.imageSnapshot,
+      productThumbnailSnapshot: data.productThumbnailSnapshot,
       imageVariantSnapshot: data.imageVariantSnapshot,
       unitPriceSnapshot: data.unitPriceSnapshot,
       compareAtPriceSnapshot: data.compareAtPriceSnapshot,
+      attributesSnapshot: data.attributesSnapshot,
       createdAt: now,
       updatedAt: now,
     });
@@ -62,6 +85,10 @@ export class CartItem {
   }
 
   private validate(): void {
+    if (!this.params.id?.trim()) {
+      throw new Error('id is required');
+    }
+
     if (!this.params.cartId?.trim()) {
       throw new Error('cartId is required');
     }
@@ -76,6 +103,10 @@ export class CartItem {
 
     if (!this.params.productNameSnapshot?.trim()) {
       throw new Error('productNameSnapshot is required');
+    }
+
+    if (!this.params.productSlugSnapshot?.trim()) {
+      throw new Error('productSlugSnapshot is required');
     }
 
     if (!this.params.variantNameSnapshot?.trim()) {
@@ -96,9 +127,23 @@ export class CartItem {
     ) {
       throw new Error('compareAtPriceSnapshot must be greater than or equal to 0');
     }
+
+    if (!Array.isArray(this.params.attributesSnapshot)) {
+      throw new Error('attributesSnapshot must be an array');
+    }
+
+    for (const attribute of this.params.attributesSnapshot) {
+      if (!attribute.name?.trim()) {
+        throw new Error('attribute name is required');
+      }
+
+      if (!attribute.value?.trim()) {
+        throw new Error('attribute value is required');
+      }
+    }
   }
 
-  private touch(): void {
+  private setUpdatedAt(): void {
     this.params.updatedAt = new Date();
   }
 
@@ -108,7 +153,7 @@ export class CartItem {
     }
 
     this.params.quantity = quantity;
-    this.touch();
+    this.setUpdatedAt();
   }
 
   increaseQuantity(quantity: number): void {
@@ -117,7 +162,7 @@ export class CartItem {
     }
 
     this.params.quantity += quantity;
-    this.touch();
+    this.setUpdatedAt();
   }
 
   decreaseQuantity(quantity: number): void {
@@ -132,42 +177,22 @@ export class CartItem {
     }
 
     this.params.quantity = nextQuantity;
-    this.touch();
+    this.setUpdatedAt();
   }
 
-  updateSnapshots(data: {
-    productNameSnapshot: string;
-    variantNameSnapshot: string;
-    skuSnapshot?: string;
-    imageSnapshot?: string;
-    imageVariantSnapshot?: string;
-    unitPriceSnapshot: number;
-    compareAtPriceSnapshot?: number;
-  }): void {
-    if (!data.productNameSnapshot?.trim()) {
-      throw new Error('productNameSnapshot is required');
-    }
+  updateSnapshot(snapshot: UpdateCartItemSnapshotParams): void {
+    this.params.productNameSnapshot = snapshot.productNameSnapshot;
+    this.params.productSlugSnapshot = snapshot.productSlugSnapshot;
+    this.params.variantNameSnapshot = snapshot.variantNameSnapshot;
+    this.params.skuSnapshot = snapshot.skuSnapshot;
+    this.params.productThumbnailSnapshot = snapshot.productThumbnailSnapshot;
+    this.params.imageVariantSnapshot = snapshot.imageVariantSnapshot;
+    this.params.unitPriceSnapshot = snapshot.unitPriceSnapshot;
+    this.params.compareAtPriceSnapshot = snapshot.compareAtPriceSnapshot;
+    this.params.attributesSnapshot = snapshot.attributesSnapshot;
 
-    if (!data.variantNameSnapshot?.trim()) {
-      throw new Error('variantNameSnapshot is required');
-    }
-
-    if (data.unitPriceSnapshot < 0) {
-      throw new Error('unitPriceSnapshot must be greater than or equal to 0');
-    }
-
-    if (data.compareAtPriceSnapshot !== undefined && data.compareAtPriceSnapshot < 0) {
-      throw new Error('compareAtPriceSnapshot must be greater than or equal to 0');
-    }
-
-    this.params.productNameSnapshot = data.productNameSnapshot;
-    this.params.variantNameSnapshot = data.variantNameSnapshot;
-    this.params.skuSnapshot = data.skuSnapshot;
-    this.params.imageSnapshot = data.imageSnapshot;
-    this.params.imageVariantSnapshot = data.imageVariantSnapshot;
-    this.params.unitPriceSnapshot = data.unitPriceSnapshot;
-    this.params.compareAtPriceSnapshot = data.compareAtPriceSnapshot;
-    this.touch();
+    this.validate();
+    this.setUpdatedAt();
   }
 
   get subtotal(): number {
@@ -198,6 +223,10 @@ export class CartItem {
     return this.params.productNameSnapshot;
   }
 
+  get productSlugSnapshot(): string {
+    return this.params.productSlugSnapshot;
+  }
+
   get variantNameSnapshot(): string {
     return this.params.variantNameSnapshot;
   }
@@ -206,8 +235,8 @@ export class CartItem {
     return this.params.skuSnapshot;
   }
 
-  get imageSnapshot(): string | undefined {
-    return this.params.imageSnapshot;
+  get productThumbnailSnapshot(): string | undefined {
+    return this.params.productThumbnailSnapshot;
   }
 
   get imageVariantSnapshot(): string | undefined {
@@ -220,6 +249,10 @@ export class CartItem {
 
   get compareAtPriceSnapshot(): number | undefined {
     return this.params.compareAtPriceSnapshot;
+  }
+
+  get attributesSnapshot(): CartItemAttributeSnapshot[] {
+    return [...this.params.attributesSnapshot];
   }
 
   get createdAt(): Date {
