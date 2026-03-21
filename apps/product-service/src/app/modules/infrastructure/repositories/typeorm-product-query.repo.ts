@@ -14,6 +14,7 @@ import { ProductReadModel } from '../../application/read-models/product.read-mod
 import { ProductOrderBy } from '../../domain/enum/product-orderby.enum';
 import { QueryResult } from '@common/interfaces/common/pagination.interface';
 import { ProductInfoReadModel } from '../../application/read-models/product-info.read-model';
+import { ProductStatus } from '../../domain/enum/product-status.enum';
 
 @Injectable()
 export class TypeOrmProductQueryRepository implements IProductQueryRepository {
@@ -28,7 +29,112 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
     private readonly specRepo: Repository<SpecificationOrmEntity>,
   ) {}
 
-  async getProductInfo(productId?: string, slug?: string): Promise<ProductInfoReadModel | null> {
+  async findRelatedProducts(params: {
+    productId: string;
+    categoryId: string;
+    brandId: string;
+    limit: number;
+  }): Promise<ProductReadModel[]> {
+    const { productId, categoryId, brandId, limit } = params;
+
+    const qb = this.productRepo
+      .createQueryBuilder('p')
+      .innerJoin('p.variants', 'v', 'v.is_default = :isDefault', {
+        isDefault: true,
+      })
+      .where('p.category_id = :categoryId', { categoryId })
+      .andWhere('p.id != :productId', { productId })
+      .andWhere('p.deleted_at IS NULL')
+      .andWhere('p.status = :status', { status: ProductStatus.ACTIVE })
+      .select([
+        'p.id AS id',
+        'p.name AS name',
+        'p.slug AS slug',
+        'p.thumbnail AS thumbnail',
+        'p.images AS images',
+        'v.price AS price',
+        'v.compare_at_price AS "compareAtPrice"',
+      ])
+      .orderBy('CASE WHEN p.brand_id = :brandId THEN 0 ELSE 1 END', 'ASC')
+      .setParameter('brandId', brandId)
+      .addOrderBy('p.created_at', 'DESC')
+      .limit(limit);
+
+    const raws = await qb.getRawMany();
+
+    return raws.map((r) => ({
+      id: r.id,
+      name: r.name,
+      slug: r.slug,
+      thumbnail: r.thumbnail,
+      images: r.images,
+      price: Number(r.price),
+      compareAtPrice: r.compareAtPrice ? Number(r.compareAtPrice) : undefined,
+    }));
+  }
+
+  async findRelatedBaseInfoById(
+    productId: string,
+  ): Promise<{ id: string; categoryId: string; brandId: string } | null> {
+    const orm = await this.productRepo.findOne({
+      where: { id: productId },
+      select: {
+        id: true,
+        categoryId: true,
+        brandId: true,
+      },
+    });
+
+    if (!orm) return null;
+
+    return {
+      id: orm.id,
+      categoryId: orm.categoryId,
+      brandId: orm.brandId,
+    };
+  }
+
+  async findFeaturedProducts(page: number, limit: number): Promise<QueryResult<ProductReadModel>> {
+    const qb = this.productRepo
+      .createQueryBuilder('p')
+      .innerJoin('p.variants', 'v', 'v.is_default = :isDefault', {
+        isDefault: true,
+      })
+      .where('p.featured = :featured', { featured: true })
+      .andWhere('p.deletedAt IS NULL');
+
+    const total = await qb.clone().getCount();
+
+    qb.select([
+      'p.id AS id',
+      'p.name AS name',
+      'p.slug AS slug',
+      'p.thumbnail AS thumbnail',
+      'p.images AS images',
+      'v.price AS price',
+      'v.compare_at_price AS "compareAtPrice"',
+    ])
+      .skip((page - 1) * limit)
+      .take(limit)
+      .orderBy('p.createdAt', 'DESC');
+
+    const raws = await qb.getRawMany();
+
+    return {
+      items: raws.map((r) => ({
+        id: r.id,
+        name: r.name,
+        slug: r.slug,
+        thumbnail: r.thumbnail,
+        images: r.images,
+        price: Number(r.price),
+        compareAtPrice: r.compareAtPrice ? Number(r.compareAtPrice) : undefined,
+      })),
+      total,
+    };
+  }
+
+  async findProductInfo(productId?: string, slug?: string): Promise<ProductInfoReadModel | null> {
     const qb = this.productRepo
       .createQueryBuilder('p')
       .leftJoinAndSelect('p.category', 'c')
@@ -221,7 +327,7 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
 
     const qb = this.productRepo
       .createQueryBuilder('p')
-      .innerJoin('p.variants', 'v', 'v.isDefault = :isDefault', {
+      .innerJoin('p.variants', 'v', 'v.is_default = :isDefault', {
         isDefault: true,
       })
       .andWhere('p.deletedAt IS NULL');

@@ -10,7 +10,7 @@ export class GetProductInfoHandler implements IQueryHandler<GetProductInfoQuery>
   async execute(query: GetProductInfoQuery): Promise<ProductInfoReadModel> {
     const { productId, slug } = query;
 
-    const product = await this.productRepo.getProductInfo(productId, slug);
+    const product = await this.productRepo.findProductInfo(productId, slug);
 
     if (!product) {
       throw new Error('PNF');

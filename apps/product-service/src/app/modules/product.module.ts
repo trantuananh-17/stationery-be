@@ -7,6 +7,8 @@ import { ProductInfraModule } from './infrastructure/product-infra.module';
 import { ProductController } from './presentation/controllers/product.controller';
 import { GetProductsHandler } from './application/queries/get-products/get-products.handler';
 import { GetProductInfoHandler } from './application/queries/get-product-id/get-product-info.handler';
+import { GetFeaturedHandler } from './application/queries/get-featured/get-featured.handler';
+import { GetRelatedHandler } from './application/queries/get-related/get-related.handler';
 
 @Module({
   imports: [CqrsModule, TypeOrmProvider, ProductInfraModule],
@@ -16,6 +18,8 @@ import { GetProductInfoHandler } from './application/queries/get-product-id/get-
     UpdateProductHandler,
     GetProductsHandler,
     GetProductInfoHandler,
+    GetFeaturedHandler,
+    GetRelatedHandler,
   ],
   exports: [],
 })

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, ParseUUIDPipe } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateProductCommand } from '../../application/commands/products/create-product/create-product.command';
@@ -9,6 +9,10 @@ import { ProductOrderBy } from '../../domain/enum/product-orderby.enum';
 import { GetProductsQuery } from '../../application/queries/get-products/get-products.query';
 import { GetProductsDto } from '../dtos/get-product.dto';
 import { GetProductInfoQuery } from '../../application/queries/get-product-id/get-product-info.query';
+import { GetFeaturedDto } from '../dtos/get-fetured.dto';
+import { GetFeaturedQuery } from '../../application/queries/get-featured/get-featured.query';
+import { GetRelatedProductsDto } from '../dtos/get-related.dto';
+import { GetRelatedQuery } from '../../application/queries/get-related/get-related.query';
 
 @ApiTags('Products')
 @Controller('products')
@@ -28,7 +32,7 @@ export class ProductController {
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() body: UpdateProductDto) {
+  async update(@Param('id', new ParseUUIDPipe()) id: string, @Body() body: UpdateProductDto) {
     return this.commandBus.execute(
       new UpdateProductCommand(id, body.product, body.specifications, body.variants),
     );
@@ -37,8 +41,9 @@ export class ProductController {
   @Get()
   @ApiOperation({ summary: 'Get list products' })
   @ApiResponse({ status: 200, description: 'List products' })
-  async findAll(@Query() query: GetProductsDto) {
+  async getAll(@Query() query: GetProductsDto) {
     const { brand, category, search, orderBy, page, limit } = query;
+
     return this.queryBus.execute(
       new GetProductsQuery(
         search,
@@ -51,17 +56,33 @@ export class ProductController {
     );
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: 'Get product by id' })
-  @ApiResponse({ status: 200, description: 'Product detail by id' })
-  async findById(@Param('id') id: string) {
-    return this.queryBus.execute(new GetProductInfoQuery(id, undefined));
+  @Get('featured')
+  @ApiOperation({ summary: 'Get featured products' })
+  @ApiResponse({ status: 200, description: 'Get featured products' })
+  async getFeaturedProducts(@Query() query: GetFeaturedDto) {
+    const { page, limit } = query;
+    return this.queryBus.execute(new GetFeaturedQuery(Number(page), Number(limit)));
   }
 
   @Get('slug/:slug')
   @ApiOperation({ summary: 'Get product by slug' })
   @ApiResponse({ status: 200, description: 'Product detail by slug' })
-  async findBySlug(@Param('slug') slug: string) {
+  async getBySlug(@Param('slug') slug: string) {
     return this.queryBus.execute(new GetProductInfoQuery(undefined, slug));
+  }
+
+  @Get(':id/related')
+  async getRelatedProducts(
+    @Param('id', new ParseUUIDPipe()) productId: string,
+    @Query() query: GetRelatedProductsDto,
+  ) {
+    return this.queryBus.execute(new GetRelatedQuery(productId, Number(query.limit)));
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get product by id' })
+  @ApiResponse({ status: 200, description: 'Product detail by id' })
+  async getById(@Param('id', new ParseUUIDPipe()) id: string) {
+    return this.queryBus.execute(new GetProductInfoQuery(id, undefined));
   }
 }

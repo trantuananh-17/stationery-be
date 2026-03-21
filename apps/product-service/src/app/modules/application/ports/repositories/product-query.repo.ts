@@ -15,5 +15,18 @@ export abstract class IProductQueryRepository {
   }): Promise<QueryResult<ProductReadModel>>;
   abstract findById(productId: string): Promise<Product | null>;
   abstract findMaxSlug(prefix: string): Promise<string>;
-  abstract getProductInfo(productId?: string, slug?: string): Promise<ProductInfoReadModel | null>;
+  abstract findProductInfo(productId?: string, slug?: string): Promise<ProductInfoReadModel | null>;
+  abstract findFeaturedProducts(
+    page: number,
+    limit: number,
+  ): Promise<QueryResult<ProductReadModel>>;
+  abstract findRelatedProducts(params: {
+    productId: string;
+    categoryId: string;
+    brandId: string;
+    limit: number;
+  }): Promise<ProductReadModel[]>;
+  abstract findRelatedBaseInfoById(
+    id: string,
+  ): Promise<{ id: string; categoryId: string; brandId: string } | null>;
 }

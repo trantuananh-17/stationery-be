@@ -14,9 +14,15 @@ export class ProductOrmEntity extends BaseEntity {
   @Column({ unique: true })
   slug: string;
 
+  @Column({ name: 'category_id', type: 'uuid' })
+  categoryId: string;
+
   @ManyToOne(() => CategoryOrmEntity)
   @JoinColumn({ name: 'category_id' })
   category: CategoryOrmEntity;
+
+  @Column({ name: 'brand_id', type: 'uuid' })
+  brandId: string;
 
   @ManyToOne(() => BrandOrmEntity)
   @JoinColumn({ name: 'brand_id' })

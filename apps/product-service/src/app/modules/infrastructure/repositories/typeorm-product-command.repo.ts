@@ -11,8 +11,6 @@ import { Variant } from '../../domain/entities/variant.entity';
 import { Specification } from '../../domain/entities/specification.entity';
 import { VariantAttribute } from '../../domain/entities/variant-attribute.entity';
 import { getManager } from '../helpers/get-manager.helper';
-import { CategoryOrmEntity } from '../entities/typeorm-category.entity';
-import { BrandOrmEntity } from '../entities/typeorm-brand.entity';
 
 @Injectable()
 export class TypeOrmProductCommandRepository implements IProductCommandRepository {
@@ -152,8 +150,8 @@ export class TypeOrmProductCommandRepository implements IProductCommandRepositor
     orm.id = product.id;
     orm.name = product.name;
     orm.slug = product.slug;
-    orm.category = { id: product.categoryId } as CategoryOrmEntity;
-    orm.brand = { id: product.brandId } as BrandOrmEntity;
+    orm.categoryId = product.categoryId;
+    orm.brandId = product.brandId;
     orm.description = product.description;
     orm.shortDescription = product.shortDescription;
     orm.images = product.images;
