@@ -9,10 +9,13 @@ import { AppModule } from './app/app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
 import { CONFIGURATION } from './configuration';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const CONFIG = CONFIGURATION();
+
+  const globalPrefix = CONFIG.GLOBAL_PREFIX;
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
@@ -29,7 +32,48 @@ async function bootstrap() {
     },
   });
 
-  const globalPrefix = 'api';
+  app.enableCors({
+    origin: '*',
+  });
+
+  const config = new DocumentBuilder()
+    .setTitle('Stationery-bff API')
+    .setDescription('The Stationery-bff API description')
+    .setVersion('1.0.0')
+    .addBearerAuth({
+      description: 'Default JWT Authorization',
+      type: 'http',
+      in: 'header',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+      name: 'Authorization',
+    })
+    .build();
+
+  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup(`${globalPrefix}/docs`, app, documentFactory, {
+    swaggerOptions: {
+      operationsSorter: (a, b) => {
+        const methodOrder = {
+          post: 1,
+          get: 2,
+          patch: 3,
+          put: 4,
+          delete: 5,
+        };
+
+        const aMethod = a.get('method');
+        const bMethod = b.get('method');
+
+        if (methodOrder[aMethod] !== methodOrder[bMethod]) {
+          return methodOrder[aMethod] - methodOrder[bMethod];
+        }
+
+        return a.get('path').localeCompare(b.get('path'));
+      },
+    },
+  });
+
   app.setGlobalPrefix(globalPrefix);
   const port = CONFIG.APP_CONFIG.PORT;
 
