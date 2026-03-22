@@ -8,7 +8,6 @@ export enum GRPC_SERVICES {
   USER_SERVICE = 'GRPC_USER_SERVICE',
   ORDER_SERVICE = 'GRPC_ORDER_SERVICE',
   CART_SERVICE = 'GRPC_CART_SERVICE',
-  INVENTORY_SERVICE = 'GRPC_INVENTORY_SERVICE',
   PRODUCT_SERVICE = 'GRPC_PRODUCT_SERVICE',
 }
 
@@ -39,11 +38,6 @@ const GRPC_SERVICE_CONFIG: Record<keyof typeof GRPC_SERVICES, GrpcServiceConfig>
     hostEnv: 'CART_SERVICE_HOST',
     portEnv: 'CART_SERVICE_PORT',
   },
-  INVENTORY_SERVICE: {
-    proto: './proto/inventory.proto',
-    hostEnv: 'INVENTORY_SERVICE_HOST',
-    portEnv: 'INVENTORY_SERVICE_PORT',
-  },
   PRODUCT_SERVICE: {
     proto: './proto/product.proto',
     hostEnv: 'PRODUCT_SERVICE_HOST',
@@ -67,10 +61,6 @@ export class GrpcConfiguration {
   @IsObject()
   @IsNotEmpty()
   GRPC_CART_SERVICE: GrpcOptions & { name: string };
-
-  @IsObject()
-  @IsNotEmpty()
-  GRPC_INVENTORY_SERVICE: GrpcOptions & { name: string };
 
   @IsObject()
   @IsNotEmpty()

@@ -1,6 +1,7 @@
 import { Product } from '../../../domain/entities/product.entity';
 import { ProductOrderBy } from '../../../domain/enum/product-orderby.enum';
 import { ProductInfoReadModel } from '../../read-models/product-info.read-model';
+import { ProductItemReadModel } from '../../read-models/product-item.read.model';
 import { ProductReadModel } from '../../read-models/product.read-model';
 import { QueryResult } from '@common/interfaces/common/pagination.interface';
 
@@ -27,4 +28,5 @@ export abstract class IProductQueryRepository {
   abstract findRelatedBaseInfoById(
     id: string,
   ): Promise<{ id: string; categoryId: string; brandId: string } | null>;
+  abstract findProductItemBase(variantId: string): Promise<ProductItemReadModel | null>;
 }

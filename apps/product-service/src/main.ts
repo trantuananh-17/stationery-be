@@ -21,11 +21,14 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
 
+  Logger.debug('GRPC CONFIG', JSON.stringify(configService.get('GRPC_SERV.GRPC_PRODUCT_SERVICE')));
+
   app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.TCP,
+    transport: Transport.GRPC,
     options: {
-      host: configService.get<string>('TCP_SERV.TCP_PRODUCT_SERVICE.options.host'),
-      port: configService.get<number>('TCP_SERV.TCP_PRODUCT_SERVICE.options.port'),
+      package: configService.get<string>('GRPC_SERV.GRPC_PRODUCT_SERVICE.name'),
+      protoPath: configService.get<string>('GRPC_SERV.GRPC_PRODUCT_SERVICE.options.protoPath'),
+      url: configService.get<string>('GRPC_SERV.GRPC_PRODUCT_SERVICE.options.url'),
     },
   });
 

@@ -13,6 +13,8 @@ import { GetFeaturedDto } from '../dtos/get-fetured.dto';
 import { GetFeaturedQuery } from '../../application/queries/get-featured/get-featured.query';
 import { GetRelatedProductsDto } from '../dtos/get-related.dto';
 import { GetRelatedQuery } from '../../application/queries/get-related/get-related.query';
+import { GetItemQuery } from '../../application/queries/get-item/get-item.query';
+import { GrpcMethod, Payload } from '@nestjs/microservices';
 
 @ApiTags('Products')
 @Controller('products')
@@ -62,6 +64,11 @@ export class ProductController {
   async getFeaturedProducts(@Query() query: GetFeaturedDto) {
     const { page, limit } = query;
     return this.queryBus.execute(new GetFeaturedQuery(Number(page), Number(limit)));
+  }
+
+  @GrpcMethod('ProductService', 'getProductCartItem')
+  async getProductItemInfo(@Payload() { variantId }: { variantId: string }) {
+    return this.queryBus.execute(new GetItemQuery(variantId));
   }
 
   @Get('slug/:slug')

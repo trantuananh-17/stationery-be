@@ -3,11 +3,29 @@ syntax = "proto3";
 package GRPC_PRODUCT_SERVICE;
 
 service ProductService {
-  rpc Ping (PingRequest) returns (PingResponse);
+  rpc getProductCartItem (ProductCartItemRequest) returns (ProductCartItemResponse);
 }
 
-message PingRequest {}
-
-message PingResponse {
-  string message = 1;
+message ProductCartItemRequest {
+  string variantId = 1;
 }
+
+message ProductAttributeResponse {
+  string name = 1;
+  string value = 2;
+}
+
+message ProductCartItemResponse {
+  string product_id = 1;
+  string variant_id = 2;
+  string product_name = 3;
+  string product_slug = 4;
+  string variant_name = 5;
+  string sku = 6;
+  string product_thumbnail = 7;
+  string image_variant = 8;
+  int32 price = 9;
+  int32 compare_at_price = 10;
+  repeated ProductAttributeResponse attributes = 11;
+}
+

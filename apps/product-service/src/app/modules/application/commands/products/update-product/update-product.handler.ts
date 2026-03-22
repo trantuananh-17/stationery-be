@@ -5,7 +5,6 @@ import { ICategoryQueryRepository } from '../../../ports/repositories/category-q
 import { IUnitOfWork } from '../../../ports/services/unit-of-work.port';
 import { ISkuService } from '../../../ports/services/sku.port';
 import { ISlugService } from '../../../ports/services/slug.port';
-import { IProductQueryRepository } from '../../../ports/repositories/product-query.repo';
 import { ProductNotFoundError } from '../../../../domain/errors/product.error';
 import { IBrandQueryRepository } from '../../../ports/repositories/brand-query.repo';
 import { CategoryNotFoundError } from '../../../../domain/errors/category.error';
@@ -15,7 +14,6 @@ import { BrandNotFoundError } from '../../../../domain/errors/brand.error';
 export class UpdateProductHandler implements ICommandHandler<UpdateProductCommand> {
   constructor(
     private readonly productCommandRepo: IProductCommandRepository,
-    private readonly productQueryRepo: IProductQueryRepository,
     private readonly categoryQueryRepo: ICategoryQueryRepository,
     private readonly brandQueryRepo: IBrandQueryRepository,
     private readonly dataContext: IUnitOfWork,
@@ -40,7 +38,7 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
         throw new BrandNotFoundError();
       }
 
-      const productAggregate = await this.productQueryRepo.findById(productId);
+      const productAggregate = await this.productCommandRepo.findById(productId);
 
       if (!productAggregate) {
         throw new ProductNotFoundError();

@@ -1,20 +1,16 @@
+import { QueryResult } from '@common/interfaces/common/pagination.interface';
 import { Injectable } from '@nestjs/common';
-import { IProductQueryRepository } from '../../application/ports/repositories/product-query.repo';
-import { Product } from '../../domain/entities/product.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ProductOrmEntity } from '../entities/typeorm-product.entity';
 import { Repository } from 'typeorm';
-import { Specification } from '../../domain/entities/specification.entity';
-import { SpecificationOrmEntity } from '../entities/typeorm-specification.enity';
-import { Variant } from '../../domain/entities/variant.entity';
-import { VariantOrmEntity } from '../entities/typeorm-variant.entity';
-import { VariantAttribute } from '../../domain/entities/variant-attribute.entity';
-import { VariantAttributeOrmEntity } from '../entities/typeorm-variant-attribute.entity';
+import { IProductQueryRepository } from '../../application/ports/repositories/product-query.repo';
+import { ProductInfoReadModel } from '../../application/read-models/product-info.read-model';
+import { ProductItemReadModel } from '../../application/read-models/product-item.read.model';
 import { ProductReadModel } from '../../application/read-models/product.read-model';
 import { ProductOrderBy } from '../../domain/enum/product-orderby.enum';
-import { QueryResult } from '@common/interfaces/common/pagination.interface';
-import { ProductInfoReadModel } from '../../application/read-models/product-info.read-model';
 import { ProductStatus } from '../../domain/enum/product-status.enum';
+import { ProductOrmEntity } from '../entities/typeorm-product.entity';
+import { SpecificationOrmEntity } from '../entities/typeorm-specification.enity';
+import { VariantOrmEntity } from '../entities/typeorm-variant.entity';
 
 @Injectable()
 export class TypeOrmProductQueryRepository implements IProductQueryRepository {
@@ -28,6 +24,56 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
     @InjectRepository(SpecificationOrmEntity)
     private readonly specRepo: Repository<SpecificationOrmEntity>,
   ) {}
+
+  async findProductItemBase(variantId: string): Promise<ProductItemReadModel | null> {
+    const rows = await this.variantRepo
+      .createQueryBuilder('v')
+      .leftJoin('v.product', 'p')
+      .leftJoin('v.attributes', 'va')
+      .leftJoin('va.attributeValue', 'av')
+      .leftJoin('av.attribute', 'a')
+      .select([
+        'v.id AS "variantId"',
+        'v.name AS "variantName"',
+        'v.sku AS "sku"',
+        'v.image AS "imageVariant"',
+        'v.price AS "price"',
+        'v.compareAtPrice AS "compareAtPrice"',
+        'p.id AS "productId"',
+        'p.name AS "productName"',
+        'p.slug AS "productSlug"',
+        'p.thumbnail AS "productThumbnail"',
+        'a.name AS "attributeName"',
+        'av.value AS "attributeValue"',
+      ])
+      .where('v.id = :variantId', { variantId })
+      .getRawMany();
+
+    console.log(JSON.stringify(rows, null, 2));
+
+    if (!rows.length) return null;
+
+    const first = rows[0];
+
+    return {
+      productId: first.productId,
+      variantId: first.variantId,
+      productName: first.productName,
+      productSlug: first.productSlug,
+      variantName: first.variantName,
+      sku: first.sku,
+      productThumbnail: first.productThumbnail,
+      imageVariant: first.imageVariant,
+      price: Number(first.price),
+      compareAtPrice: Number(first.compareAtPrice),
+      attributes: rows
+        .filter((r) => r.attributeName && r.attributeValue)
+        .map((r) => ({
+          name: r.attributeName,
+          value: r.attributeValue,
+        })),
+    };
+  }
 
   async findRelatedProducts(params: {
     productId: string;

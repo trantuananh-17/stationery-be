@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ISlugService } from '../../application/ports/services/slug.port';
-import { IProductQueryRepository } from '../../application/ports/repositories/product-query.repo';
+import { IProductCommandRepository } from '../../application/ports/repositories/product-command.repo';
 
 @Injectable()
 export class SlugService implements ISlugService {
-  constructor(private readonly repo: IProductQueryRepository) {}
+  constructor(private readonly repo: IProductCommandRepository) {}
 
   async generate(name: string): Promise<string> {
     const baseSlug = this.slugify(name);

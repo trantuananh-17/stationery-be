@@ -95,14 +95,14 @@ export class Cart {
     this.params.updatedAt = new Date();
   }
 
-  private ensureCanModify(): void {
+  private canModify(): void {
     if (this.params.status !== StatusCart.ACTIVE) {
       throw new Error('Cart is not active');
     }
   }
 
   addItem(data: AddCartItemParams): void {
-    this.ensureCanModify();
+    this.canModify();
 
     const existedItem = this.cartItems.find((cartItem) => cartItem.variantId === data.variantId);
 
@@ -132,7 +132,7 @@ export class Cart {
   }
 
   removeItem(cartItemId: string): void {
-    this.ensureCanModify();
+    this.canModify();
 
     const index = this.cartItems.findIndex((item) => item.id === cartItemId);
 
@@ -145,7 +145,7 @@ export class Cart {
   }
 
   updateItemQuantity(cartItemId: string, quantity: number): void {
-    this.ensureCanModify();
+    this.canModify();
 
     if (quantity <= 0) {
       this.removeItem(cartItemId);
@@ -163,7 +163,7 @@ export class Cart {
   }
 
   updateItemSnapshot(cartItemId: string, snapshot: UpdateCartItemSnapshotParams): void {
-    this.ensureCanModify();
+    this.canModify();
 
     const item = this.cartItems.find((cartItem) => cartItem.id === cartItemId);
 
@@ -176,7 +176,7 @@ export class Cart {
   }
 
   clear(): void {
-    this.ensureCanModify();
+    this.canModify();
 
     this.cartItems = [];
     this.setUpdatedAt();
@@ -205,7 +205,7 @@ export class Cart {
   }
 
   mergeItems(items: AddCartItemParams[]): void {
-    this.ensureCanModify();
+    this.canModify();
 
     for (const item of items) {
       this.addItem(item);
