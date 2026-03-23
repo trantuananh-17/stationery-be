@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-
 import { ProductOrmEntity } from './entities/typeorm-product.entity';
 import { SpecificationOrmEntity } from './entities/typeorm-specification.enity';
 import { VariantAttributeOrmEntity } from './entities/typeorm-variant-attribute.entity';

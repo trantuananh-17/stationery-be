@@ -1,4 +1,13 @@
-export interface ProductItemReadModel {
+export type ProductAttributeResponse = {
+  value: string;
+  name: string;
+};
+
+export type ProductCartItemRequest = {
+  variantId: string;
+};
+
+export type ProductCartItemResponse = {
   productId: string;
   variantId: string;
   productName: string;
@@ -9,9 +18,6 @@ export interface ProductItemReadModel {
   imageVariant?: string;
   price: number;
   compareAtPrice?: number;
-  attributes: {
-    name: string;
-    value: string;
-  }[];
+  attributes: ProductAttributeResponse[];
   stock: number;
-}
+};

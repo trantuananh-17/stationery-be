@@ -39,6 +39,7 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
         'v.image AS "imageVariant"',
         'v.price AS "price"',
         'v.compareAtPrice AS "compareAtPrice"',
+        'v.stock AS stock',
         'p.id AS "productId"',
         'p.name AS "productName"',
         'p.slug AS "productSlug"',
@@ -72,6 +73,7 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
           name: r.attributeName,
           value: r.attributeValue,
         })),
+      stock: first.stock,
     };
   }
 
