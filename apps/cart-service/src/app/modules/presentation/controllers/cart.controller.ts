@@ -1,4 +1,13 @@
-import { Body, Controller, Post, Req, UseFilters, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Param,
+  Post,
+  Put,
+  Req,
+  UseFilters,
+  UseInterceptors,
+} from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { GrpcLoggingInterceptor } from '@common/interceptors/grpcLogging.interceptor';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
@@ -6,6 +15,8 @@ import { AddToCartCommand } from '../../application/commands/add-to-cart/add-to-
 import { OptionalUserData } from '@common/decorators/optional-user-data.decorator';
 import { JwtPayload } from '@common/interfaces/common/jwt-payload.interface';
 import { AddToCartDto } from '../dtos/add-to-cart.dto';
+import { UpdateQuantityDto } from '../dtos/update-quantity.dto';
+import { UpdateQuantityCommand } from '../../application/commands/update-quantity/update-quantity.command';
 
 @Controller()
 // @UseInterceptors(GrpcLoggingInterceptor)
@@ -19,12 +30,31 @@ export class CartController {
   @Post('cart/items')
   @ApiOperation({ summary: 'Add to cart' })
   @ApiResponse({ status: 200, description: 'Add to cart success' })
-  addToCart(@OptionalUserData() user: JwtPayload, @Req() req, @Body() body: AddToCartDto) {
+  addToCart(@OptionalUserData() user: JwtPayload, @Req() req: Request, @Body() body: AddToCartDto) {
     return this.commandBus.execute(
       new AddToCartCommand(
         body.variantId,
         body.quantity,
         '550e8400-e29b-41d4-a716-446655440001',
+        '550e8400-e29b-41d4-a716-446655440000',
+      ),
+    );
+  }
+
+  @Put('cart/items/:variantId')
+  @ApiOperation({ summary: 'Update cart item quantity' })
+  @ApiResponse({ status: 200, description: 'Update quantity success' })
+  updateQuantity(
+    @Param('variantId') variantId: string,
+    @Body() body: UpdateQuantityDto,
+    @OptionalUserData() user: JwtPayload,
+    @Req() req: Request,
+  ) {
+    return this.commandBus.execute(
+      new UpdateQuantityCommand(
+        variantId,
+        body.quantity,
+        undefined,
         '550e8400-e29b-41d4-a716-446655440000',
       ),
     );

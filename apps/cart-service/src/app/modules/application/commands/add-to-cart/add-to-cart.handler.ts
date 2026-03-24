@@ -18,16 +18,12 @@ export class AddToCartHandler implements ICommandHandler<AddToCartCommand> {
   async execute(command: AddToCartCommand): Promise<void> {
     const { variantId, quantity, userId, sessionId } = command;
 
-    const productCartItem = await this.productGrpcPort.getProductCartItem({
-      variantId,
-    });
-
-    if (!productCartItem) {
-      throw new Error('Not Found');
+    if (!userId && !sessionId) {
+      throw new Error('userId or sessionId is required');
     }
 
-    if (productCartItem.stock <= 0) {
-      throw new Error('Product is out of stock');
+    if (quantity < 0) {
+      throw new Error('Quantity must be greater than or equal to 0');
     }
 
     return await this.dataContext.runInTransaction(async () => {
@@ -48,6 +44,18 @@ export class AddToCartHandler implements ICommandHandler<AddToCartCommand> {
       }
 
       const existedItem = cart.getItemByVariantId(variantId);
+
+      const productCartItem = await this.productGrpcPort.getProductCartItem({
+        variantId,
+      });
+
+      if (!productCartItem) {
+        throw new Error('Not Found');
+      }
+
+      if (productCartItem.stock <= 0) {
+        throw new Error('Product is out of stock');
+      }
 
       if (existedItem) {
         const nextQuantity = existedItem.quantity + quantity;
