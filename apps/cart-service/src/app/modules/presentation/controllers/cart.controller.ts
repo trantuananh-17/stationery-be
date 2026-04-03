@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
   Post,
   Put,
@@ -17,6 +18,7 @@ import { JwtPayload } from '@common/interfaces/common/jwt-payload.interface';
 import { AddToCartDto } from '../dtos/add-to-cart.dto';
 import { UpdateQuantityDto } from '../dtos/update-quantity.dto';
 import { UpdateQuantityCommand } from '../../application/commands/update-quantity/update-quantity.command';
+import { GetCartQuery } from '../../application/queries/get-cart/get-cart.query';
 
 @Controller()
 // @UseInterceptors(GrpcLoggingInterceptor)
@@ -57,6 +59,15 @@ export class CartController {
         undefined,
         '550e8400-e29b-41d4-a716-446655440000',
       ),
+    );
+  }
+
+  @Get('cart/')
+  @ApiOperation({ summary: 'Get cart info' })
+  @ApiResponse({ status: 200, description: 'Update quantity success' })
+  getCart(@OptionalUserData() user: JwtPayload, @Req() req: Request) {
+    return this.queryBus.execute(
+      new GetCartQuery('550e8400-e29b-41d4-a716-446655440001', undefined),
     );
   }
 }
