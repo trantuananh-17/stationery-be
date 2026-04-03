@@ -6,11 +6,12 @@ import { CartController } from './presentation/controllers/cart.controller';
 import { AddToCartHandler } from './application/commands/add-to-cart/add-to-cart.handler';
 import { UpdateQuantityHandler } from './application/commands/update-quantity/update-quantity.handler';
 import { GetCartHandler } from './application/queries/get-cart/get-cart.handler';
+import { GetCartCountHandler } from './application/queries/get-cart-count/get-cart-count.handler';
 
 @Module({
   imports: [CqrsModule, TypeOrmProvider, CartInfraModule],
   controllers: [CartController],
-  providers: [AddToCartHandler, UpdateQuantityHandler, GetCartHandler],
+  providers: [AddToCartHandler, UpdateQuantityHandler, GetCartHandler, GetCartCountHandler],
   exports: [],
 })
 export class CartModule {}

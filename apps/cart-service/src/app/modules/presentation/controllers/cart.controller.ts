@@ -19,6 +19,7 @@ import { AddToCartDto } from '../dtos/add-to-cart.dto';
 import { UpdateQuantityDto } from '../dtos/update-quantity.dto';
 import { UpdateQuantityCommand } from '../../application/commands/update-quantity/update-quantity.command';
 import { GetCartQuery } from '../../application/queries/get-cart/get-cart.query';
+import { GetCartCountQuery } from '../../application/queries/get-cart-count/get-cart-count.query';
 
 @Controller()
 // @UseInterceptors(GrpcLoggingInterceptor)
@@ -37,7 +38,7 @@ export class CartController {
       new AddToCartCommand(
         body.variantId,
         body.quantity,
-        '550e8400-e29b-41d4-a716-446655440001',
+        undefined,
         '550e8400-e29b-41d4-a716-446655440000',
       ),
     );
@@ -67,7 +68,16 @@ export class CartController {
   @ApiResponse({ status: 200, description: 'Update quantity success' })
   getCart(@OptionalUserData() user: JwtPayload, @Req() req: Request) {
     return this.queryBus.execute(
-      new GetCartQuery('550e8400-e29b-41d4-a716-446655440001', undefined),
+      new GetCartQuery(undefined, '550e8400-e29b-41d4-a716-446655440000'),
+    );
+  }
+
+  @Get('cart/count')
+  @ApiOperation({ summary: 'Get cart info' })
+  @ApiResponse({ status: 200, description: 'Update quantity success' })
+  getCartCount(@OptionalUserData() user: JwtPayload, @Req() req: Request) {
+    return this.queryBus.execute(
+      new GetCartCountQuery(undefined, '550e8400-e29b-41d4-a716-446655440000'),
     );
   }
 }
