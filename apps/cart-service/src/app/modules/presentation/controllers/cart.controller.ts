@@ -22,6 +22,7 @@ import { UpdateQuantityCommand } from '../../application/commands/update-quantit
 import { GetCartQuery } from '../../application/queries/get-cart/get-cart.query';
 import { GetCartCountQuery } from '../../application/queries/get-cart-count/get-cart-count.query';
 import { RemoveItemCommand } from '../../application/commands/remove-item/remove-item.command';
+import { ClearCartCommand } from '../../application/commands/clear-cart/clear-cart.command';
 
 @Controller()
 // @UseInterceptors(GrpcLoggingInterceptor)
@@ -93,6 +94,15 @@ export class CartController {
   ) {
     return await this.commandBus.execute(
       new RemoveItemCommand(cartItemId, undefined, '550e8400-e29b-41d4-a716-446655440001'),
+    );
+  }
+
+  @Delete('cart/clear')
+  @ApiOperation({ summary: 'Clear cart' })
+  @ApiResponse({ status: 200, description: 'Clear cart success' })
+  async clearCart(@OptionalUserData() user: JwtPayload, @Req() req: Request) {
+    return await this.commandBus.execute(
+      new ClearCartCommand(undefined, '550e8400-e29b-41d4-a716-446655440000'),
     );
   }
 }

@@ -7,6 +7,7 @@ import { CartItem } from '../../domain/entities/cart-item.entity';
 import { Cart } from '../../domain/entities/cart.entity';
 import { CartItemOrmEntity } from '../entities/typeorm-cart-item.entity';
 import { CartOrmEntity } from '../entities/typeorm-cart.entity';
+import { StatusCart } from '../../domain/enums/status-cart.enum';
 
 @Injectable()
 export class TypeOrmCartCommandRepository implements ICartCommandRepository {
@@ -17,6 +18,34 @@ export class TypeOrmCartCommandRepository implements ICartCommandRepository {
     @InjectRepository(CartItemOrmEntity)
     private readonly cartItemRepo: Repository<CartItemOrmEntity>,
   ) {}
+
+  async findActiveByUserId(userId: string): Promise<Cart | null> {
+    const cart = await this.cartRepo.findOne({
+      where: {
+        userId,
+        status: StatusCart.ACTIVE,
+      },
+      relations: ['items'],
+    });
+
+    if (!cart) return null;
+
+    return this._toDomain(cart);
+  }
+
+  async findActiveBySessionId(sessionId: string): Promise<Cart | null> {
+    const cart = await this.cartRepo.findOne({
+      where: {
+        sessionId,
+        status: StatusCart.ACTIVE,
+      },
+      relations: ['items'],
+    });
+
+    if (!cart) return null;
+
+    return this._toDomain(cart);
+  }
 
   async findByCartItemId(cartItemId: string): Promise<Cart | null> {
     const cartOrm = await this.cartRepo
@@ -116,6 +145,8 @@ export class TypeOrmCartCommandRepository implements ICartCommandRepository {
   }
 
   private _toDomain(cartOrm: CartOrmEntity): Cart {
+    const items = (cartOrm.items ?? []).map((item) => this._toCartItemDomain(item));
+
     return Cart.restore(
       {
         id: cartOrm.id,
@@ -127,26 +158,28 @@ export class TypeOrmCartCommandRepository implements ICartCommandRepository {
         createdAt: cartOrm.createdAt,
         updatedAt: cartOrm.updatedAt,
       },
-      (cartOrm.items ?? []).map((item) =>
-        CartItem.restore({
-          id: item.id,
-          cartId: item.cartId,
-          productId: item.productId,
-          variantId: item.variantId,
-          quantity: item.quantity,
-          productNameSnapshot: item.productNameSnapshot,
-          productSlugSnapshot: item.productSlugSnapshot,
-          variantNameSnapshot: item.variantNameSnapshot,
-          skuSnapshot: item.skuSnapshot ?? undefined,
-          productThumbnailSnapshot: item.productThumbnailSnapshot ?? undefined,
-          imageVariantSnapshot: item.imageVariantSnapshot ?? undefined,
-          unitPriceSnapshot: item.unitPriceSnapshot,
-          compareAtPriceSnapshot: item.compareAtPriceSnapshot ?? undefined,
-          attributesSnapshot: item.attributesSnapshot,
-          createdAt: item.createdAt,
-          updatedAt: item.updatedAt,
-        }),
-      ),
+      items,
     );
+  }
+
+  private _toCartItemDomain(item: CartItemOrmEntity): CartItem {
+    return CartItem.restore({
+      id: item.id,
+      cartId: item.cartId,
+      productId: item.productId,
+      variantId: item.variantId,
+      quantity: item.quantity,
+      productNameSnapshot: item.productNameSnapshot,
+      productSlugSnapshot: item.productSlugSnapshot,
+      variantNameSnapshot: item.variantNameSnapshot,
+      skuSnapshot: item.skuSnapshot ?? undefined,
+      productThumbnailSnapshot: item.productThumbnailSnapshot ?? undefined,
+      imageVariantSnapshot: item.imageVariantSnapshot ?? undefined,
+      unitPriceSnapshot: item.unitPriceSnapshot,
+      compareAtPriceSnapshot: item.compareAtPriceSnapshot ?? undefined,
+      attributesSnapshot: item.attributesSnapshot,
+      createdAt: item.createdAt,
+      updatedAt: item.updatedAt,
+    });
   }
 }

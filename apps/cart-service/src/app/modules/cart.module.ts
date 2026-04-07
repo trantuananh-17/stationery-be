@@ -8,6 +8,7 @@ import { UpdateQuantityHandler } from './application/commands/update-quantity/up
 import { GetCartHandler } from './application/queries/get-cart/get-cart.handler';
 import { GetCartCountHandler } from './application/queries/get-cart-count/get-cart-count.handler';
 import { RemoveItemHandler } from './application/commands/remove-item/remove-item.handler';
+import { ClearCartHandler } from './application/commands/clear-cart/clear-cart.handler';
 
 @Module({
   imports: [CqrsModule, TypeOrmProvider, CartInfraModule],
@@ -18,6 +19,7 @@ import { RemoveItemHandler } from './application/commands/remove-item/remove-ite
     GetCartHandler,
     GetCartCountHandler,
     RemoveItemHandler,
+    ClearCartHandler,
   ],
   exports: [],
 })

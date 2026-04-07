@@ -4,14 +4,12 @@ import { IProductGrpcPort } from '../../ports/grpc/product-grpc.port';
 import { IUnitOfWork } from '../../ports/services/unit-of-work.port';
 import { Cart } from '../../../domain/entities/cart.entity';
 import { ICartCommandRepository } from '../../ports/repositories/cart-command.repo';
-import { ICartQueryRepository } from '../../ports/repositories/cart-query.repo';
 
 @CommandHandler(AddToCartCommand)
 export class AddToCartHandler implements ICommandHandler<AddToCartCommand> {
   constructor(
     private readonly productGrpcPort: IProductGrpcPort,
     private readonly cartCommandRepo: ICartCommandRepository,
-    private readonly cartQueryRepo: ICartQueryRepository,
     private readonly dataContext: IUnitOfWork,
   ) {}
 
@@ -30,9 +28,9 @@ export class AddToCartHandler implements ICommandHandler<AddToCartCommand> {
       let cart: Cart | null = null;
 
       if (userId) {
-        cart = await this.cartQueryRepo.findByUserId(userId);
+        cart = await this.cartCommandRepo.findActiveByUserId(userId);
       } else if (sessionId) {
-        cart = await this.cartQueryRepo.findBySessionId(sessionId);
+        cart = await this.cartCommandRepo.findActiveBySessionId(sessionId);
       }
 
       if (!cart) {
