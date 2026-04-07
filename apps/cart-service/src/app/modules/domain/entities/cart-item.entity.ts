@@ -14,8 +14,8 @@ export type CartItemParams = {
   productNameSnapshot: string;
   productSlugSnapshot: string;
   variantNameSnapshot: string;
-  skuSnapshot?: string;
-  productThumbnailSnapshot?: string;
+  skuSnapshot: string;
+  productThumbnailSnapshot: string;
   imageVariantSnapshot?: string;
   unitPriceSnapshot: number;
   compareAtPriceSnapshot?: number;
@@ -32,8 +32,8 @@ export type CartItemSnapshot = {
   productNameSnapshot: string;
   productSlugSnapshot: string;
   variantNameSnapshot: string;
-  skuSnapshot?: string;
-  productThumbnailSnapshot?: string;
+  skuSnapshot: string;
+  productThumbnailSnapshot: string;
   imageVariantSnapshot?: string;
   unitPriceSnapshot: number;
   compareAtPriceSnapshot?: number;
@@ -44,8 +44,8 @@ export type UpdateCartItemSnapshotParams = {
   productNameSnapshot: string;
   productSlugSnapshot: string;
   variantNameSnapshot: string;
-  skuSnapshot?: string;
-  productThumbnailSnapshot?: string;
+  skuSnapshot: string;
+  productThumbnailSnapshot: string;
   imageVariantSnapshot?: string;
   unitPriceSnapshot: number;
   compareAtPriceSnapshot?: number;
@@ -231,11 +231,11 @@ export class CartItem {
     return this.params.variantNameSnapshot;
   }
 
-  get skuSnapshot(): string | undefined {
+  get skuSnapshot(): string {
     return this.params.skuSnapshot;
   }
 
-  get productThumbnailSnapshot(): string | undefined {
+  get productThumbnailSnapshot(): string {
     return this.params.productThumbnailSnapshot;
   }
 

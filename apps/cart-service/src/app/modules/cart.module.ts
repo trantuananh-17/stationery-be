@@ -7,11 +7,18 @@ import { AddToCartHandler } from './application/commands/add-to-cart/add-to-cart
 import { UpdateQuantityHandler } from './application/commands/update-quantity/update-quantity.handler';
 import { GetCartHandler } from './application/queries/get-cart/get-cart.handler';
 import { GetCartCountHandler } from './application/queries/get-cart-count/get-cart-count.handler';
+import { RemoveItemHandler } from './application/commands/remove-item/remove-item.handler';
 
 @Module({
   imports: [CqrsModule, TypeOrmProvider, CartInfraModule],
   controllers: [CartController],
-  providers: [AddToCartHandler, UpdateQuantityHandler, GetCartHandler, GetCartCountHandler],
+  providers: [
+    AddToCartHandler,
+    UpdateQuantityHandler,
+    GetCartHandler,
+    GetCartCountHandler,
+    RemoveItemHandler,
+  ],
   exports: [],
 })
 export class CartModule {}

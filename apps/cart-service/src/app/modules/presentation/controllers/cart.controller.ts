@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -20,6 +21,7 @@ import { UpdateQuantityDto } from '../dtos/update-quantity.dto';
 import { UpdateQuantityCommand } from '../../application/commands/update-quantity/update-quantity.command';
 import { GetCartQuery } from '../../application/queries/get-cart/get-cart.query';
 import { GetCartCountQuery } from '../../application/queries/get-cart-count/get-cart-count.query';
+import { RemoveItemCommand } from '../../application/commands/remove-item/remove-item.command';
 
 @Controller()
 // @UseInterceptors(GrpcLoggingInterceptor)
@@ -78,6 +80,19 @@ export class CartController {
   getCartCount(@OptionalUserData() user: JwtPayload, @Req() req: Request) {
     return this.queryBus.execute(
       new GetCartCountQuery(undefined, '550e8400-e29b-41d4-a716-446655440000'),
+    );
+  }
+
+  @Delete('cart/items/:cartItemId')
+  @ApiOperation({ summary: 'Remove item from cart' })
+  @ApiResponse({ status: 200, description: 'Remove cart item success' })
+  async removeItem(
+    @Param('cartItemId') cartItemId: string,
+    @OptionalUserData() user: JwtPayload,
+    @Req() req: Request,
+  ) {
+    return await this.commandBus.execute(
+      new RemoveItemCommand(cartItemId, undefined, '550e8400-e29b-41d4-a716-446655440001'),
     );
   }
 }

@@ -4,7 +4,7 @@ import { IsNumber, IsString } from 'class-validator';
 export class AddToCartDto {
   @ApiPropertyOptional()
   @IsString()
-  variantId?: string;
+  variantId: string;
 
   @ApiPropertyOptional()
   @IsNumber()
