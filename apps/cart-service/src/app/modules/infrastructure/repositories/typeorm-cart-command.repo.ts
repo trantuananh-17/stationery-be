@@ -26,6 +26,9 @@ export class TypeOrmCartCommandRepository implements ICartCommandRepository {
         status: StatusCart.ACTIVE,
       },
       relations: ['items'],
+      order: {
+        updatedAt: 'DESC',
+      },
     });
 
     if (!cart) return null;
@@ -40,6 +43,9 @@ export class TypeOrmCartCommandRepository implements ICartCommandRepository {
         status: StatusCart.ACTIVE,
       },
       relations: ['items'],
+      order: {
+        updatedAt: 'DESC',
+      },
     });
 
     if (!cart) return null;

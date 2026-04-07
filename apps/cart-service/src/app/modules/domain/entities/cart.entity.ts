@@ -31,8 +31,8 @@ export type AddCartItemParams = {
   productNameSnapshot: string;
   productSlugSnapshot: string;
   variantNameSnapshot: string;
-  skuSnapshot?: string;
-  productThumbnailSnapshot?: string;
+  skuSnapshot: string;
+  productThumbnailSnapshot: string;
   imageVariantSnapshot?: string;
   unitPriceSnapshot: number;
   compareAtPriceSnapshot?: number;
@@ -210,6 +210,15 @@ export class Cart {
     for (const item of items) {
       this.addItem(item);
     }
+  }
+
+  markMerged(): void {
+    if (this.params.status !== StatusCart.ACTIVE) {
+      throw new Error('Only active cart can be merged');
+    }
+
+    this.params.status = StatusCart.MERGED;
+    this.setUpdatedAt();
   }
 
   hasItems(): boolean {

@@ -23,6 +23,7 @@ import { GetCartQuery } from '../../application/queries/get-cart/get-cart.query'
 import { GetCartCountQuery } from '../../application/queries/get-cart-count/get-cart-count.query';
 import { RemoveItemCommand } from '../../application/commands/remove-item/remove-item.command';
 import { ClearCartCommand } from '../../application/commands/clear-cart/clear-cart.command';
+import { MergeCartCommand } from '../../application/commands/merge-cart/merge-cart.command';
 
 @Controller()
 // @UseInterceptors(GrpcLoggingInterceptor)
@@ -41,7 +42,17 @@ export class CartController {
       new AddToCartCommand(
         body.variantId,
         body.quantity,
+        '550e8400-e29b-41d4-a716-446655440000',
         undefined,
+      ),
+    );
+  }
+
+  @Post('cart/merge')
+  async mergeCart(@OptionalUserData() user: JwtPayload, @Req() req: any) {
+    await this.commandBus.execute(
+      new MergeCartCommand(
+        '550e8400-e29b-41d4-a716-446655440001',
         '550e8400-e29b-41d4-a716-446655440000',
       ),
     );
