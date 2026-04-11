@@ -294,7 +294,7 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
 
         const optionGroup = variantOptionsMap.get(attribute.id);
 
-        if (!optionGroup) return;
+        if (!optionGroup) return null;
 
         optionGroup.values.set(attributeValue.id, {
           id: attributeValue.id,

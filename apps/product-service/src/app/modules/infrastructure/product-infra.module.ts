@@ -22,6 +22,8 @@ import { AttributeValueOrmEntity } from './entities/typeorm-attribute-value.enti
 import { IBrandQueryRepository } from '../application/ports/repositories/brand-query.repo';
 import { TypeOrmBrandQueryRepository } from './repositories/typeorm-brand-query.repo';
 import { BrandOrmEntity } from './entities/typeorm-brand.entity';
+import { IInventoryCommandRepository } from '../application/ports/repositories/inventory-command';
+import { TypeOrmInventoryCommandRepository } from './repositories/typeorm-inventory-command.repo';
 
 @Module({
   imports: [
@@ -51,6 +53,10 @@ import { BrandOrmEntity } from './entities/typeorm-brand.entity';
       useClass: TypeOrmBrandQueryRepository,
     },
     {
+      provide: IInventoryCommandRepository,
+      useClass: TypeOrmInventoryCommandRepository,
+    },
+    {
       provide: ISlugService,
       useClass: SlugService,
     },
@@ -68,6 +74,7 @@ import { BrandOrmEntity } from './entities/typeorm-brand.entity';
     IProductQueryRepository,
     ICategoryQueryRepository,
     IBrandQueryRepository,
+    IInventoryCommandRepository,
     ISlugService,
     IUnitOfWork,
     ISkuService,

@@ -12,7 +12,7 @@ export class VariantOrmEntity extends BaseEntity {
   name: string;
 
   @Column({ nullable: true })
-  sku?: string;
+  sku: string;
 
   @Column('decimal')
   price: number;
@@ -39,7 +39,7 @@ export class VariantOrmEntity extends BaseEntity {
   isAvailable: boolean;
 
   @Column({ name: 'deleted_at', default: null, nullable: true })
-  deletedAt?: Date;
+  deletedAt?: Date | null;
 
   @ManyToOne(() => ProductOrmEntity, (product) => product.variants)
   @JoinColumn({ name: 'product_id' })

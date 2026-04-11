@@ -71,7 +71,7 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
         const variantInputs = await Promise.all(
           variants.map(async (variant, index) => {
             const sku = variant.id
-              ? undefined
+              ? ''
               : await this.skuService.generateVariantSku({
                   productSlug: productAggregate.slug,
                   attributeValueSlugs: variant.attributeValueSlug,
@@ -79,7 +79,7 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
 
             return {
               id: variant.id,
-              name: variant.name,
+              name: variant.name ?? '',
               sku,
               price: variant.price,
               compareAtPrice: variant.compareAtPrice,

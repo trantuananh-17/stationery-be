@@ -12,7 +12,7 @@ export type ProductParams = {
   description: string;
   shortDescription: string;
   images: string[];
-  thumbnail?: string;
+  thumbnail: string;
   status: ProductStatus;
   featured: boolean;
   seoTitle?: string;
@@ -37,7 +37,7 @@ export class Product {
     brandId: string;
     description?: string;
     shortDescription?: string;
-    thumbnail?: string;
+    thumbnail: string;
     images?: string[];
     seoTitle?: string;
     seoDescription?: string;
@@ -159,7 +159,7 @@ export class Product {
       sortOrder?: number;
       isDefault?: boolean;
       attributeValueIds: string[];
-      sku?: string;
+      sku: string;
       stock: number;
     }>,
   ) {
@@ -360,7 +360,7 @@ export class Product {
     return this.params.images;
   }
 
-  get thumbnail(): string | undefined {
+  get thumbnail(): string {
     return this.params.thumbnail;
   }
 

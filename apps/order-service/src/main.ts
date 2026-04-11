@@ -20,12 +20,20 @@ async function bootstrap() {
 
   Logger.debug('GRPC CONFIG', JSON.stringify(configService.get('GRPC_SERV.GRPC_ORDER_SERVICE')));
 
+  const grpcPackage = configService.get<string>('GRPC_SERV.GRPC_ORDER_SERVICE.name');
+  const grpcProtoPath = configService.get<string>('GRPC_SERV.GRPC_ORDER_SERVICE.options.protoPath');
+  const grpcUrl = configService.get<string>('GRPC_SERV.GRPC_ORDER_SERVICE.options.url');
+
+  if (!grpcPackage || !grpcProtoPath) {
+    throw new Error('Missing GRPC_ORDER_SERVICE config');
+  }
+
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.GRPC,
     options: {
-      package: configService.get<string>('GRPC_SERV.GRPC_ORDER_SERVICE.name'),
-      protoPath: configService.get<string>('GRPC_SERV.GRPC_ORDER_SERVICE.options.protoPath'),
-      url: configService.get<string>('GRPC_SERV.GRPC_ORDER_SERVICE.options.url'),
+      package: grpcPackage,
+      protoPath: grpcProtoPath,
+      url: grpcUrl,
     },
   });
 

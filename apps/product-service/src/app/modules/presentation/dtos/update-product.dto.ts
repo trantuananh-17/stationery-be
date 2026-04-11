@@ -142,7 +142,7 @@ export class UpdateProductDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => UpdateProductInfoDto)
-  product?: UpdateProductInfoDto;
+  product: UpdateProductInfoDto;
 
   @ApiPropertyOptional({ type: [UpdateSpecificationDto] })
   @IsOptional()

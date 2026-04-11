@@ -29,16 +29,16 @@ export class ProductOrmEntity extends BaseEntity {
   brand: BrandOrmEntity;
 
   @Column({ type: 'text', nullable: true })
-  description?: string;
+  description: string;
 
   @Column({ name: 'short_description', type: 'text', nullable: true })
-  shortDescription?: string;
+  shortDescription: string;
 
   @Column({ type: 'json', nullable: true })
   images: string[];
 
   @Column({ nullable: true })
-  thumbnail?: string;
+  thumbnail: string;
 
   @Column({ type: 'enum', enum: ProductStatus, default: ProductStatus.INACTIVE })
   status: ProductStatus;
@@ -56,10 +56,10 @@ export class ProductOrmEntity extends BaseEntity {
   searchKeywords: string[];
 
   @Column({ name: 'base_name', nullable: true })
-  baseName: string;
+  baseName?: string;
 
   @Column({ name: 'deleted_at', default: null, nullable: true })
-  deletedAt?: Date;
+  deletedAt?: Date | null;
 
   @OneToMany(() => VariantOrmEntity, (variant) => variant.product)
   variants: VariantOrmEntity[];

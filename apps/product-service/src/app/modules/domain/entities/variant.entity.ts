@@ -5,7 +5,7 @@ export type VariantParams = {
   readonly id: string;
   readonly productId: string;
   name: string;
-  sku?: string;
+  sku: string;
   price: number;
   compareAtPrice?: number;
   stock: number;
@@ -27,7 +27,7 @@ export class Variant {
   static create(data: {
     productId: string;
     name: string;
-    sku?: string;
+    sku: string;
     price: number;
     compareAtPrice?: number;
     stock: number;

@@ -11,7 +11,7 @@ export class TypeOrmBrandQueryRepository implements IBrandQueryRepository {
     private readonly repo: Repository<BrandOrmEntity>,
   ) {}
 
-  async findBrandExist(brandId: string): Promise<boolean> {
+  async findBrandExist(brandId?: string): Promise<boolean> {
     return this.repo.exist({
       where: { id: brandId },
     });

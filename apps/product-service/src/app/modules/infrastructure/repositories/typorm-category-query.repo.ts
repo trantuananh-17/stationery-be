@@ -11,7 +11,7 @@ export class TypeOrmCategoryQueryRepository implements ICategoryQueryRepository 
     private readonly repo: Repository<CategoryOrmEntity>,
   ) {}
 
-  async findCategoryExist(categoryId: string): Promise<boolean> {
+  async findCategoryExist(categoryId?: string): Promise<boolean> {
     return this.repo.exist({
       where: { id: categoryId },
     });

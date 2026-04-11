@@ -15,6 +15,8 @@ import { GetRelatedProductsDto } from '../dtos/get-related.dto';
 import { GetRelatedQuery } from '../../application/queries/get-related/get-related.query';
 import { GetItemQuery } from '../../application/queries/get-item/get-item.query';
 import { GrpcMethod, Payload } from '@nestjs/microservices';
+import { ReserveStockDto } from '../dtos/reserve-stock.dto';
+import { ReserveStockCommand } from '../../application/commands/products/reserve-stock/reserve-stock.command';
 
 @ApiTags('Products')
 @Controller('products')
@@ -91,5 +93,17 @@ export class ProductController {
   @ApiResponse({ status: 200, description: 'Product detail by id' })
   async getById(@Param('id', new ParseUUIDPipe()) id: string) {
     return this.queryBus.execute(new GetProductInfoQuery(id, undefined));
+  }
+
+  @Post('inventory/reserve')
+  @ApiOperation({ summary: 'Reserve stock for variants' })
+  @ApiResponse({ status: 200, description: 'Reserve stock result' })
+  async reserveStock(@Body() body: ReserveStockDto) {
+    return this.commandBus.execute(new ReserveStockCommand(body.items));
+  }
+
+  @GrpcMethod('ProductService', 'reserveStock')
+  async reserveStockGrpc(@Payload() payload: { items: { variantId: string; quantity: number }[] }) {
+    return this.commandBus.execute(new ReserveStockCommand(payload.items));
   }
 }
