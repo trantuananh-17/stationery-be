@@ -27,6 +27,16 @@ module.exports = {
           input: 'libs/interfaces/src/lib/proto/order',
           output: './proto',
         },
+        {
+          glob: '**/*',
+          input: 'libs/interfaces/src/lib/proto/cart',
+          output: './proto',
+        },
+        {
+          glob: '**/*',
+          input: 'libs/interfaces/src/lib/proto/product',
+          output: './proto',
+        },
       ],
     }),
   ],

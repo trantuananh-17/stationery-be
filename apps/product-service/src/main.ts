@@ -23,12 +23,22 @@ async function bootstrap() {
 
   Logger.debug('GRPC CONFIG', JSON.stringify(configService.get('GRPC_SERV.GRPC_PRODUCT_SERVICE')));
 
+  const grpcPackage = configService.get<string>('GRPC_SERV.GRPC_PRODUCT_SERVICE.name');
+  const grpcProtoPath = configService.get<string>(
+    'GRPC_SERV.GRPC_PRODUCT_SERVICE.options.protoPath',
+  );
+  const grpcUrl = configService.get<string>('GRPC_SERV.GRPC_PRODUCT_SERVICE.options.url');
+
+  if (!grpcPackage || !grpcProtoPath) {
+    throw new Error('Missing GRPC_PRODUCT_SERVICE config');
+  }
+
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.GRPC,
     options: {
-      package: configService.get<string>('GRPC_SERV.GRPC_PRODUCT_SERVICE.name'),
-      protoPath: configService.get<string>('GRPC_SERV.GRPC_PRODUCT_SERVICE.options.protoPath'),
-      url: configService.get<string>('GRPC_SERV.GRPC_PRODUCT_SERVICE.options.url'),
+      package: grpcPackage,
+      protoPath: grpcProtoPath,
+      url: grpcUrl,
     },
   });
 
@@ -53,23 +63,16 @@ async function bootstrap() {
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup(`${globalPrefix}/docs`, app, documentFactory, {
     swaggerOptions: {
-      operationsSorter: (a, b) => {
-        const methodOrder = {
+      operationsSorter: (a: any, b: any): number => {
+        const order: Record<string, number> = {
           post: 1,
           get: 2,
-          patch: 3,
-          put: 4,
+          put: 3,
+          patch: 4,
           delete: 5,
         };
 
-        const aMethod = a.get('method');
-        const bMethod = b.get('method');
-
-        if (methodOrder[aMethod] !== methodOrder[bMethod]) {
-          return methodOrder[aMethod] - methodOrder[bMethod];
-        }
-
-        return a.get('path').localeCompare(b.get('path'));
+        return (order[a.get('method')] ?? 99) - (order[b.get('method')] ?? 99);
       },
     },
   });

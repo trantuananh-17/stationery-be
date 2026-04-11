@@ -4,6 +4,7 @@ package GRPC_PRODUCT_SERVICE;
 
 service ProductService {
   rpc getProductCartItem (ProductCartItemRequest) returns (ProductCartItemResponse);
+  rpc reserveStock (ReserveStockRequest) returns (ReserveStockResponse);
 }
 
 message ProductCartItemRequest {
@@ -30,3 +31,25 @@ message ProductCartItemResponse {
   int32 stock = 12;
 }
 
+message ReserveStockItemRequest {
+  string variant_id = 1;
+  int32 quantity = 2;
+}
+
+message ReserveStockRequest {
+  repeated ReserveStockItemRequest items = 1;
+}
+
+message ReserveStockItemResponse {
+  string variant_id = 1;
+  int32 quantity = 2;
+  bool success = 3;
+  string status = 4;
+  int32 available_stock = 5;
+  optional string message = 6;
+}
+
+message ReserveStockResponse {
+  bool success = 1;
+  repeated ReserveStockItemResponse items = 2;
+}
