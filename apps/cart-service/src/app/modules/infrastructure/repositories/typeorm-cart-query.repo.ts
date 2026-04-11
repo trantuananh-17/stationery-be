@@ -7,6 +7,10 @@ import { ICartQueryRepository } from '../../application/ports/repositories/cart-
 import { Cart } from '../../domain/entities/cart.entity';
 import { CartItem } from '../../domain/entities/cart-item.entity';
 import { StatusCart } from '../../domain/enums/status-cart.enum';
+import {
+  CheckoutCartItemResult,
+  CheckoutCartResult,
+} from '../../application/dtos/checkout-cart.result';
 
 @Injectable()
 export class TypeOrmCartQueryRepository implements ICartQueryRepository {
@@ -14,6 +18,46 @@ export class TypeOrmCartQueryRepository implements ICartQueryRepository {
     @InjectRepository(CartOrmEntity)
     private readonly cartRepo: Repository<CartOrmEntity>,
   ) {}
+  async findCartInfoByCheckout(userId: string): Promise<CheckoutCartResult | null> {
+    const cart = await this.cartRepo.findOne({
+      where: {
+        userId,
+        status: StatusCart.ACTIVE,
+      },
+      relations: ['items'],
+      order: {
+        updatedAt: 'DESC',
+        items: {
+          createdAt: 'ASC',
+        },
+      },
+    });
+
+    if (!cart) {
+      return null;
+    }
+
+    const items: CheckoutCartItemResult[] = (cart.items ?? []).map((item) => ({
+      productId: item.productId,
+      variantId: item.variantId,
+      quantity: item.quantity,
+      productNameSnapshot: item.productNameSnapshot,
+      variantNameSnapshot: item.variantNameSnapshot,
+      skuSnapshot: item.skuSnapshot ?? undefined,
+      imageSnapshot: item.imageVariantSnapshot ?? item.productThumbnailSnapshot ?? undefined,
+      unitPriceSnapshot: item.unitPriceSnapshot,
+      attributesSnapshot: item.attributesSnapshot ?? [],
+      subtotal: item.unitPriceSnapshot * item.quantity,
+    }));
+
+    return {
+      id: cart.id,
+      userId,
+      items,
+      totalItems: items.reduce((sum, item) => sum + item.quantity, 0),
+      subtotal: items.reduce((sum, item) => sum + item.subtotal, 0),
+    };
+  }
 
   async findById(id: string): Promise<Cart | null> {
     const cart = await this.cartRepo.findOne({

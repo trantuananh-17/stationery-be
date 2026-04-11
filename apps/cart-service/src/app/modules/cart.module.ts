@@ -10,6 +10,7 @@ import { GetCartCountHandler } from './application/queries/get-cart-count/get-ca
 import { RemoveItemHandler } from './application/commands/remove-item/remove-item.handler';
 import { ClearCartHandler } from './application/commands/clear-cart/clear-cart.handler';
 import { MergeCartHandler } from './application/commands/merge-cart/merge-carthandler';
+import { GetCartCheckoutHandler } from './application/queries/get-cart-checkout/get-cart-checkout.handler';
 
 @Module({
   imports: [CqrsModule, TypeOrmProvider, CartInfraModule],
@@ -22,6 +23,7 @@ import { MergeCartHandler } from './application/commands/merge-cart/merge-cartha
     RemoveItemHandler,
     ClearCartHandler,
     MergeCartHandler,
+    GetCartCheckoutHandler,
   ],
   exports: [],
 })

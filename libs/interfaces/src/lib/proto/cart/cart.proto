@@ -4,10 +4,42 @@ package GRPC_CART_SERVICE;
 
 service CartService {
   rpc Ping (PingRequest) returns (PingResponse);
+
+  rpc GetCartForCheckout (GetCartForCheckoutRequest) returns (GetCartForCheckoutResponse);
 }
 
 message PingRequest {}
 
 message PingResponse {
   string message = 1;
+}
+
+message GetCartForCheckoutRequest {
+  string userId = 1;
+}
+
+message CheckoutCartAttribute {
+  string name = 1;
+  string value = 2;
+}
+
+message CheckoutCartItem {
+  string productId = 1;
+  string variantId = 2;
+  int32 quantity = 3;
+  string productNameSnapshot = 4;
+  string variantNameSnapshot = 5;
+  optional string skuSnapshot = 6;
+  optional string imageSnapshot = 7;
+  double unitPriceSnapshot = 8;
+  repeated CheckoutCartAttribute attributesSnapshot = 9;
+  double subtotal = 10;
+}
+
+message GetCartForCheckoutResponse {
+  string id = 1;
+  string userId = 2;
+  repeated CheckoutCartItem items = 3;
+  int32 totalItems = 4;
+  double subtotal = 5;
 }

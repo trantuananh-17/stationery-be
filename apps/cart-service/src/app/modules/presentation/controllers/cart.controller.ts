@@ -24,6 +24,8 @@ import { GetCartCountQuery } from '../../application/queries/get-cart-count/get-
 import { RemoveItemCommand } from '../../application/commands/remove-item/remove-item.command';
 import { ClearCartCommand } from '../../application/commands/clear-cart/clear-cart.command';
 import { MergeCartCommand } from '../../application/commands/merge-cart/merge-cart.command';
+import { GrpcMethod, Payload } from '@nestjs/microservices';
+import { GetCartCheckoutQuery } from '../../application/queries/get-cart-checkout/get-cart-checkout.query';
 
 @Controller()
 // @UseInterceptors(GrpcLoggingInterceptor)
@@ -115,5 +117,19 @@ export class CartController {
     return await this.commandBus.execute(
       new ClearCartCommand(undefined, '550e8400-e29b-41d4-a716-446655440000'),
     );
+  }
+
+  @Get('cart/checkout')
+  @ApiOperation({ summary: 'Get cart for checkout' })
+  @ApiResponse({ status: 200, description: 'Cart info: ' })
+  async getCartForCheckout(@OptionalUserData() user: JwtPayload, @Req() req: Request) {
+    return await this.queryBus.execute(
+      new GetCartCheckoutQuery('550e8400-e29b-41d4-a716-446655440001'),
+    );
+  }
+
+  @GrpcMethod('CartService', 'getCartForCheckout')
+  async GetCartForCheckoutGrpc(@Payload() { userId }: { userId: string }) {
+    return await this.queryBus.execute(new GetCartCheckoutQuery(userId));
   }
 }
