@@ -300,6 +300,14 @@ export class Order {
     return this.params.paymentMethod;
   }
 
+  get paymentTransactionId(): string | undefined {
+    return this.params.paymentTransactionId;
+  }
+
+  get paymentProvider(): string | undefined {
+    return this.params.paymentProvider;
+  }
+
   get shippingAddress(): OrderAddress {
     return this.params.shippingAddress;
   }

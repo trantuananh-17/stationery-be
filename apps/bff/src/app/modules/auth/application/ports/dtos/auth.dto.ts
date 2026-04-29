@@ -14,7 +14,11 @@ export interface LoginUserBodyDto {
   password: string;
 }
 
-export interface LoginUserResponse {
+export interface RefreshTokenBodyDto {
+  refreshToken: string;
+}
+
+export interface AuthTokenResponse {
   accessToken: string;
   refreshToken: string;
 }

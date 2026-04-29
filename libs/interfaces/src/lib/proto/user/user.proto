@@ -11,6 +11,10 @@ message UserAuthResponse {
   string userId = 1;
   string role = 2;
   repeated string permissions = 3;
+  string firstName = 4;
+  string lastName = 5;
+  string avatar = 6;
+  string email = 7;
 }
 
 message UserAuthRequest {

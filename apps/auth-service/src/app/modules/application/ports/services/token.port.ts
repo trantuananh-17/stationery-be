@@ -11,4 +11,6 @@ export abstract class ITokenService {
   abstract generateRefreshToken(payload: TokenPayloadDto): Promise<string>;
 
   abstract generateRandomToken(length?: number): string;
+
+  abstract verifyRefreshToken(token: string): Promise<TokenPayloadDto>;
 }

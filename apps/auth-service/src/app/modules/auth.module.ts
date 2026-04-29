@@ -9,6 +9,7 @@ import { ResetPasswordHandler } from './application/commands/reset-password/rese
 import { VerifyEmailHandler } from './application/commands/verify-email/verify-email.handler';
 import { AuthInfraModule } from './infrastructure/auth-infrs.module';
 import { AuthController } from './presentation/controllers/auth.controller';
+import { RefreshTokenHandler } from './application/commands/refresh-token/refresh-token.handler';
 
 @Module({
   imports: [CqrsModule, TypeOrmProvider, AuthInfraModule],
@@ -20,6 +21,7 @@ import { AuthController } from './presentation/controllers/auth.controller';
     ResendverificationHandler,
     ForgotPasswordHandler,
     ResetPasswordHandler,
+    RefreshTokenHandler,
   ],
   exports: [],
 })

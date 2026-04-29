@@ -15,7 +15,13 @@ export class TokenService implements ITokenService {
     return this.jwtService.signAsync(payload, { expiresIn: '7d' });
   }
 
-  generateRandomToken(length?: number): string {
+  generateRandomToken(length: number): string {
     return randomBytes(length).toString('hex');
+  }
+
+  async verifyRefreshToken(token: string): Promise<TokenPayloadDto> {
+    return this.jwtService.verifyAsync<TokenPayloadDto>(token, {
+      secret: process.env.JWT_REFRESH_SECRET,
+    });
   }
 }

@@ -7,6 +7,16 @@ package GRPC_AUTH_SERVICE;
 service AuthorizerService {
   rpc registerUser (UserPayload) returns (UserResponse);
   rpc loginUser (LoginPayload) returns (LoginResponse);
+  rpc refreshToken (RefreshTokenRequest) returns (AuthTokenResponse);
+}
+
+message RefreshTokenRequest {
+  string refreshToken = 1;
+}
+
+message AuthTokenResponse {
+  string accessToken = 1;
+  string refreshToken = 2;
 }
 
 message LoginPayload {

@@ -14,6 +14,8 @@ import { ResetPasswordPayloadDto } from '../dtos/reset-pass.dto';
 import { TokenPayloadDto } from '../dtos/token.dto';
 import { AuthGrpcExceptionFilter } from '../filters/auth-grpc-exception.filter';
 import { ForgotPasswordCommand } from '../../application/commands/forgot-password/forgot-password.command';
+import { RefreshTokenPayloadDto } from '../dtos/refresh-token.dto';
+import { RefreshTokenCommand } from '../../application/commands/refresh-token/refresh-token.command';
 
 @Controller()
 @UseInterceptors(GrpcLoggingInterceptor)
@@ -58,5 +60,12 @@ export class AuthController {
   async forgotPassword(@Payload() payload: EmailPayloadDto) {
     const { email } = payload;
     return await this.commandBus.execute(new ForgotPasswordCommand(email));
+  }
+
+  @GrpcMethod('AuthorizerService', 'refreshToken')
+  async refreshToken(@Payload() payload: RefreshTokenPayloadDto) {
+    const { refreshToken } = payload;
+
+    return await this.commandBus.execute(new RefreshTokenCommand(refreshToken));
   }
 }

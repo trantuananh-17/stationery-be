@@ -2,7 +2,7 @@ export type ReserveStockItemResponse = {
   variantId: string;
   quantity: number;
   success: boolean;
-  status: 'reserved' | 'insufficient_stock' | 'not_found' | 'inactive';
+  status: string;
   availableStock: number;
   message?: string;
 };

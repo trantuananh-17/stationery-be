@@ -6,5 +6,15 @@ export interface CreateUserRequest {
 }
 
 export interface UserResponse {
-  id: string;
+  userId: string;
+}
+
+export interface UserAuthResponse {
+  userId: string;
+  role: string;
+  permissions: string[];
+  firstName: string;
+  lastName: string;
+  email: string;
+  avatar: string;
 }

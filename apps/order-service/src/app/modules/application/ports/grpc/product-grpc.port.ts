@@ -1,5 +1,10 @@
 import { ReserveStockItemRequest, ReserveStockResponse } from '../contracts/product.contract';
 
 export abstract class IProductGrpcPort {
-  abstract reserveStock(data: ReserveStockItemRequest[]): Promise<ReserveStockResponse>;
+  abstract reserveStock(data: {
+    items: {
+      variantId: string;
+      quantity: number;
+    }[];
+  }): Promise<ReserveStockResponse>;
 }

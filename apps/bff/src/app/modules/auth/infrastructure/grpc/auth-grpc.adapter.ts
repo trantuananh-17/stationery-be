@@ -5,9 +5,10 @@ import { firstValueFrom } from 'rxjs';
 import { AuthPort } from '../../application/ports/auth.port';
 import {
   LoginUserBodyDto,
-  LoginUserResponse,
+  AuthTokenResponse,
   RegisterUserBodyDto,
   UserResponse,
+  RefreshTokenBodyDto,
 } from '../../application/ports/dtos/auth.dto';
 import { AuthGrpcService } from './auth-grpc.interface';
 
@@ -28,7 +29,11 @@ export class AuthGrpcAdapter implements AuthPort, OnModuleInit {
     return firstValueFrom(this.authService.registerUser(data));
   }
 
-  loginUser(data: LoginUserBodyDto): Promise<LoginUserResponse> {
+  loginUser(data: LoginUserBodyDto): Promise<AuthTokenResponse> {
     return firstValueFrom(this.authService.loginUser(data));
+  }
+
+  refreshToken(data: RefreshTokenBodyDto): Promise<AuthTokenResponse> {
+    return firstValueFrom(this.authService.refreshToken(data));
   }
 }

@@ -1,22 +1,33 @@
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { CreateUserRequest, UserResponse } from '../../application/ports/dtos/user.dto';
-import { UserPort } from '../../application/ports/user.port';
 import { GRPC_SERVICES } from '@common/configuration/grpc.config';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
-import { Observable } from 'rxjs';
-import { Response } from '@common/interfaces/grpc/common/response.interface';
+import { firstValueFrom } from 'rxjs';
+import {
+  CreateUserRequest,
+  UserAuthResponse,
+  UserResponse,
+} from '../../application/ports/dtos/user.dto';
+import { UserPort } from '../../application/ports/user.port';
+import { UserGrpcService } from './user-grpc.interface';
 
 @Injectable()
 export class UserGrpcAdapter implements UserPort, OnModuleInit {
-  private userPort: UserPort;
+  private userService: UserGrpcService;
 
-  constructor(@Inject(GRPC_SERVICES.USER_SERVICE) private readonly userClient: ClientGrpc) {}
+  constructor(
+    @Inject(GRPC_SERVICES.USER_SERVICE)
+    private readonly userClient: ClientGrpc,
+  ) {}
 
-  onModuleInit() {
-    this.userPort = this.userClient.getService<UserPort>('UserService');
+  onModuleInit(): void {
+    this.userService = this.userClient.getService<UserGrpcService>('UserService');
   }
 
-  createUser(data: CreateUserRequest): Observable<Response<UserResponse>> {
-    return this.userPort.createUser(data);
+  createUser(data: CreateUserRequest): Promise<UserResponse> {
+    return firstValueFrom(this.userService.createUser(data));
+  }
+
+  getUserAuth(data: { userId: string }): Promise<UserAuthResponse> {
+    return firstValueFrom(this.userService.getUserAuth(data));
   }
 }

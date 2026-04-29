@@ -21,8 +21,14 @@ export class TypeOrmCredentialQueryRepository implements ICredentialQueryReposit
     return this._toDomain(credential);
   }
 
-  findByUserId(userId: string): Promise<Credential | null> {
-    throw new Error('Method not implemented.');
+  async findByUserId(userId: string): Promise<Credential | null> {
+    const credential = await this.repo.findOne({
+      where: { userId },
+    });
+
+    if (!credential) return null;
+
+    return this._toDomain(credential);
   }
 
   async findByVerificationToken(token: string): Promise<Credential | null> {
