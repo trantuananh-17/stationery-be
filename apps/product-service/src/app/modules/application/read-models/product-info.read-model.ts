@@ -18,11 +18,11 @@ export interface ProductInfoReadModel {
     };
   };
 
-  // brand: {
-  //   id: string;
-  //   name: string;
-  //   slug: string;
-  // };
+  brand: {
+    id: string;
+    name: string;
+    slug: string;
+  };
   description: string;
   shortDescription: string;
   status: ProductStatus;

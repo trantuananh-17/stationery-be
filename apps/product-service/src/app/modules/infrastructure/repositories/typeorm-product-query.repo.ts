@@ -186,6 +186,7 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
     const qb = this.productRepo
       .createQueryBuilder('p')
       .leftJoinAndSelect('p.category', 'c')
+      .leftJoinAndSelect('p.brand', 'b')
       .leftJoinAndSelect('c.parent', 'pc')
       .where('p.deletedAt IS NULL');
 
@@ -215,6 +216,10 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
         'c.id',
         'c.name',
         'c.slug',
+
+        'b.id',
+        'b.name',
+        'b.slug',
 
         'pc.id',
         'pc.name',
@@ -315,6 +320,7 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       slug: product.slug,
       thumbnail: product.thumbnail,
       images: product.images ?? [],
+
       category: {
         id: product.category.id,
         name: product.category.name,
@@ -327,6 +333,13 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
             }
           : undefined,
       },
+
+      brand: {
+        id: product.brand.id,
+        name: product.brand.name,
+        slug: product.brand.slug,
+      },
+
       description: product.description,
       shortDescription: product.shortDescription,
       status: product.status,

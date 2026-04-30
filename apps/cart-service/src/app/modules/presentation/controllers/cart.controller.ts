@@ -132,4 +132,107 @@ export class CartController {
   async GetCartForCheckoutGrpc(@Payload() { userId }: { userId: string }) {
     return await this.queryBus.execute(new GetCartCheckoutQuery(userId));
   }
+
+  @GrpcMethod('CartService', 'addToCart')
+  async addToCartGrpc(
+    @Payload()
+    payload: {
+      variantId: string;
+      quantity: number;
+      userId?: string;
+      sessionId?: string;
+    },
+  ) {
+    await this.commandBus.execute(
+      new AddToCartCommand(payload.variantId, payload.quantity, payload.sessionId, payload.userId),
+    );
+
+    return {};
+  }
+
+  @GrpcMethod('CartService', 'updateCartItemQuantity')
+  async updateQuantityGrpc(
+    @Payload()
+    payload: {
+      variantId: string;
+      quantity: number;
+      userId?: string;
+      sessionId?: string;
+    },
+  ) {
+    await this.commandBus.execute(
+      new UpdateQuantityCommand(
+        payload.variantId,
+        payload.quantity,
+        payload.userId,
+        payload.sessionId,
+      ),
+    );
+
+    return {};
+  }
+
+  @GrpcMethod('CartService', 'removeCartItem')
+  async removeItemGrpc(
+    @Payload()
+    payload: {
+      cartItemId: string;
+      userId?: string;
+      sessionId?: string;
+    },
+  ) {
+    await this.commandBus.execute(
+      new RemoveItemCommand(payload.cartItemId, payload.userId, payload.sessionId),
+    );
+
+    return {};
+  }
+
+  @GrpcMethod('CartService', 'clearCart')
+  async clearCartGrpc(
+    @Payload()
+    payload: {
+      userId?: string;
+      sessionId?: string;
+    },
+  ) {
+    await this.commandBus.execute(new ClearCartCommand(payload.userId, payload.sessionId));
+
+    return {};
+  }
+
+  @GrpcMethod('CartService', 'mergeCart')
+  async mergeCartGrpc(
+    @Payload()
+    payload: {
+      userId: string;
+      sessionId: string;
+    },
+  ) {
+    await this.commandBus.execute(new MergeCartCommand(payload.userId, payload.sessionId));
+
+    return {};
+  }
+
+  @GrpcMethod('CartService', 'getCart')
+  async getCartGrpc(
+    @Payload()
+    payload: {
+      userId?: string;
+      sessionId?: string;
+    },
+  ) {
+    return this.queryBus.execute(new GetCartQuery(payload.userId, payload.sessionId));
+  }
+
+  @GrpcMethod('CartService', 'getCartCount')
+  async getCartCountGrpc(
+    @Payload()
+    payload: {
+      userId?: string;
+      sessionId?: string;
+    },
+  ) {
+    return this.queryBus.execute(new GetCartCountQuery(payload.userId, payload.sessionId));
+  }
 }

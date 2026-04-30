@@ -3,6 +3,22 @@ import { GetCartQuery } from './get-cart.query';
 import { ICartQueryRepository } from '../../ports/repositories/cart-query.repo';
 import { Cart } from '../../../domain/entities/cart.entity';
 
+type GrpcTimestamp = {
+  seconds: number;
+  nanos: number;
+};
+
+const toTimestamp = (date?: Date | null): GrpcTimestamp | undefined => {
+  if (!date) return undefined;
+
+  const time = date instanceof Date ? date.getTime() : new Date(date).getTime();
+
+  return {
+    seconds: Math.floor(time / 1000),
+    nanos: (time % 1000) * 1_000_000,
+  };
+};
+
 export interface GetCartItemResult {
   id: string;
   cartId: string;
@@ -22,8 +38,8 @@ export interface GetCartItemResult {
     value: string;
   }[];
   subtotal: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: GrpcTimestamp;
+  updatedAt?: GrpcTimestamp;
 }
 
 export interface GetCartResult {
@@ -32,13 +48,13 @@ export interface GetCartResult {
   sessionId?: string;
   currency?: string;
   status?: string;
-  expiresAt?: Date;
+  expiresAt?: GrpcTimestamp;
   items: GetCartItemResult[];
   totalItems: number;
   totalUniqueItems: number;
   subtotal: number;
-  createdAt?: Date;
-  updatedAt?: Date;
+  createdAt?: GrpcTimestamp;
+  updatedAt?: GrpcTimestamp;
 }
 
 @QueryHandler(GetCartQuery)
@@ -76,21 +92,27 @@ export class GetCartHandler implements IQueryHandler<GetCartQuery, GetCartResult
       productId: item.productId,
       variantId: item.variantId,
       quantity: item.quantity,
+
       productNameSnapshot: item.productNameSnapshot,
       productSlugSnapshot: item.productSlugSnapshot,
       variantNameSnapshot: item.variantNameSnapshot,
+
       skuSnapshot: item.skuSnapshot,
       productThumbnailSnapshot: item.productThumbnailSnapshot,
       imageVariantSnapshot: item.imageVariantSnapshot,
+
       unitPriceSnapshot: item.unitPriceSnapshot,
       compareAtPriceSnapshot: item.compareAtPriceSnapshot,
+
       attributesSnapshot: item.attributesSnapshot.map((attr) => ({
         name: attr.name,
         value: attr.value,
       })),
+
       subtotal: item.subtotal,
-      createdAt: item.createdAt,
-      updatedAt: item.updatedAt,
+
+      createdAt: toTimestamp(item.createdAt),
+      updatedAt: toTimestamp(item.updatedAt),
     }));
 
     return {
@@ -99,13 +121,16 @@ export class GetCartHandler implements IQueryHandler<GetCartQuery, GetCartResult
       sessionId: cart.sessionId,
       currency: cart.currency,
       status: cart.status,
-      expiresAt: cart.expiresAt,
+      expiresAt: toTimestamp(cart.expiresAt),
+
       items,
+
       totalItems: cart.totalItems,
       totalUniqueItems: cart.totalUniqueItems,
       subtotal: cart.subtotal,
-      createdAt: cart.createdAt,
-      updatedAt: cart.updatedAt,
+
+      createdAt: toTimestamp(cart.createdAt),
+      updatedAt: toTimestamp(cart.updatedAt),
     };
   }
 }

@@ -15,7 +15,7 @@ export type UpdateProductPayload = {
 };
 
 export type UpdateSpecificationPayload = {
-  id?: string;
+  id: string;
   attributeId: string;
   value: string;
 };
@@ -23,14 +23,14 @@ export type UpdateSpecificationPayload = {
 export type UpdateVariantPayload = {
   id?: string;
   name?: string;
-  price: number;
+  price?: number;
   compareAtPrice?: number;
-  stock: number;
+  stock?: number;
   image?: string;
   sortOrder?: number;
   isDefault?: boolean;
-  attributeValueIds: string[];
-  attributeValueSlug: string[];
+  attributeValueIds?: string[];
+  attributeValueSlug?: string[];
 };
 
 export class UpdateProductCommand implements ICommand {

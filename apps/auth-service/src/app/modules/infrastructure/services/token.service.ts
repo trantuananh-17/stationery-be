@@ -8,7 +8,7 @@ export class TokenService implements ITokenService {
   constructor(private readonly jwtService: JwtService) {}
 
   async generateAccessToken(payload: TokenPayloadDto): Promise<string> {
-    return this.jwtService.signAsync(payload, { expiresIn: '15m' });
+    return this.jwtService.signAsync(payload, { expiresIn: '1d' });
   }
 
   async generateRefreshToken(payload: TokenPayloadDto): Promise<string> {

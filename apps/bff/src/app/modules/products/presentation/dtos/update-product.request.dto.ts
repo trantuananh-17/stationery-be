@@ -1,3 +1,5 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
@@ -6,10 +8,8 @@ import {
   IsString,
   ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
-import { ApiPropertyOptional } from '@nestjs/swagger';
 
-class UpdateProductInfoDto {
+export class UpdateProductInputDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -68,7 +68,7 @@ class UpdateProductInfoDto {
   seoDescription?: string;
 }
 
-class UpdateSpecificationDto {
+export class UpdateSpecificationInputDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -83,7 +83,7 @@ class UpdateSpecificationDto {
   value: string;
 }
 
-class UpdateVariantDto {
+export class UpdateVariantInputDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -137,24 +137,24 @@ class UpdateVariantDto {
   attributeValueSlug: string[];
 }
 
-export class UpdateProductDto {
-  @ApiPropertyOptional({ type: UpdateProductInfoDto })
+export class UpdateProductRequestDto {
+  @ApiPropertyOptional({ type: UpdateProductInputDto })
   @IsOptional()
   @ValidateNested()
-  @Type(() => UpdateProductInfoDto)
-  product: UpdateProductInfoDto;
+  @Type(() => UpdateProductInputDto)
+  product: UpdateProductInputDto;
 
-  @ApiPropertyOptional({ type: [UpdateSpecificationDto] })
+  @ApiPropertyOptional({ type: [UpdateSpecificationInputDto] })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => UpdateSpecificationDto)
-  specifications?: UpdateSpecificationDto[];
+  @Type(() => UpdateSpecificationInputDto)
+  specifications?: UpdateSpecificationInputDto[];
 
-  @ApiPropertyOptional({ type: [UpdateVariantDto] })
+  @ApiPropertyOptional({ type: [UpdateVariantInputDto] })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => UpdateVariantDto)
-  variants?: UpdateVariantDto[];
+  @Type(() => UpdateVariantInputDto)
+  variants?: UpdateVariantInputDto[];
 }

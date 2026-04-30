@@ -2,16 +2,129 @@ syntax = "proto3";
 
 package GRPC_CART_SERVICE;
 
-service CartService {
-  rpc Ping (PingRequest) returns (PingResponse);
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/empty.proto";
 
-  rpc GetCartForCheckout (GetCartForCheckoutRequest) returns (GetCartForCheckoutResponse);
+service CartService {
+  rpc Ping(PingRequest) returns (PingResponse);
+
+  rpc getCart(GetCartRequest) returns (GetCartResponse);
+  rpc getCartCount(GetCartCountRequest) returns (GetCartCountResponse);
+  rpc getCartForCheckout(GetCartForCheckoutRequest) returns (GetCartForCheckoutResponse);
+
+  rpc addToCart(AddToCartRequest) returns (google.protobuf.Empty);
+  rpc updateCartItemQuantity(UpdateCartItemQuantityRequest) returns (google.protobuf.Empty);
+  rpc removeCartItem(RemoveCartItemRequest) returns (google.protobuf.Empty);
+  rpc clearCart(ClearCartRequest) returns (google.protobuf.Empty);
+  rpc mergeCart(MergeCartRequest) returns (google.protobuf.Empty);
 }
 
 message PingRequest {}
 
 message PingResponse {
   string message = 1;
+}
+
+message CartIdentity {
+  optional string userId = 1;
+  optional string sessionId = 2;
+}
+
+message GetCartRequest {
+  optional string userId = 1;
+  optional string sessionId = 2;
+}
+
+message GetCartCountRequest {
+  optional string userId = 1;
+  optional string sessionId = 2;
+}
+
+message GetCartCountResponse {
+  int32 count = 1;
+}
+
+message AddToCartRequest {
+  optional string userId = 1;
+  optional string sessionId = 2;
+
+  string variantId = 3;
+  int32 quantity = 4;
+}
+
+message UpdateCartItemQuantityRequest {
+  optional string userId = 1;
+  optional string sessionId = 2;
+
+  string variantId = 3;
+  int32 quantity = 4;
+}
+
+message RemoveCartItemRequest {
+  optional string userId = 1;
+  optional string sessionId = 2;
+
+  string cartItemId = 3;
+}
+
+message ClearCartRequest {
+  optional string userId = 1;
+  optional string sessionId = 2;
+}
+
+message MergeCartRequest {
+  string userId = 1;
+  string sessionId = 2;
+}
+
+message CartAttribute {
+  string name = 1;
+  string value = 2;
+}
+
+message CartItem {
+  string id = 1;
+  string cartId = 2;
+  string productId = 3;
+  string variantId = 4;
+  int32 quantity = 5;
+
+  string productNameSnapshot = 6;
+  string productSlugSnapshot = 7;
+  string variantNameSnapshot = 8;
+
+  optional string skuSnapshot = 9;
+  optional string productThumbnailSnapshot = 10;
+  optional string imageVariantSnapshot = 11;
+
+  double unitPriceSnapshot = 12;
+  optional double compareAtPriceSnapshot = 13;
+
+  repeated CartAttribute attributesSnapshot = 14;
+
+  double subtotal = 15;
+
+  google.protobuf.Timestamp createdAt = 16;
+  google.protobuf.Timestamp updatedAt = 17;
+}
+
+message GetCartResponse {
+  optional string id = 1;
+  optional string userId = 2;
+  optional string sessionId = 3;
+
+  optional string currency = 4;
+  optional string status = 5;
+  optional google.protobuf.Timestamp expiresAt = 6;
+
+  repeated CartItem items = 7;
+
+  int32 totalItems = 8;
+  int32 totalUniqueItems = 9;
+  double subtotal = 10;
+
+  optional google.protobuf.Timestamp createdAt = 11;
+  optional google.protobuf.Timestamp updatedAt = 12;
 }
 
 message GetCartForCheckoutRequest {
@@ -27,19 +140,26 @@ message CheckoutCartItem {
   string productId = 1;
   string variantId = 2;
   int32 quantity = 3;
+
   string productNameSnapshot = 4;
   string variantNameSnapshot = 5;
+
   optional string skuSnapshot = 6;
   optional string imageSnapshot = 7;
+
   double unitPriceSnapshot = 8;
+
   repeated CheckoutCartAttribute attributesSnapshot = 9;
+
   double subtotal = 10;
 }
 
 message GetCartForCheckoutResponse {
   string id = 1;
   string userId = 2;
+
   repeated CheckoutCartItem items = 3;
+
   int32 totalItems = 4;
   double subtotal = 5;
 }

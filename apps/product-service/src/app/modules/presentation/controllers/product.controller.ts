@@ -17,6 +17,8 @@ import { GetItemQuery } from '../../application/queries/get-item/get-item.query'
 import { GrpcMethod, Payload } from '@nestjs/microservices';
 import { ReserveStockDto } from '../dtos/reserve-stock.dto';
 import { ReserveStockCommand } from '../../application/commands/products/reserve-stock/reserve-stock.command';
+import { PaginatedResult } from '@common/interfaces/common/pagination.interface';
+import { ProductReadModel } from '../../application/read-models/product.read-model';
 
 @ApiTags('Products')
 @Controller('products')
@@ -105,5 +107,133 @@ export class ProductController {
   @GrpcMethod('ProductService', 'reserveStock')
   async reserveStockGrpc(@Payload() payload: { items: { variantId: string; quantity: number }[] }) {
     return this.commandBus.execute(new ReserveStockCommand(payload.items));
+  }
+
+  @GrpcMethod('ProductService', 'createProduct')
+  async createProductGrpc(
+    @Payload()
+    payload: {
+      product: {
+        name: string;
+        description: string;
+        shortDescription: string;
+        categoryId: string;
+        brandId: string;
+        images: string[];
+        thumbnail: string;
+        featured?: boolean;
+        searchKeywords?: string[];
+        seoTitle?: string;
+        seoDescription?: string;
+      };
+      specifications: {
+        attributeId: string;
+        value: string;
+      }[];
+      variants: {
+        name: string;
+        price: number;
+        stock: number;
+        compareAtPrice?: number;
+        image?: string;
+        sortOrder?: number;
+        isDefault?: boolean;
+        attributeValueIds: string[];
+        attributeValueSlug: string[];
+      }[];
+    },
+  ) {
+    return this.commandBus.execute(
+      new CreateProductCommand(payload.product, payload.specifications, payload.variants),
+    );
+  }
+
+  @GrpcMethod('ProductService', 'updateProduct')
+  async updateProductGrpc(
+    @Payload()
+    payload: {
+      id: string;
+      product: {
+        name?: string;
+        description?: string;
+        shortDescription?: string;
+        categoryId?: string;
+        brandId?: string;
+        images?: string[];
+        thumbnail?: string;
+        featured?: boolean;
+        searchKeywords?: string[];
+        seoTitle?: string;
+        seoDescription?: string;
+      };
+      specifications?: {
+        id: string;
+        attributeId: string;
+        value: string;
+      }[];
+      variants?: {
+        id?: string;
+        name?: string;
+        price?: number;
+        compareAtPrice?: number;
+        stock?: number;
+        image?: string;
+        sortOrder?: number;
+        isDefault?: boolean;
+        attributeValueIds?: string[];
+        attributeValueSlug?: string[];
+      }[];
+    },
+  ) {
+    return this.commandBus.execute(
+      new UpdateProductCommand(
+        payload.id,
+        payload.product,
+        payload.specifications,
+        payload.variants,
+      ),
+    );
+  }
+
+  @GrpcMethod('ProductService', 'getProductById')
+  async getProductByIdGrpc(@Payload() payload: { id: string }) {
+    return this.queryBus.execute(new GetProductInfoQuery(payload.id, undefined));
+  }
+
+  @GrpcMethod('ProductService', 'getProductBySlug')
+  async getProductBySlugGrpc(@Payload() payload: { slug: string }) {
+    return this.queryBus.execute(new GetProductInfoQuery(undefined, payload.slug));
+  }
+
+  @GrpcMethod('ProductService', 'getProducts')
+  async getProductsGrpc(
+    @Payload()
+    payload: {
+      search?: string;
+      category?: string;
+      brand?: string;
+      orderBy?: ProductOrderBy;
+      page?: number;
+      limit?: number;
+    },
+  ) {
+    const result: PaginatedResult<ProductReadModel> = await this.queryBus.execute(
+      new GetProductsQuery(
+        payload.search,
+        payload.category,
+        payload.brand,
+        payload.orderBy as ProductOrderBy,
+        Number(payload.page ?? 1),
+        Number(payload.limit ?? 10),
+      ),
+    );
+
+    return {
+      items: result.data,
+      total: result.pagination.total,
+      page: result.pagination.page,
+      limit: result.pagination.limit,
+      totalPages: result.pagination.totalPages,
+    };
   }
 }

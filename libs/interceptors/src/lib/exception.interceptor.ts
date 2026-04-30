@@ -52,8 +52,6 @@ export class ExceptionInterceptor implements NestInterceptor {
       map((data) => {
         const duration = Date.now() - startTime;
 
-        Logger.log({ data });
-
         return new ResponseDto({
           data,
           message: 'Success',

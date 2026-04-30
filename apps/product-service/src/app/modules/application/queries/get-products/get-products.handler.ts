@@ -23,7 +23,7 @@ export class GetProductsHandler implements IQueryHandler<GetProductsQuery> {
     let brandId: string | undefined;
 
     if (categorySlug?.trim()) {
-      categoryId = await this.categoryRepo.findBySlug(categorySlug.trim());
+      categoryId = (await this.categoryRepo.findBySlug(categorySlug.trim())) ?? undefined;
 
       if (!categoryId) {
         throw new CategoryNotFoundError();
@@ -31,7 +31,7 @@ export class GetProductsHandler implements IQueryHandler<GetProductsQuery> {
     }
 
     if (brandSlug?.trim()) {
-      brandId = await this.brandRepo.findBySlug(brandSlug.trim());
+      brandId = (await this.brandRepo.findBySlug(brandSlug.trim())) ?? undefined;
 
       if (!brandId) {
         throw new BrandNotFoundError();
@@ -47,6 +47,16 @@ export class GetProductsHandler implements IQueryHandler<GetProductsQuery> {
       orderBy,
       page,
       limit,
+    });
+
+    console.log({
+      data: result.items,
+      pagination: {
+        page,
+        limit,
+        total: result.total,
+        totalPages: Math.ceil(result.total / limit),
+      },
     });
 
     return {
