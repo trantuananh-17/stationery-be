@@ -60,7 +60,7 @@ export class Product {
       seoDescription: data.seoDescription?.trim(),
       searchKeywords: data.searchKeywords ?? [],
       featured: data.featured ?? false,
-      status: ProductStatus.INACTIVE,
+      status: ProductStatus.DRAFT,
       createdAt: now,
       updatedAt: now,
       deletedAt: null,

@@ -1,5 +1,6 @@
 syntax = "proto3";
 import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 
 package GRPC_PRODUCT_SERVICE;
 
@@ -12,6 +13,7 @@ service ProductService {
   rpc getProductById (GetProductByIdRequest) returns (ProductInfoResponse);
   rpc getProductBySlug (GetProductBySlugRequest) returns (ProductInfoResponse);
   rpc getProducts (GetProductsRequest) returns (GetProductsResponse);
+  rpc getProductsByAdmin (GetProductsByAdminRequest) returns (GetProductsResponse);
 }
 
 /* ================= CART ================= */
@@ -161,6 +163,14 @@ message GetProductsRequest {
   optional int32 limit = 6;
 }
 
+message GetProductsByAdminRequest {
+  optional string search = 1;
+  optional string status = 2;
+  optional string order_by = 3;
+  optional int32 page = 4;
+  optional int32 limit = 5;
+}
+
 /* ================= CREATE / UPDATE RESPONSE ================= */
 
 message ProductResponse {
@@ -273,10 +283,19 @@ message ProductItemResponse {
   string slug = 3;
   string thumbnail = 4;
   repeated string images = 5;
-  int32 price = 6;
-  optional int32 compare_at_price = 7;
-}
 
+  string description = 6;
+  string sku = 7;
+  string category = 8;
+  string brand = 9;
+  string status = 10;
+
+  int32 price = 11;
+  optional int32 compare_at_price = 12;
+  int32 stock = 13;
+
+  google.protobuf.Timestamp created_at = 14;
+}
 message GetProductsResponse {
   repeated ProductItemResponse items = 1;
   int32 total = 2;

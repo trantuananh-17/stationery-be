@@ -65,7 +65,7 @@ export class ProductController {
   @ApiOkResponse({ type: ResponseDto<GetProductsResponseDto> })
   @ApiOperation({ summary: 'Get products' })
   @HttpCode(HttpStatus.OK)
-  async findAll(@Query() query: GetProductsQueryDto) {
+  async findAllActive(@Query() query: GetProductsQueryDto) {
     const result = await this.getProducts.execute(query);
 
     Logger.log(`Get products request: ${JSON.stringify(query)}`);

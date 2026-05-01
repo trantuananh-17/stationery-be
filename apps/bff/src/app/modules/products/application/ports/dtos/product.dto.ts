@@ -58,6 +58,14 @@ export interface GetProductsBodyDto {
   limit?: number;
 }
 
+export interface GetProductsByAdminBodyDto {
+  search?: string;
+  status?: string;
+  orderBy?: string;
+  page?: number;
+  limit?: number;
+}
+
 export interface ReserveStockItemBodyDto {
   variantId: string;
   quantity: number;
@@ -197,9 +205,15 @@ export interface ProductItemResponse {
   name: string;
   slug: string;
   thumbnail: string;
-  images: string[];
+  description: string;
+  sku: string;
+  category: string;
+  brand: string;
+  status: string;
   price: number;
-  compareAtPrice?: number;
+  compareAtPrice?: number | null;
+  stock: number;
+  createdAt: Date;
 }
 
 export interface GetProductsResponse {

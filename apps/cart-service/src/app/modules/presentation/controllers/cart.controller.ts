@@ -144,7 +144,7 @@ export class CartController {
     },
   ) {
     await this.commandBus.execute(
-      new AddToCartCommand(payload.variantId, payload.quantity, payload.sessionId, payload.userId),
+      new AddToCartCommand(payload.variantId, payload.quantity, payload.userId, payload.sessionId),
     );
 
     return {};

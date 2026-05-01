@@ -5,7 +5,7 @@ import { CreateProductCommand } from '../../application/commands/products/create
 import { CreateProductDto } from '../dtos/create-product.dto';
 import { UpdateProductDto } from '../dtos/update-product.dto';
 import { UpdateProductCommand } from '../../application/commands/products/update-product/update-product.command';
-import { ProductOrderBy } from '../../domain/enum/product-orderby.enum';
+import { AdminProductOrderBy, ProductOrderBy } from '../../domain/enum/product-orderby.enum';
 import { GetProductsQuery } from '../../application/queries/get-products/get-products.query';
 import { GetProductsDto } from '../dtos/get-product.dto';
 import { GetProductInfoQuery } from '../../application/queries/get-product-id/get-product-info.query';
@@ -19,6 +19,8 @@ import { ReserveStockDto } from '../dtos/reserve-stock.dto';
 import { ReserveStockCommand } from '../../application/commands/products/reserve-stock/reserve-stock.command';
 import { PaginatedResult } from '@common/interfaces/common/pagination.interface';
 import { ProductReadModel } from '../../application/read-models/product.read-model';
+import { ProductStatus } from '../../domain/enum/product-status.enum';
+import { GetProductsByAdminQuery } from '../../application/queries/get-products-admin/get-products-admin.query';
 
 @ApiTags('Products')
 @Controller('products')
@@ -225,6 +227,38 @@ export class ProductController {
         payload.orderBy as ProductOrderBy,
         Number(payload.page ?? 1),
         Number(payload.limit ?? 10),
+      ),
+    );
+
+    return {
+      items: result.data,
+      total: result.pagination.total,
+      page: result.pagination.page,
+      limit: result.pagination.limit,
+      totalPages: result.pagination.totalPages,
+    };
+  }
+
+  @GrpcMethod('ProductService', 'getProductsByAdmin')
+  async getProductsByAdminGrpc(
+    @Payload()
+    payload: {
+      search?: string;
+      status?: ProductStatus;
+      orderBy?: AdminProductOrderBy;
+      page?: number;
+      limit?: number;
+    },
+  ) {
+    console.log(payload.status);
+
+    const result: PaginatedResult<ProductReadModel> = await this.queryBus.execute(
+      new GetProductsByAdminQuery(
+        payload.search,
+        payload.status,
+        payload.orderBy as AdminProductOrderBy,
+        Number(payload.page ?? 1),
+        Number(payload.limit ?? 8),
       ),
     );
 

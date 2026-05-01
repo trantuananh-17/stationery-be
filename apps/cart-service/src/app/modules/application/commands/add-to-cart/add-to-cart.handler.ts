@@ -16,6 +16,9 @@ export class AddToCartHandler implements ICommandHandler<AddToCartCommand> {
   async execute(command: AddToCartCommand): Promise<void> {
     const { variantId, quantity, userId, sessionId } = command;
 
+    console.log(userId);
+    console.log(sessionId);
+
     if (!userId && !sessionId) {
       throw new Error('userId or sessionId is required');
     }

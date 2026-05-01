@@ -1,6 +1,6 @@
 export const ProductStatus = {
   ACTIVE: 'ACTIVE',
-  INACTIVE: 'INACTIVE',
+  ARCHIVED: 'ARCHIVED',
   DRAFT: 'DRAFT',
 } as const;
 

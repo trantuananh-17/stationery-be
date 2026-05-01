@@ -6,7 +6,7 @@ import { IProductQueryRepository } from '../../application/ports/repositories/pr
 import { ProductInfoReadModel } from '../../application/read-models/product-info.read-model';
 import { ProductItemReadModel } from '../../application/read-models/product-item.read.model';
 import { ProductReadModel } from '../../application/read-models/product.read-model';
-import { ProductOrderBy } from '../../domain/enum/product-orderby.enum';
+import { AdminProductOrderBy, ProductOrderBy } from '../../domain/enum/product-orderby.enum';
 import { ProductStatus } from '../../domain/enum/product-status.enum';
 import { ProductOrmEntity } from '../entities/typeorm-product.entity';
 import { SpecificationOrmEntity } from '../entities/typeorm-specification.enity';
@@ -90,6 +90,8 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       .innerJoin('p.variants', 'v', 'v.is_default = :isDefault', {
         isDefault: true,
       })
+      .leftJoin('p.category', 'c')
+      .leftJoin('p.brand', 'b')
       .where('p.category_id = :categoryId', { categoryId })
       .andWhere('p.id != :productId', { productId })
       .andWhere('p.deleted_at IS NULL')
@@ -100,8 +102,17 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
         'p.slug AS slug',
         'p.thumbnail AS thumbnail',
         'p.images AS images',
+        'p.description AS description',
+        'p.status AS status',
+        'p.created_at AS "createdAt"',
+
+        'v.sku AS sku',
         'v.price AS price',
         'v.compare_at_price AS "compareAtPrice"',
+        'v.stock AS stock',
+
+        'c.name AS category',
+        'b.name AS brand',
       ])
       .orderBy('CASE WHEN p.brand_id = :brandId THEN 0 ELSE 1 END', 'ASC')
       .setParameter('brandId', brandId)
@@ -116,8 +127,18 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       slug: r.slug,
       thumbnail: r.thumbnail,
       images: r.images,
+      description: r.description,
+      sku: r.sku,
+      category: r.category,
+      brand: r.brand,
+      status: r.status,
       price: Number(r.price),
-      compareAtPrice: r.compareAtPrice ? Number(r.compareAtPrice) : undefined,
+      compareAtPrice:
+        r.compareAtPrice !== null && r.compareAtPrice !== undefined
+          ? Number(r.compareAtPrice)
+          : null,
+      stock: Number(r.stock),
+      createdAt: new Date(r.createdAt),
     }));
   }
 
@@ -148,8 +169,10 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       .innerJoin('p.variants', 'v', 'v.is_default = :isDefault', {
         isDefault: true,
       })
+      .leftJoin('p.category', 'c')
+      .leftJoin('p.brand', 'b')
       .where('p.featured = :featured', { featured: true })
-      .andWhere('p.deletedAt IS NULL');
+      .andWhere('p.deleted_at IS NULL');
 
     const total = await qb.clone().getCount();
 
@@ -159,12 +182,21 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       'p.slug AS slug',
       'p.thumbnail AS thumbnail',
       'p.images AS images',
+      'p.description AS description',
+      'p.status AS status',
+      'p.created_at AS "createdAt"',
+
+      'v.sku AS sku',
       'v.price AS price',
       'v.compare_at_price AS "compareAtPrice"',
+      'v.stock AS stock',
+
+      'c.name AS category',
+      'b.name AS brand',
     ])
-      .skip((page - 1) * limit)
-      .take(limit)
-      .orderBy('p.createdAt', 'DESC');
+      .orderBy('p.created_at', 'DESC')
+      .offset((page - 1) * limit)
+      .limit(limit);
 
     const raws = await qb.getRawMany();
 
@@ -175,8 +207,18 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
         slug: r.slug,
         thumbnail: r.thumbnail,
         images: r.images,
+        description: r.description,
+        sku: r.sku,
+        category: r.category,
+        brand: r.brand,
+        status: r.status,
         price: Number(r.price),
-        compareAtPrice: r.compareAtPrice ? Number(r.compareAtPrice) : undefined,
+        compareAtPrice:
+          r.compareAtPrice !== null && r.compareAtPrice !== undefined
+            ? Number(r.compareAtPrice)
+            : null,
+        stock: Number(r.stock),
+        createdAt: new Date(r.createdAt),
       })),
       total,
     };
@@ -360,19 +402,20 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
 
   async findAll(filters: {
     keywords: string[];
-    category?: string;
-    brand?: string;
-    orderBy?: ProductOrderBy;
+    status?: ProductStatus;
+    orderBy?: AdminProductOrderBy;
     page: number;
     limit: number;
   }): Promise<QueryResult<ProductReadModel>> {
-    const { keywords, category, brand, orderBy, page, limit } = filters;
+    const { keywords, status, orderBy, page, limit } = filters;
 
     const qb = this.productRepo
       .createQueryBuilder('p')
       .innerJoin('p.variants', 'v', 'v.is_default = :isDefault', {
         isDefault: true,
       })
+      .leftJoin('p.category', 'c')
+      .leftJoin('p.brand', 'b')
       .andWhere('p.deletedAt IS NULL');
 
     if (keywords.length > 0) {
@@ -397,13 +440,143 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       );
     }
 
-    if (category && category?.trim()) {
+    if (status) {
+      qb.andWhere('p.status = :status', { status });
+    }
+
+    const total = await qb.clone().getCount();
+
+    qb.select([
+      'p.id AS id',
+      'p.name AS name',
+      'p.slug AS slug',
+      'p.thumbnail AS thumbnail',
+      'p.description AS description',
+      'p.status AS status',
+      'p.created_at AS "createdAt"',
+
+      'v.sku AS sku',
+      'v.price AS price',
+      'v.compare_at_price AS "compareAtPrice"',
+      'v.stock AS stock',
+
+      'c.name AS category',
+      'b.name AS brand',
+    ]);
+
+    switch (orderBy) {
+      case AdminProductOrderBy.PRICE_ASC:
+        qb.orderBy('v.price', 'ASC');
+        break;
+
+      case AdminProductOrderBy.PRICE_DESC:
+        qb.orderBy('v.price', 'DESC');
+        break;
+
+      case AdminProductOrderBy.CREATED_AT_ASC:
+        qb.orderBy('p.created_at', 'ASC');
+        break;
+
+      case AdminProductOrderBy.CREATED_AT_DESC:
+        qb.orderBy('p.created_at', 'DESC');
+        break;
+
+      case AdminProductOrderBy.NAME_ASC:
+        qb.orderBy('p.name', 'ASC');
+        break;
+
+      case AdminProductOrderBy.NAME_DESC:
+        qb.orderBy('p.name', 'DESC');
+        break;
+
+      case AdminProductOrderBy.STOCK_ASC:
+        qb.orderBy('v.stock', 'ASC');
+        break;
+
+      case AdminProductOrderBy.STOCK_DESC:
+        qb.orderBy('v.stock', 'DESC');
+        break;
+
+      default:
+        qb.orderBy('p.created_at', 'DESC');
+    }
+
+    qb.offset((page - 1) * limit).limit(limit);
+
+    const raws = await qb.getRawMany();
+
+    return {
+      items: raws.map((r) => ({
+        id: r.id,
+        name: r.name,
+        slug: r.slug,
+        thumbnail: r.thumbnail,
+        description: r.description,
+        sku: r.sku,
+        category: r.category,
+        brand: r.brand,
+        status: r.status,
+        price: Number(r.price),
+        compareAtPrice:
+          r.compareAtPrice !== null && r.compareAtPrice !== undefined
+            ? Number(r.compareAtPrice)
+            : null,
+        stock: Number(r.stock),
+        createdAt: new Date(r.createdAt),
+      })),
+      total,
+    };
+  }
+
+  async findAllActive(filters: {
+    keywords: string[];
+    category?: string;
+    brand?: string;
+    orderBy?: ProductOrderBy;
+    page: number;
+    limit: number;
+  }): Promise<QueryResult<ProductReadModel>> {
+    const { keywords, category, brand, orderBy, page, limit } = filters;
+
+    const qb = this.productRepo
+      .createQueryBuilder('p')
+      .innerJoin('p.variants', 'v', 'v.is_default = :isDefault', {
+        isDefault: true,
+      })
+      .leftJoin('p.category', 'c')
+      .leftJoin('p.brand', 'b')
+      .andWhere('p.deletedAt IS NULL')
+      .andWhere('p.status = :status', { status: ProductStatus.ACTIVE });
+
+    if (keywords.length > 0) {
+      qb.andWhere(
+        `
+      to_tsvector(
+        'simple',
+        unaccent(
+          array_to_string(
+            ARRAY(
+              SELECT jsonb_array_elements_text(p.search_keywords)
+            ),
+            ' '
+          )
+        )
+      )
+      @@ plainto_tsquery('simple', unaccent(:query))
+      `,
+        {
+          query: keywords.join(' '),
+        },
+      );
+    }
+
+    if (category && category.trim()) {
       qb.andWhere('p.category_id = :category', {
         category,
       });
     }
 
-    if (brand && brand?.trim()) {
+    if (brand && brand.trim()) {
       qb.andWhere('p.brand_id = :brand', {
         brand,
       });
@@ -416,9 +589,17 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       'p.name AS name',
       'p.slug AS slug',
       'p.thumbnail AS thumbnail',
-      'p.images AS images',
+      'p.description AS description',
+      'p.status AS status',
+      'p.created_at AS "createdAt"',
+
+      'v.sku AS sku',
       'v.price AS price',
       'v.compare_at_price AS "compareAtPrice"',
+      'v.stock AS stock',
+
+      'c.name AS category',
+      'b.name AS brand',
     ]);
 
     switch (orderBy) {
@@ -430,11 +611,19 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
         qb.orderBy('v.price', 'DESC');
         break;
 
+      case ProductOrderBy.NAME_ASC:
+        qb.orderBy('p.name', 'ASC');
+        break;
+
+      case ProductOrderBy.NAME_DESC:
+        qb.orderBy('p.name', 'DESC');
+        break;
+
       default:
-        qb.orderBy('p.createdAt', 'DESC');
+        qb.orderBy('p.created_at', 'DESC');
     }
 
-    qb.skip((page - 1) * limit).take(limit);
+    qb.offset((page - 1) * limit).limit(limit);
 
     const raws = await qb.getRawMany();
 
@@ -444,9 +633,18 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
         name: r.name,
         slug: r.slug,
         thumbnail: r.thumbnail,
-        images: r.images,
+        description: r.description,
+        sku: r.sku,
+        category: r.category,
+        brand: r.brand,
+        status: r.status,
         price: Number(r.price),
-        compareAtPrice: r.compareAtPrice ? Number(r.compareAtPrice) : undefined,
+        compareAtPrice:
+          r.compareAtPrice !== null && r.compareAtPrice !== undefined
+            ? Number(r.compareAtPrice)
+            : null,
+        stock: Number(r.stock),
+        createdAt: new Date(r.createdAt),
       })),
       total,
     };

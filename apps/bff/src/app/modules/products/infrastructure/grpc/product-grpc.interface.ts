@@ -4,6 +4,7 @@ import {
   GetProductByIdBodyDto,
   GetProductBySlugBodyDto,
   GetProductsBodyDto,
+  GetProductsByAdminBodyDto,
   GetProductsResponse,
   ProductCartItemResponse,
   ProductIdResponse,
@@ -23,6 +24,8 @@ export interface ProductGrpcService {
   getProductBySlug(data: GetProductBySlugBodyDto): Observable<ProductInfoResponse>;
 
   getProducts(data: GetProductsBodyDto): Observable<GetProductsResponse>;
+
+  getProductsByAdmin(query: GetProductsByAdminBodyDto): Observable<GetProductsResponse>;
 
   reserveStock(data: ReserveStockBodyDto): Observable<ReserveStockResponse>;
 

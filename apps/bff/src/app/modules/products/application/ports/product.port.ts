@@ -3,6 +3,7 @@ import {
   GetProductByIdBodyDto,
   GetProductBySlugBodyDto,
   GetProductsBodyDto,
+  GetProductsByAdminBodyDto,
   GetProductsResponse,
   ProductCartItemResponse,
   ProductIdResponse,
@@ -22,6 +23,8 @@ export abstract class ProductPort {
   abstract getProductBySlug(data: GetProductBySlugBodyDto): Promise<ProductInfoResponse>;
 
   abstract getProducts(query: GetProductsBodyDto): Promise<GetProductsResponse>;
+
+  abstract getProductsByAdmin(query: GetProductsByAdminBodyDto): Promise<GetProductsResponse>;
 
   abstract reserveStock(data: ReserveStockBodyDto): Promise<ReserveStockResponse>;
 

@@ -9,6 +9,7 @@ import {
   GetProductByIdBodyDto,
   GetProductBySlugBodyDto,
   GetProductsBodyDto,
+  GetProductsByAdminBodyDto,
   GetProductsResponse,
   ProductCartItemResponse,
   ProductIdResponse,
@@ -51,6 +52,10 @@ export class ProductGrpcAdapter implements ProductPort, OnModuleInit {
 
   getProducts(query: GetProductsBodyDto): Promise<GetProductsResponse> {
     return firstValueFrom(this.productService.getProducts(query));
+  }
+
+  getProductsByAdmin(query: GetProductsByAdminBodyDto): Promise<GetProductsResponse> {
+    return firstValueFrom(this.productService.getProductsByAdmin(query));
   }
 
   reserveStock(data: ReserveStockBodyDto): Promise<ReserveStockResponse> {

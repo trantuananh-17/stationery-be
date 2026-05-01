@@ -8,16 +8,19 @@ import { GetProductsUseCase } from './application/get-products.usecase';
 import { GetProductBySlugUseCase } from './application/get-product-slug.usecase';
 import { CreateProductUseCase } from './application/create-product.usecase';
 import { UpdateProductUseCase } from './application/update-product.usecase';
+import { GetProductsByAdminUseCase } from './application/get-products-admin.usecase';
+import { AdminProductController } from './presentation/controllers/admin-product.controller';
 
 @Module({
   imports: [ProductInfrasModule, JwtProvider, GuardsModule],
-  controllers: [ProductController],
+  controllers: [ProductController, AdminProductController],
   providers: [
     GetProductByIdUseCase,
     GetProductsUseCase,
     GetProductBySlugUseCase,
     CreateProductUseCase,
     UpdateProductUseCase,
+    GetProductsByAdminUseCase,
   ],
   exports: [JwtProvider, GuardsModule],
 })

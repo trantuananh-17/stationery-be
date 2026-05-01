@@ -40,7 +40,7 @@ export class ProductOrmEntity extends BaseEntity {
   @Column({ nullable: true })
   thumbnail: string;
 
-  @Column({ type: 'enum', enum: ProductStatus, default: ProductStatus.INACTIVE })
+  @Column({ type: 'enum', enum: ProductStatus, default: ProductStatus.DRAFT })
   status: ProductStatus;
 
   @Column({ default: false })
