@@ -21,7 +21,7 @@ services:
       - stationery-nw
 
   postgres:
-    image: postgres
+    image: pgvector/pgvector:pg16
     container_name: postgres_server
     restart: unless-stopped
     environment:
@@ -31,7 +31,8 @@ services:
     ports:
       - '5432:5432'
     volumes:
-      - ./docker_data/postgres_data:/var/lib/postgresql
+      - ./docker_data/postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init-pgvector.sql:/docker-entrypoint-initdb.d/init-pgvector.sql
     networks:
       - stationery-nw
 
@@ -48,5 +49,16 @@ services:
       - postgres
     volumes:
       - ./docker_data/pgadmin_data:/var/lib/pgadmin
+    networks:
+      - stationery-nw
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama_server
+    restart: unless-stopped
+    ports:
+      - '11434:11434'
+    volumes:
+      - ./docker_data/ollama_data:/root/.ollama
+    gpus: all
     networks:
       - stationery-nw
