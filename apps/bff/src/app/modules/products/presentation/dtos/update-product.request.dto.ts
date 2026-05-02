@@ -3,6 +3,7 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsBoolean,
+  IsIn,
   IsNumber,
   IsOptional,
   IsString,
@@ -40,6 +41,11 @@ export class UpdateProductInputDto {
   @IsArray()
   @IsString({ each: true })
   images?: string[];
+
+  @IsOptional()
+  @IsString()
+  @IsIn(['ACTIVE', 'DRAFT', 'ARCHIVED'])
+  status?: string;
 
   @ApiPropertyOptional()
   @IsOptional()

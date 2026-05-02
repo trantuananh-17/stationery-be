@@ -1,4 +1,5 @@
 import { ICommand } from '@nestjs/cqrs';
+import { ProductStatus } from '../../../../domain/enum/product-status.enum';
 
 export type UpdateProductPayload = {
   name?: string;
@@ -7,6 +8,7 @@ export type UpdateProductPayload = {
   categoryId?: string;
   brandId?: string;
   images?: string[];
+  status: ProductStatus;
   thumbnail?: string;
   featured?: boolean;
   searchKeywords?: string[];

@@ -10,6 +10,7 @@ export interface ProductBodyDto {
   searchKeywords?: string[];
   seoTitle?: string;
   seoDescription?: string;
+  status?: string;
 }
 
 export interface SpecificationBodyDto {

@@ -61,6 +61,7 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
         searchKeywords: product.searchKeywords,
         seoTitle: product.seoTitle,
         seoDescription: product.seoDescription,
+        status: product.status,
       });
 
       if (specifications !== undefined) {
@@ -81,13 +82,13 @@ export class UpdateProductHandler implements ICommandHandler<UpdateProductComman
               id: variant.id,
               name: variant.name ?? '',
               sku,
-              price: variant.price,
+              price: variant.price ?? 0,
               compareAtPrice: variant.compareAtPrice,
-              stock: variant.stock,
+              stock: variant.stock ?? 0,
               image: variant.image,
               sortOrder: variant.sortOrder ?? index,
               isDefault: variant.isDefault,
-              attributeValueIds: variant.attributeValueIds,
+              attributeValueIds: variant.attributeValueIds ?? [],
             };
           }),
         );

@@ -65,6 +65,48 @@
 
     { "attributeSlug": "file_type", "value": "Bìa còng", "slug": "lever-arch", "sortOrder": 1 },
     { "attributeSlug": "file_type", "value": "Bìa lá", "slug": "clear-book", "sortOrder": 2 },
-    { "attributeSlug": "file_type", "value": "File hộp", "slug": "box-file", "sortOrder": 3 }
+    { "attributeSlug": "file_type", "value": "File hộp", "slug": "box-file", "sortOrder": 3 },
+
+    { "attributeSlug": "brand", "value": "Pentel", "slug": "pentel", "sortOrder": 4 },
+    { "attributeSlug": "brand", "value": "Pilot", "slug": "pilot", "sortOrder": 5 },
+    { "attributeSlug": "brand", "value": "Stabilo", "slug": "stabilo", "sortOrder": 6 },
+    { "attributeSlug": "brand", "value": "Plus", "slug": "plus", "sortOrder": 7 },
+
+    { "attributeSlug": "color", "value": "Xanh lá", "slug": "green", "sortOrder": 4 },
+    { "attributeSlug": "color", "value": "Vàng", "slug": "yellow", "sortOrder": 5 },
+    { "attributeSlug": "color", "value": "Tím", "slug": "purple", "sortOrder": 6 },
+    { "attributeSlug": "color", "value": "Cam", "slug": "orange", "sortOrder": 7 },
+
+    { "attributeSlug": "size", "value": "Extra nhỏ", "slug": "xs", "sortOrder": 4 },
+    { "attributeSlug": "size", "value": "Extra lớn", "slug": "xl", "sortOrder": 5 },
+
+    { "attributeSlug": "gsm", "value": "90gsm", "slug": "90gsm", "sortOrder": 4 },
+    { "attributeSlug": "gsm", "value": "100gsm", "slug": "100gsm", "sortOrder": 5 },
+    { "attributeSlug": "gsm", "value": "120gsm", "slug": "120gsm", "sortOrder": 6 },
+
+    {
+      "attributeSlug": "paper_type",
+      "value": "Giấy tái chế",
+      "slug": "recycled-paper",
+      "sortOrder": 3
+    },
+    {
+      "attributeSlug": "paper_type",
+      "value": "Giấy mỹ thuật",
+      "slug": "art-paper",
+      "sortOrder": 4
+    },
+
+    { "attributeSlug": "sheet_count", "value": "300 tờ", "slug": "300-sheets", "sortOrder": 4 },
+    { "attributeSlug": "sheet_count", "value": "1000 tờ", "slug": "1000-sheets", "sortOrder": 5 },
+
+    { "attributeSlug": "pen_type", "value": "Bút chì", "slug": "pencil", "sortOrder": 4 },
+    { "attributeSlug": "pen_type", "value": "Bút mực", "slug": "fountain-pen", "sortOrder": 5 },
+
+    { "attributeSlug": "ink_type", "value": "Mực nước", "slug": "water-ink", "sortOrder": 3 },
+    { "attributeSlug": "ink_type", "value": "Mực khô nhanh", "slug": "quick-dry", "sortOrder": 4 },
+
+    { "attributeSlug": "file_type", "value": "Bìa nút", "slug": "button-file", "sortOrder": 4 },
+    { "attributeSlug": "file_type", "value": "Bìa zip", "slug": "zip-file", "sortOrder": 5 }
   ]
 }

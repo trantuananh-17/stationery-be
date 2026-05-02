@@ -414,6 +414,7 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       .innerJoin('p.variants', 'v', 'v.is_default = :isDefault', {
         isDefault: true,
       })
+      .leftJoin('p.variants', 'all_variants')
       .leftJoin('p.category', 'c')
       .leftJoin('p.brand', 'b')
       .andWhere('p.deletedAt IS NULL');
@@ -451,18 +452,21 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       'p.name AS name',
       'p.slug AS slug',
       'p.thumbnail AS thumbnail',
-      'p.description AS description',
+      'p.short_description AS "shortDescription"',
       'p.status AS status',
       'p.created_at AS "createdAt"',
 
       'v.sku AS sku',
       'v.price AS price',
       'v.compare_at_price AS "compareAtPrice"',
-      'v.stock AS stock',
+
+      'COALESCE(SUM(all_variants.stock - all_variants.reservedStock), 0) AS stock',
 
       'c.name AS category',
       'b.name AS brand',
     ]);
+
+    qb.groupBy('p.id').addGroupBy('v.id').addGroupBy('c.id').addGroupBy('b.id');
 
     switch (orderBy) {
       case AdminProductOrderBy.PRICE_ASC:
@@ -490,11 +494,11 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
         break;
 
       case AdminProductOrderBy.STOCK_ASC:
-        qb.orderBy('v.stock', 'ASC');
+        qb.orderBy('stock', 'ASC');
         break;
 
       case AdminProductOrderBy.STOCK_DESC:
-        qb.orderBy('v.stock', 'DESC');
+        qb.orderBy('stock', 'DESC');
         break;
 
       default:
@@ -511,7 +515,7 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
         name: r.name,
         slug: r.slug,
         thumbnail: r.thumbnail,
-        description: r.description,
+        description: r.shortDescription,
         sku: r.sku,
         category: r.category,
         brand: r.brand,
@@ -543,6 +547,7 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       .innerJoin('p.variants', 'v', 'v.is_default = :isDefault', {
         isDefault: true,
       })
+      .leftJoin('p.variants', 'all_variants')
       .leftJoin('p.category', 'c')
       .leftJoin('p.brand', 'b')
       .andWhere('p.deletedAt IS NULL')
@@ -596,11 +601,14 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       'v.sku AS sku',
       'v.price AS price',
       'v.compare_at_price AS "compareAtPrice"',
-      'v.stock AS stock',
+
+      'COALESCE(SUM(all_variants.stock - all_variants.reservedStock), 0) AS stock',
 
       'c.name AS category',
       'b.name AS brand',
     ]);
+
+    qb.groupBy('p.id').addGroupBy('v.id').addGroupBy('c.id').addGroupBy('b.id');
 
     switch (orderBy) {
       case ProductOrderBy.PRICE_ASC:

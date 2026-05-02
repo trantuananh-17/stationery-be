@@ -1,3 +1,4 @@
+import { status } from '@grpc/grpc-js';
 import { randomUUID } from 'crypto';
 import { Variant } from './variant.entity';
 import { Specification } from './specification.entity';
@@ -228,9 +229,14 @@ export class Product {
     searchKeywords?: string[];
     seoTitle?: string;
     seoDescription?: string;
+    status: ProductStatus;
   }) {
     if (data.name !== undefined) {
       this.params.name = data.name.trim();
+    }
+
+    if (data.status !== undefined) {
+      this.params.status = data.status;
     }
 
     if (data.description !== undefined) {

@@ -118,6 +118,8 @@ message UpdateProductInput {
   repeated string search_keywords = 9;
   optional string seo_title = 10;
   optional string seo_description = 11;
+  optional string status = 12;
+
 }
 
 message UpdateSpecificationInput {

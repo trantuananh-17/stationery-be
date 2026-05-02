@@ -39,12 +39,12 @@ export class ProductController {
     return this.commandBus.execute(new CreateProductCommand(product, specifications, variants));
   }
 
-  @Patch(':id')
-  async update(@Param('id', new ParseUUIDPipe()) id: string, @Body() body: UpdateProductDto) {
-    return this.commandBus.execute(
-      new UpdateProductCommand(id, body.product, body.specifications, body.variants),
-    );
-  }
+  // @Patch(':id')
+  // async update(@Param('id', new ParseUUIDPipe()) id: string, @Body() body: UpdateProductDto) {
+  //   return this.commandBus.execute(
+  //     new UpdateProductCommand(id, body.product, body.specifications, body.variants),
+  //   );
+  // }
 
   @Get()
   @ApiOperation({ summary: 'Get list products' })
@@ -167,6 +167,7 @@ export class ProductController {
         searchKeywords?: string[];
         seoTitle?: string;
         seoDescription?: string;
+        status: ProductStatus;
       };
       specifications?: {
         id: string;
@@ -250,8 +251,6 @@ export class ProductController {
       limit?: number;
     },
   ) {
-    console.log(payload.status);
-
     const result: PaginatedResult<ProductReadModel> = await this.queryBus.execute(
       new GetProductsByAdminQuery(
         payload.search,
