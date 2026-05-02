@@ -1,10 +1,10 @@
 module.exports = {
-  displayName: 'ai-service',
+  displayName: 'upload-service',
   preset: '../../jest.preset.js',
   testEnvironment: 'node',
   transform: {
     '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
   },
   moduleFileExtensions: ['ts', 'js', 'html'],
-  coverageDirectory: '../../coverage/apps/ai-service',
+  coverageDirectory: '../../coverage/apps/upload-service',
 };

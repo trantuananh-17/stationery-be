@@ -1,7 +1,7 @@
 {
-  "name": "ai-service",
+  "name": "upload-service",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/ai-service/src",
+  "sourceRoot": "apps/upload-service/src",
   "projectType": "application",
   "tags": [],
   "targets": {
@@ -10,7 +10,7 @@
       "options": {
         "command": "webpack-cli build",
         "args": ["--node-env=production"],
-        "cwd": "apps/ai-service"
+        "cwd": "apps/upload-service"
       },
       "configurations": {
         "development": {
@@ -23,8 +23,8 @@
       "cache": true,
       "executor": "@nx/js:prune-lockfile",
       "outputs": [
-        "{workspaceRoot}/dist/apps/ai-service/package.json",
-        "{workspaceRoot}/dist/apps/ai-service/pnpm-lock.yaml"
+        "{workspaceRoot}/dist/apps/upload-service/package.json",
+        "{workspaceRoot}/dist/apps/upload-service/pnpm-lock.yaml"
       ],
       "options": {
         "buildTarget": "build"
@@ -33,7 +33,7 @@
     "copy-workspace-modules": {
       "dependsOn": ["build"],
       "cache": true,
-      "outputs": ["{workspaceRoot}/dist/apps/ai-service/workspace_modules"],
+      "outputs": ["{workspaceRoot}/dist/apps/upload-service/workspace_modules"],
       "executor": "@nx/js:copy-workspace-modules",
       "options": {
         "buildTarget": "build"
@@ -49,15 +49,15 @@
       "defaultConfiguration": "development",
       "dependsOn": ["build"],
       "options": {
-        "buildTarget": "ai-service:build",
+        "buildTarget": "upload-service:build",
         "runBuildTargetDependencies": false
       },
       "configurations": {
         "development": {
-          "buildTarget": "ai-service:build:development"
+          "buildTarget": "upload-service:build:development"
         },
         "production": {
-          "buildTarget": "ai-service:build:production"
+          "buildTarget": "upload-service:build:production"
         }
       }
     },

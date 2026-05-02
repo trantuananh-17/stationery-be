@@ -6,7 +6,7 @@ import { Module } from '@nestjs/common';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: ['apps/ai-services/.env', '.env'],
+      envFilePath: ['apps/ai-service/.env', '.env'],
     }),
     ChatModule,
   ],

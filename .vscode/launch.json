@@ -151,9 +151,9 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug ai-services with Nx",
+      "name": "Debug ai-service with Nx",
       "runtimeExecutable": "pnpm exec",
-      "runtimeArgs": ["nx", "serve", "ai-services"],
+      "runtimeArgs": ["nx", "serve", "ai-service"],
       "env": {
         "NODE_OPTIONS": "--inspect=9238"
       },
@@ -161,7 +161,25 @@
       "internalConsoleOptions": "neverOpen",
       "skipFiles": ["<node_internals>/**"],
       "sourceMaps": true,
-      "outFiles": ["${workspaceFolder}/apps/ai-services/dist/**/*.(m|c|)js", "!**/node_modules/**"]
+      "outFiles": ["${workspaceFolder}/apps/ai-service/dist/**/*.(m|c|)js", "!**/node_modules/**"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug upload-service with Nx",
+      "runtimeExecutable": "pnpm exec",
+      "runtimeArgs": ["nx", "serve", "upload-service"],
+      "env": {
+        "NODE_OPTIONS": "--inspect=9239"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"],
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceFolder}/apps/upload-service/dist/**/*.(m|c|)js",
+        "!**/node_modules/**"
+      ]
     }
   ]
 }
