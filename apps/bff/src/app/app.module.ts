@@ -12,6 +12,7 @@ import { ProductModule } from './modules/products/product.module';
 import { UserModule } from './modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CartModule } from './modules/cart/cart.module';
+import { WebhookModule } from './modules/webhook/webhook.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { CartModule } from './modules/cart/cart.module';
     UserModule,
     AuthModule,
     CartModule,
+    WebhookModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['apps/bff/.env'],
