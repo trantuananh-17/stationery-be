@@ -1,16 +1,20 @@
-import { Column, Entity, OneToMany } from 'typeorm';
+import { Column, Entity, Index, OneToMany } from 'typeorm';
 import { BaseEntity } from '@common/databases/base.entity';
 import { OrderStatus } from '../../domain/enums/order-status.enum';
 import { PaymentStatus } from '../../domain/enums/payment-status.enum';
 import { OrderItemOrmEntity } from './typeorm-order-item.entity';
 
 @Entity({ name: 'orders' })
+@Index('idx_orders_payment_expire', ['paymentStatus', 'paymentExpiredAt'])
 export class OrderOrmEntity extends BaseEntity {
   @Column({ type: 'varchar', length: 50, unique: true })
   number: string;
 
   @Column({ name: 'user_id', type: 'uuid' })
   userId: string;
+
+  @Column({ name: 'email', type: 'varchar', length: 255, nullable: false })
+  email: string;
 
   @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.PENDING })
   status: OrderStatus;
@@ -23,9 +27,6 @@ export class OrderOrmEntity extends BaseEntity {
     address1: string;
     address2?: string;
     city: string;
-    state: string;
-    zip: string;
-    country: string;
     phone?: string;
   };
 
@@ -37,9 +38,6 @@ export class OrderOrmEntity extends BaseEntity {
     address1: string;
     address2?: string;
     city: string;
-    state: string;
-    zip: string;
-    country: string;
     phone?: string;
   };
 
@@ -59,6 +57,9 @@ export class OrderOrmEntity extends BaseEntity {
 
   @Column({ name: 'payment_provider', type: 'varchar', length: 50, nullable: true })
   paymentProvider?: string | null;
+
+  @Column({ name: 'payment_expired_at', type: 'timestamp', nullable: true })
+  paymentExpiredAt?: Date | null;
 
   @Column({ type: 'int' })
   subtotal: number;

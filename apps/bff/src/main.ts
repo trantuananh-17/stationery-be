@@ -12,7 +12,9 @@ import { GlobalExceptionFilter } from '@common/filters/global-exception.filter';
 
 async function bootstrap() {
   try {
-    const app = await NestFactory.create(AppModule);
+    const app = await NestFactory.create(AppModule, {
+      rawBody: true,
+    });
     const CONFIG = CONFIGURATION();
 
     const globalPrefix = CONFIG.GLOBAL_PREFIX;

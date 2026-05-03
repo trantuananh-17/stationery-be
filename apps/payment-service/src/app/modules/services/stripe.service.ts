@@ -46,4 +46,31 @@ export class StripeService {
       sessionId: session.id,
     };
   }
+
+  async createPaymentIntent(params: CreateCheckoutSessionRequest) {
+    const currency = 'vnd';
+
+    const amount = params.lineItems.reduce((total, item) => {
+      return total + item.price * item.quantity;
+    }, 0);
+
+    const stripeAmount = currency === 'vnd' ? Math.round(amount) : Math.round(amount * 100);
+
+    const paymentIntent = await this.stripe.paymentIntents.create({
+      amount: stripeAmount,
+      currency,
+      metadata: {
+        orderId: params.orderId,
+      },
+      automatic_payment_methods: {
+        enabled: true,
+      },
+      receipt_email: params.clientEmail,
+    });
+
+    return {
+      clientSecret: paymentIntent.client_secret,
+      paymentIntentId: paymentIntent.id,
+    };
+  }
 }

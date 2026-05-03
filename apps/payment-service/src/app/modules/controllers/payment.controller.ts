@@ -70,8 +70,63 @@ export class PaymentController {
     };
   }
 
+  @Post('payment-intent')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Create Stripe payment intent' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['orderId', 'clientEmail', 'lineItems'],
+      properties: {
+        orderId: {
+          type: 'string',
+          example: 'order_123',
+        },
+        clientEmail: {
+          type: 'string',
+          example: 'test@gmail.com',
+        },
+        lineItems: {
+          type: 'array',
+          items: {
+            type: 'object',
+            required: ['name', 'price', 'quantity'],
+            properties: {
+              name: {
+                type: 'string',
+                example: 'Bút bi',
+              },
+              price: {
+                type: 'number',
+                example: 10000,
+              },
+              quantity: {
+                type: 'number',
+                example: 2,
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  async createPaymentIntent(@Body() body: CreateCheckoutSessionRequest) {
+    const data = await this.paymentService.createPaymentIntent(body);
+
+    return {
+      data,
+      message: 'Create Payment Intent Successfully',
+      statusCode: HttpStatus.OK,
+    };
+  }
+
   @GrpcMethod('PaymentService', 'createCheckoutSession')
   async createCheckoutSessionGrpc(@Payload() payload: CreateCheckoutSessionRequest) {
+    return await this.paymentService.createCheckoutSession(payload);
+  }
+
+  @GrpcMethod('PaymentService', 'createCheckoutIntent')
+  async createCheckoutIntentGrpc(@Payload() payload: CreateCheckoutSessionRequest) {
     return await this.paymentService.createCheckoutSession(payload);
   }
 }

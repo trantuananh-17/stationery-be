@@ -10,7 +10,8 @@
     "docker:down:provider": "docker compose -f docker/docker-compose.provider.yaml down",
     "docker:clear": "docker system prune -af",
     "dev": "pnpm nx:run-many -t serve",
-    "dev-lite": "pnpm dev --projects=bff,auth-service,user-service,cart-service,product-service"
+    "dev-lite": "pnpm dev --projects=bff,auth-service,user-service,cart-service,product-service,order-service,payment-service",
+    "dev-kafka": "pnpm dev --projects=bff,order-service,payment-service"
   },
   "private": true,
   "dependencies": {
@@ -38,6 +39,7 @@
     "class-validator": "^0.14.3",
     "crypto": "^1.0.1",
     "express": "^5.2.1",
+    "kafkajs": "^2.2.4",
     "langchain": "^1.3.5",
     "mongoose": "^9.2.1",
     "multer": "^2.1.1",

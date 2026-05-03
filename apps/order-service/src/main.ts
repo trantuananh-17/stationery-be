@@ -10,6 +10,7 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
 import { CONFIGURATION } from './configuration';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { QUEUE_GROUPS } from '@common/constants/enums/queue.enum';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -29,6 +30,19 @@ async function bootstrap() {
   if (!grpcPackage || !grpcProtoPath) {
     throw new Error('Missing GRPC_ORDER_SERVICE config');
   }
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.KAFKA,
+    options: {
+      client: {
+        clientId: 'order-service',
+        brokers: [configService.getOrThrow<string>('KAFKA_CONFIG.URL')],
+      },
+      consumer: {
+        groupId: QUEUE_GROUPS.ORDER,
+        allowAutoTopicCreation: true,
+      },
+    },
+  });
 
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.GRPC,

@@ -1,7 +1,7 @@
 export const OrderStatus = {
   PENDING: 'PENDING',
   PROCESSING: 'PROCESSING',
-  SHIPPED: 'SHIPPED',
+  EXPIRED: 'EXPIRED',
   DELIVERED: 'DELIVERED',
   CANCELLED: 'CANCELLED',
 } as const;

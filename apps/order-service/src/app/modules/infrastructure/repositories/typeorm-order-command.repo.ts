@@ -10,6 +10,8 @@ import { OrderItem } from '../../domain/entities/order-item.entity';
 
 import { OrderOrmEntity } from '../entities/typeorm-order.entity';
 import { OrderItemOrmEntity } from '../entities/typeorm-order-item.entity';
+import { PaymentStatus } from '../../domain/enums/payment-status.enum';
+import { OrderStatus } from '../../domain/enums/order-status.enum';
 
 @Injectable()
 export class TypeOrmOrderCommandRepository implements IOrderCommandRepository {
@@ -32,6 +34,29 @@ export class TypeOrmOrderCommandRepository implements IOrderCommandRepository {
 
     await orderRepo.save(orderOrm);
     await this.syncOrderItems(order.id, itemOrms, orderItemRepo);
+  }
+
+  async updatePaymentStatus(params: {
+    orderId: string;
+    paymentStatus: PaymentStatus;
+    orderStatus: OrderStatus;
+    paymentTransactionId?: string;
+    paymentProvider?: string;
+  }): Promise<void> {
+    const result = await this.orderRepo.update(
+      { id: params.orderId },
+      {
+        paymentStatus: params.paymentStatus,
+        paymentTransactionId: params.paymentTransactionId ?? undefined,
+        paymentProvider: params.paymentProvider ?? undefined,
+        status: params.orderStatus ?? undefined,
+        updatedAt: new Date(),
+      },
+    );
+
+    if (!result.affected) {
+      throw new Error(`Order not found: ${params.orderId}`);
+    }
   }
 
   private async syncOrderItems(
@@ -64,6 +89,7 @@ export class TypeOrmOrderCommandRepository implements IOrderCommandRepository {
     orm.id = order.id;
     orm.number = order.number;
     orm.userId = order.userId;
+    orm.email = order.email;
     orm.status = order.status;
 
     orm.shippingAddress = order.shippingAddress;

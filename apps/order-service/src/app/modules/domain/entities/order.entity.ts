@@ -10,9 +10,7 @@ export type OrderAddress = {
   address1: string;
   address2?: string;
   city: string;
-  state: string;
-  zip: string;
-  country: string;
+
   phone?: string;
 };
 
@@ -20,6 +18,7 @@ export type OrderParams = {
   readonly id: string;
   readonly number: string;
   readonly userId: string;
+  readonly email: string;
   status: OrderStatus;
 
   shippingAddress: OrderAddress;
@@ -29,6 +28,7 @@ export type OrderParams = {
   paymentStatus: PaymentStatus;
   paymentTransactionId?: string;
   paymentProvider?: string;
+  paymentExpiredAt?: Date;
 
   subtotal: number;
   tax: number;
@@ -47,6 +47,7 @@ export type OrderParams = {
 
 export type CreateOrderParams = {
   userId: string;
+  email: string;
   number: string;
   shippingAddress: OrderAddress;
   billingAddress: OrderAddress;
@@ -86,17 +87,20 @@ export class Order {
     const shippingCost = data.shippingCost ?? 0;
     const discount = data.discount ?? 0;
     const total = subtotal + tax + shippingCost - discount;
+    const paymentExpiredAt = new Date(Date.now() + 15 * 60 * 1000);
 
     return new Order(
       {
         id: orderId,
         number: data.number,
         userId: data.userId,
+        email: data.email,
         status: OrderStatus.PENDING,
         shippingAddress: data.shippingAddress,
         billingAddress: data.billingAddress,
         paymentMethod: data.paymentMethod,
         paymentStatus: PaymentStatus.PENDING,
+        paymentExpiredAt,
         subtotal,
         tax,
         shippingCost,
@@ -129,18 +133,6 @@ export class Order {
 
     if (!address.city?.trim()) {
       throw new Error(`${name}.city is required`);
-    }
-
-    if (!address.state?.trim()) {
-      throw new Error(`${name}.state is required`);
-    }
-
-    if (!address.zip?.trim()) {
-      throw new Error(`${name}.zip is required`);
-    }
-
-    if (!address.country?.trim()) {
-      throw new Error(`${name}.country is required`);
     }
   }
 
@@ -212,14 +204,14 @@ export class Order {
       throw new Error('Only processing order can be shipped');
     }
 
-    this.params.status = OrderStatus.SHIPPED;
+    this.params.status = OrderStatus.DELIVERED;
     this.params.trackingNumber = trackingNumber;
     this.params.shippingProvider = shippingProvider;
     this.setUpdatedAt();
   }
 
   markDelivered(): void {
-    if (this.params.status !== OrderStatus.SHIPPED) {
+    if (this.params.status !== OrderStatus.DELIVERED) {
       throw new Error('Only shipped order can be delivered');
     }
 
@@ -286,6 +278,10 @@ export class Order {
 
   get userId(): string {
     return this.params.userId;
+  }
+
+  get email(): string {
+    return this.params.email;
   }
 
   get status(): OrderStatus {

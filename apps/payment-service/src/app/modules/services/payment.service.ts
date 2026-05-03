@@ -11,4 +11,8 @@ export class PaymentService {
   createCheckoutSession(params: CreateCheckoutSessionRequest) {
     return this.stripeService.createCheckoutSession(params);
   }
+
+  // createPaymentIntent(params: CreateCheckoutSessionRequest) {
+  //   return this.stripeService.createPaymentIntent(params);
+  // }
 }

@@ -4,6 +4,7 @@ import { OrderAddress } from '../../../domain/entities/order.entity';
 export class CheckoutCommand implements ICommand {
   constructor(
     public readonly userId: string,
+    public readonly email: string,
     public readonly shippingAddress: OrderAddress,
     public readonly billingAddress: OrderAddress,
     public readonly paymentMethod: string,

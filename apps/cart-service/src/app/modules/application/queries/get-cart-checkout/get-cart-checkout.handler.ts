@@ -18,7 +18,9 @@ export class GetCartCheckoutHandler
 
     const cart = await this.cartQueryRepo.findCartInfoByCheckout(userId);
 
-    if (!cart) return null;
+    if (!cart) {
+      throw new Error('Cart not found');
+    }
 
     return cart;
   }

@@ -6,8 +6,36 @@ import { ICartGrpcPort } from '../../ports/grpc/cart-grpc.port';
 import { Order } from '../../../domain/entities/order.entity';
 import { IOrderCommandRepository } from '../../ports/repositories/order-command.repo';
 
+export type CheckoutStockItem = {
+  variantId: string;
+  quantity: number;
+  success: boolean;
+  status: 'reserved' | 'insufficient_stock' | 'not_found' | 'inactive' | 'invalid_quantity';
+  availableStock: number;
+  remainingStock: number;
+  message?: string;
+};
+
+export type CheckoutResult =
+  | {
+      success: true;
+      orderId: string;
+      orderNumber: string;
+      subtotal: number;
+      total: number;
+      status: string;
+      paymentStatus: string;
+      stockItems: CheckoutStockItem[];
+    }
+  | {
+      success: false;
+      code: 'CART_EMPTY' | 'STOCK_RESERVATION_FAILED';
+      message: string;
+      stockItems: CheckoutStockItem[];
+    };
+
 @CommandHandler(CheckoutCommand)
-export class CheckoutHandler implements ICommandHandler<CheckoutCommand> {
+export class CheckoutHandler implements ICommandHandler<CheckoutCommand, CheckoutResult> {
   constructor(
     private readonly productGrpcPort: IProductGrpcPort,
     private readonly cartGrpcPort: ICartGrpcPort,
@@ -15,13 +43,18 @@ export class CheckoutHandler implements ICommandHandler<CheckoutCommand> {
     private readonly orderCommandRepo: IOrderCommandRepository,
   ) {}
 
-  async execute(command: CheckoutCommand): Promise<any> {
-    const { userId, shippingAddress, billingAddress, paymentMethod, notes } = command;
+  async execute(command: CheckoutCommand): Promise<CheckoutResult> {
+    const { userId, email, shippingAddress, billingAddress, paymentMethod, notes } = command;
 
     const cart = await this.cartGrpcPort.getCartForCheckout({ userId });
 
     if (!cart || cart.items.length === 0) {
-      throw new Error('Cart is empty');
+      return {
+        success: false,
+        code: 'CART_EMPTY',
+        message: 'Giỏ hàng trống',
+        stockItems: [],
+      };
     }
 
     const reservedStock = await this.productGrpcPort.reserveStock({
@@ -31,22 +64,26 @@ export class CheckoutHandler implements ICommandHandler<CheckoutCommand> {
       })),
     });
 
-    if (reservedStock.success === false) {
-      throw new Error('Failed to reserve stock for one or more items');
+    if (!reservedStock.success) {
+      return {
+        success: false,
+        code: 'STOCK_RESERVATION_FAILED',
+        message: 'Một số sản phẩm không đủ điều kiện để đặt hàng',
+        stockItems: reservedStock.items,
+      };
     }
 
     const number = this.generateOrderNumber();
 
-    const discount = 0;
-
     const order = Order.create({
       userId,
+      email,
       number,
       shippingAddress,
       billingAddress,
       paymentMethod,
       notes,
-      discount,
+      discount: 0,
       items: cart.items.map((item) => ({
         productId: item.productId,
         variantId: item.variantId,
@@ -63,13 +100,21 @@ export class CheckoutHandler implements ICommandHandler<CheckoutCommand> {
       await this.orderCommandRepo.save(order);
     });
 
+    // Sau khi save order thành công thì mới clear cart
+    // await this.cartGrpcPort.clearCartItems({
+    //   userId,
+    //   variantIds: cart.items.map((item) => item.variantId),
+    // });
+
     return {
+      success: true,
       orderId: order.id,
       orderNumber: order.number,
       subtotal: order.subtotal,
       total: order.total,
       status: order.status,
       paymentStatus: order.paymentStatus,
+      stockItems: reservedStock.items,
     };
   }
 

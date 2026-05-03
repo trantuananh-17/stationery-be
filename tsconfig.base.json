@@ -25,7 +25,8 @@
       "@common/decorators/*": ["libs/decorators/src/lib/*"],
       "@common/databases/*": ["libs/databases/src/lib/*"],
       "@common/guards/*": ["libs/guards/src/lib/*"],
-      "@common/filters/*": ["libs/filters/src/lib/*"]
+      "@common/filters/*": ["libs/filters/src/lib/*"],
+      "@common/kafka/*": ["libs/kafka/src//lib/*"]
     }
   },
   "exclude": ["node_modules", "tmp"]
