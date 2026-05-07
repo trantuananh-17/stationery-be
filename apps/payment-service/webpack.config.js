@@ -20,6 +20,19 @@ module.exports = {
       outputHashing: 'none',
       generatePackageJson: true,
       sourceMap: true,
+      assets: [
+        './src/assets',
+        {
+          glob: '**/*',
+          input: 'libs/interfaces/src/lib/proto/order',
+          output: './proto',
+        },
+        {
+          glob: '**/*',
+          input: 'libs/interfaces/src/lib/proto/payment',
+          output: './proto',
+        },
+      ],
     }),
   ],
 };

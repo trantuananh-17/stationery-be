@@ -11,7 +11,8 @@
     "docker:clear": "docker system prune -af",
     "dev": "pnpm nx:run-many -t serve",
     "dev-lite": "pnpm dev --projects=bff,auth-service,user-service,cart-service,product-service,order-service,payment-service",
-    "dev-kafka": "pnpm dev --projects=bff,order-service,payment-service"
+    "dev-kafka": "pnpm dev --projects=bff,order-service,payment-service",
+    "dev-auth": "pnpm dev --projects=bff,user-service,auth-service"
   },
   "private": true,
   "dependencies": {

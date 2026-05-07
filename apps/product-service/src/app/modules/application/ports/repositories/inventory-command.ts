@@ -1,7 +1,18 @@
 import { VariantStockSnapshot } from '../../read-models/variant-stock.read-model';
 
 export abstract class IInventoryCommandRepository {
-  abstract findVariantsForUpdate(variantIds: string[]): Promise<VariantStockSnapshot[]>;
+  abstract findVariants(variantIds: string[]): Promise<VariantStockSnapshot[]>;
 
-  abstract reserveStock(variantId: string, quantity: number): Promise<void>;
+  abstract findVariant(variantId: string): Promise<VariantStockSnapshot | null>;
+
+  abstract reserveStockAtomic(variantId: string, quantity: number): Promise<boolean>;
+
+  // confirm
+  abstract confirmStockAtomic(variantId: string, quantity: number): Promise<boolean>;
+
+  // cancel
+  abstract releaseStockAtomic(variantId: string, quantity: number): Promise<boolean>;
+
+  //return
+  abstract restockAtomic(variantId: string, quantity: number): Promise<boolean>;
 }

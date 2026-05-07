@@ -28,11 +28,11 @@ export class ReserveStockHandler
   ) {}
 
   async execute(command: ReserveStockCommand): Promise<ReserveStockResult> {
-    return await this.dataContext.runInTransaction(async () => {
+    return this.dataContext.runInTransaction(async () => {
       const mergedItems = this.mergeDuplicateItems(command.items);
       const variantIds = mergedItems.map((item) => item.variantId);
 
-      const variants = await this.inventoryCommandRepo.findVariantsForUpdate(variantIds);
+      const variants = await this.inventoryCommandRepo.findVariants(variantIds);
 
       const variantMap = new Map(variants.map((v) => [v.variantId, v]));
       const results: ReserveStockItemResult[] = [];
@@ -44,7 +44,6 @@ export class ReserveStockHandler
 
         if (!variant || variant.deletedAt) {
           hasError = true;
-
           results.push({
             variantId: item.variantId,
             requestedQuantity: item.quantity,
@@ -54,7 +53,6 @@ export class ReserveStockHandler
             remainingStock: 0,
             message: 'Variant not found',
           });
-
           continue;
         }
 
@@ -62,7 +60,6 @@ export class ReserveStockHandler
 
         if (!variant.isAvailable) {
           hasError = true;
-
           results.push({
             variantId: item.variantId,
             requestedQuantity: item.quantity,
@@ -72,13 +69,11 @@ export class ReserveStockHandler
             remainingStock: availableStock,
             message: 'Variant is inactive',
           });
-
           continue;
         }
 
         if (item.quantity <= 0) {
           hasError = true;
-
           results.push({
             variantId: item.variantId,
             requestedQuantity: item.quantity,
@@ -88,13 +83,11 @@ export class ReserveStockHandler
             remainingStock: availableStock,
             message: 'Quantity must be greater than 0',
           });
-
           continue;
         }
 
         if (availableStock < item.quantity) {
           hasError = true;
-
           results.push({
             variantId: item.variantId,
             requestedQuantity: item.quantity,
@@ -104,10 +97,10 @@ export class ReserveStockHandler
             remainingStock: availableStock,
             message: `Only ${availableStock} item(s) available`,
           });
-
           continue;
         }
 
+        // tạm OK
         results.push({
           variantId: item.variantId,
           requestedQuantity: item.quantity,
@@ -126,11 +119,40 @@ export class ReserveStockHandler
       }
 
       for (const item of mergedItems) {
-        await this.inventoryCommandRepo.reserveStock(item.variantId, item.quantity);
+        const ok = await this.inventoryCommandRepo.reserveStockAtomic(
+          item.variantId,
+          item.quantity,
+        );
+
+        if (!ok) {
+          // 🔥 race condition → phải lấy data mới
+          const latest = await this.inventoryCommandRepo.findVariant(item.variantId);
+
+          const availableStock = latest ? Math.max(latest.stock - latest.reservedStock, 0) : 0;
+
+          const index = results.findIndex((r) => r.variantId === item.variantId);
+
+          if (index !== -1) {
+            results[index] = {
+              variantId: item.variantId,
+              requestedQuantity: item.quantity,
+              success: false,
+              status: 'insufficient_stock',
+              availableStock,
+              remainingStock: availableStock,
+              message:
+                availableStock > 0
+                  ? `Only ${availableStock} item(s) available now`
+                  : 'Product is out of stock',
+            };
+          }
+
+          hasError = true;
+        }
       }
 
       return {
-        success: true,
+        success: !hasError,
         items: results,
       };
     });

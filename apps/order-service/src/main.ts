@@ -30,6 +30,7 @@ async function bootstrap() {
   if (!grpcPackage || !grpcProtoPath) {
     throw new Error('Missing GRPC_ORDER_SERVICE config');
   }
+
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.KAFKA,
     options: {

@@ -299,6 +299,7 @@ message ProductItemResponse {
 
   google.protobuf.Timestamp created_at = 14;
 }
+
 message GetProductsResponse {
   repeated ProductItemResponse items = 1;
   int32 total = 2;

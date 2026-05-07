@@ -1,3 +1,5 @@
+import { GrpcTimestamp } from '@common/interfaces/grpc/common/timestamp.interface';
+
 export type CheckoutGrpcRequest = {
   userId: string;
   email: string;
@@ -44,4 +46,32 @@ export type CheckoutStockItemGrpc = {
   availableStock: number;
   remainingStock: number;
   message?: string;
+};
+
+export type GetOrdersAdminGrpcRequest = {
+  search?: string;
+  status?: string;
+  page?: number;
+  limit?: number;
+};
+
+export type OrdersAdminGrpcResponse = {
+  data: OrderItemByAdminGrpc[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+};
+
+export type OrderItemByAdminGrpc = {
+  id: string;
+  orderNumber: string;
+  customerName: string;
+  customerEmail: string;
+  productName: string;
+  status: string;
+  paymentStatus: string;
+  total: number;
+
+  createdAt: GrpcTimestamp;
 };

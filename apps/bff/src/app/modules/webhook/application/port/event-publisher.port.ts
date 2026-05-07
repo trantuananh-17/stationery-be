@@ -1,7 +1,8 @@
-export const ORDER_EVENT_PUBLISHER = Symbol('ORDER_EVENT_PUBLISHER');
+export const ORDER_COMMAND_PUBLISHER = Symbol('ORDER_COMMAND_PUBLISHER');
 
-export interface OrderEventPublisher {
-  emitOrderUpdateStatus(payload: {
+export abstract class EventPublisher {
+  abstract emitOrderUpdateStatus(payload: {
+    eventId: string;
     orderId: string;
     status: string;
     paymentStatus: string;

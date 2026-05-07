@@ -1,5 +1,7 @@
 import { randomUUID } from 'crypto';
+
 import { OrderItem, CreateOrderItemParams } from './order-item.entity';
+
 import { OrderStatus } from '../enums/order-status.enum';
 import { PaymentStatus } from '../enums/payment-status.enum';
 
@@ -10,7 +12,6 @@ export type OrderAddress = {
   address1: string;
   address2?: string;
   city: string;
-
   phone?: string;
 };
 
@@ -20,27 +21,26 @@ export type OrderParams = {
   readonly userId: string;
   readonly email: string;
   status: OrderStatus;
-
   shippingAddress: OrderAddress;
   billingAddress: OrderAddress;
-
   paymentMethod: string;
   paymentStatus: PaymentStatus;
   paymentTransactionId?: string;
   paymentProvider?: string;
   paymentExpiredAt?: Date;
-
+  paidAt?: Date;
   subtotal: number;
   tax: number;
   shippingCost: number;
   discount: number;
   total: number;
-
   notes?: string;
   trackingNumber?: string;
   shippingProvider?: string;
+  shippedAt?: Date;
+  deliveredAt?: Date;
+  cancelledAt?: Date;
   estimatedDelivery?: Date;
-
   readonly createdAt: Date;
   updatedAt: Date;
 };
@@ -73,6 +73,7 @@ export class Order {
     }
 
     const now = new Date();
+
     const orderId = randomUUID();
 
     const items = data.items.map((item) =>
@@ -196,6 +197,7 @@ export class Order {
     }
 
     this.params.status = OrderStatus.PROCESSING;
+
     this.setUpdatedAt();
   }
 
@@ -204,18 +206,22 @@ export class Order {
       throw new Error('Only processing order can be shipped');
     }
 
-    this.params.status = OrderStatus.DELIVERED;
+    this.params.status = OrderStatus.SHIPPED;
     this.params.trackingNumber = trackingNumber;
     this.params.shippingProvider = shippingProvider;
+    this.params.shippedAt = new Date();
+
     this.setUpdatedAt();
   }
 
   markDelivered(): void {
-    if (this.params.status !== OrderStatus.DELIVERED) {
+    if (this.params.status !== OrderStatus.SHIPPED) {
       throw new Error('Only shipped order can be delivered');
     }
 
     this.params.status = OrderStatus.DELIVERED;
+    this.params.deliveredAt = new Date();
+
     this.setUpdatedAt();
   }
 
@@ -229,6 +235,8 @@ export class Order {
     }
 
     this.params.status = OrderStatus.CANCELLED;
+    this.params.cancelledAt = new Date();
+
     this.setUpdatedAt();
   }
 
@@ -236,6 +244,8 @@ export class Order {
     this.params.paymentStatus = PaymentStatus.PAID;
     this.params.paymentTransactionId = transactionId;
     this.params.paymentProvider = provider;
+    this.params.paidAt = new Date();
+
     this.setUpdatedAt();
   }
 
@@ -243,6 +253,7 @@ export class Order {
     this.params.paymentStatus = PaymentStatus.FAILED;
     this.params.paymentTransactionId = transactionId;
     this.params.paymentProvider = provider;
+
     this.setUpdatedAt();
   }
 
@@ -304,6 +315,14 @@ export class Order {
     return this.params.paymentProvider;
   }
 
+  get paymentExpiredAt(): Date | undefined {
+    return this.params.paymentExpiredAt;
+  }
+
+  get paidAt(): Date | undefined {
+    return this.params.paidAt;
+  }
+
   get shippingAddress(): OrderAddress {
     return this.params.shippingAddress;
   }
@@ -342,6 +361,18 @@ export class Order {
 
   get shippingProvider(): string | undefined {
     return this.params.shippingProvider;
+  }
+
+  get shippedAt(): Date | undefined {
+    return this.params.shippedAt;
+  }
+
+  get deliveredAt(): Date | undefined {
+    return this.params.deliveredAt;
+  }
+
+  get cancelledAt(): Date | undefined {
+    return this.params.cancelledAt;
   }
 
   get estimatedDelivery(): Date | undefined {

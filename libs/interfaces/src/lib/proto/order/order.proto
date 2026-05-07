@@ -2,8 +2,41 @@ syntax = "proto3";
 
 package GRPC_ORDER_SERVICE;
 
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
 service OrderService {
   rpc checkout (CheckoutRequest) returns (CheckoutResponse);
+  rpc getOrderPayment (getOrderPaymentRequest) returns (OrderPaymentResponse);
+  rpc getOrdersAdmin (GetOrdersAdminRequest) returns (OrdersAdminResponse);
+}
+
+message GetOrdersAdminRequest {
+  optional string search = 1;
+  optional string status = 2;
+  optional int32 page = 3;
+  optional int32 limit = 4;
+}
+
+message OrdersAdminResponse {
+  repeated OrderItemByAdminResponse data = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+  int32 total_pages = 5;
+}
+
+message OrderItemByAdminResponse {
+  string id = 1;
+  string order_number = 2;
+  string customer_name = 3;
+  string customer_email = 4;
+  string product_name = 5;
+  string status = 6;
+  string payment_status = 7;
+  int32 total = 8;
+
+  google.protobuf.Timestamp created_at = 9;
 }
 
 message CheckoutAddress {
@@ -51,3 +84,36 @@ message CheckoutResponse {
 
   repeated CheckoutStockItem stock_items = 10;
 }
+
+message getOrderPaymentRequest {
+  string user_id = 1;
+  string order_id = 2;
+}
+
+message OrderPaymentLineItemDto {
+  string productId = 1;      
+  string variantId = 2;       
+  string name = 3;             
+  string sku = 4;               
+  string image = 5;            
+  float price = 6;             
+  int32 quantity = 7;         
+  float subtotal = 8;          
+}
+
+message OrderPaymentResponse {
+  string orderId = 1;       
+  string orderNumber = 2;      
+  string userId = 3;           
+  string email = 4;             
+  int32 totalItems = 5;         
+  repeated OrderPaymentLineItemDto lineItems = 6; 
+  string status = 7;       
+  string paymentStatus = 8; 
+  float subtotal = 9;        
+  float tax = 10;             
+  float shippingCost = 11;    
+  float discount = 12;          
+  float total = 13;             
+  google.protobuf.Timestamp paymentExpiredAt = 14; 
+} 

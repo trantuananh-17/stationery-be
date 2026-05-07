@@ -1,3 +1,4 @@
+import { QUEUE_GROUPS } from '@common/constants/enums/queue.enum';
 /**
  * This is not a production server yet!
  * This is only a minimal backend to get started.
@@ -39,6 +40,20 @@ async function bootstrap() {
       package: grpcPackage,
       protoPath: grpcProtoPath,
       url: grpcUrl,
+    },
+  });
+
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.KAFKA,
+    options: {
+      client: {
+        clientId: 'product-service',
+        brokers: [configService.getOrThrow<string>('KAFKA_CONFIG.URL')],
+      },
+      consumer: {
+        groupId: QUEUE_GROUPS.PRODUCT,
+        allowAutoTopicCreation: true,
+      },
     },
   });
 

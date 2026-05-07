@@ -3,6 +3,9 @@ import { PaymentStatus } from '../../domain/enums/payment-status.enum';
 import { OrderStatus } from '../../domain/enums/order-status.enum';
 
 export class OrderUpdateStatusEventDto {
+  @IsString()
+  eventId: string;
+
   @IsUUID()
   orderId: string;
 

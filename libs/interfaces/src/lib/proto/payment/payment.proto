@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package GRPC_PAYMENT_SERVICE;
+
+import "google/protobuf/timestamp.proto";
+
+service PaymentService {
+  rpc createPaymentIntent (CreatePaymentIntentRequest) returns (CreatePaymentIntentResponse);
+}
+
+
+message CreatePaymentIntentRequest {
+  string orderId = 1;
+  string userId = 2;
+}
+
+message CreatePaymentIntentResponse {
+  string orderId = 1;
+  string clientEmail = 2;
+  int32 totalItem = 3;
+  double totalPrice = 4;
+  double subTotal = 5;
+  double shippingCost = 6;
+  string clientSecret = 7;
+  string paymentIntentId = 8;
+}

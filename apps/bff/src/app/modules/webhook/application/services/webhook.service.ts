@@ -1,7 +1,7 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
-import { ORDER_EVENT_PUBLISHER, OrderEventPublisher } from '../port/event-publisher.port';
+import { EventPublisher } from '../port/event-publisher.port';
 
 @Injectable()
 export class WebhookService {
@@ -11,8 +11,7 @@ export class WebhookService {
   constructor(
     private readonly configService: ConfigService,
 
-    @Inject(ORDER_EVENT_PUBLISHER)
-    private readonly orderEventPublisher: OrderEventPublisher,
+    private readonly eventPublisher: EventPublisher,
   ) {
     this.stripe = new Stripe(this.configService.getOrThrow<string>('STRIPE_CONFIG.SECRET_KEY'), {
       apiVersion: '2026-04-22.dahlia',
@@ -79,7 +78,8 @@ export class WebhookService {
           return { received: true };
         }
 
-        await this.orderEventPublisher.emitOrderUpdateStatus({
+        await this.eventPublisher.emitOrderUpdateStatus({
+          eventId: event.id,
           orderId,
           status: 'PROCESSING',
           paymentStatus: 'PAID',
@@ -100,7 +100,8 @@ export class WebhookService {
           return { received: true };
         }
 
-        await this.orderEventPublisher.emitOrderUpdateStatus({
+        await this.eventPublisher.emitOrderUpdateStatus({
+          eventId: event.id,
           orderId,
           status: 'PENDING',
           paymentStatus: 'FAILED',
@@ -121,7 +122,8 @@ export class WebhookService {
           return { received: true };
         }
 
-        await this.orderEventPublisher.emitOrderUpdateStatus({
+        await this.eventPublisher.emitOrderUpdateStatus({
+          eventId: event.id,
           orderId,
           status: 'CANCELED',
           paymentStatus: 'CANCELED',

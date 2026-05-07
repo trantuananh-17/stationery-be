@@ -24,6 +24,9 @@ import { TypeOrmBrandQueryRepository } from './repositories/typeorm-brand-query.
 import { BrandOrmEntity } from './entities/typeorm-brand.entity';
 import { IInventoryCommandRepository } from '../application/ports/repositories/inventory-command';
 import { TypeOrmInventoryCommandRepository } from './repositories/typeorm-inventory-command.repo';
+import { IProcessedEventRepository } from '../application/ports/repositories/process-event.repo';
+import { TypeOrmProcessedEventRepository } from './repositories/typeorm-process-event.repo';
+import { InventoryProcessedEventEntity } from './entities/typeorm-process-event.entity';
 
 @Module({
   imports: [
@@ -36,6 +39,7 @@ import { TypeOrmInventoryCommandRepository } from './repositories/typeorm-invent
       AttributeOrmEntity,
       AttributeValueOrmEntity,
       BrandOrmEntity,
+      InventoryProcessedEventEntity,
     ]),
   ],
   providers: [
@@ -68,6 +72,10 @@ import { TypeOrmInventoryCommandRepository } from './repositories/typeorm-invent
       provide: ISkuService,
       useClass: SkuService,
     },
+    {
+      provide: IProcessedEventRepository,
+      useClass: TypeOrmProcessedEventRepository,
+    },
   ],
   exports: [
     IProductCommandRepository,
@@ -75,6 +83,7 @@ import { TypeOrmInventoryCommandRepository } from './repositories/typeorm-invent
     ICategoryQueryRepository,
     IBrandQueryRepository,
     IInventoryCommandRepository,
+    IProcessedEventRepository,
     ISlugService,
     IUnitOfWork,
     ISkuService,

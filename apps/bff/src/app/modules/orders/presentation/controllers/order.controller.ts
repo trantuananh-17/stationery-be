@@ -1,20 +1,41 @@
-import { Body, Controller, HttpCode, HttpStatus, Logger, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Logger,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { UserData } from '@common/decorators/user-data.decorator';
+import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 
 import { ResponseDto } from '@common/interfaces/gateway/response.interface';
 
-import { CheckoutDto } from '../dtos/checkout.dto';
 import { CheckoutUseCase } from '../../applications/checkout.usecase';
-import { CheckoutGrpcResponse } from '../../applications/ports/dtos/order.dto';
+import { GetOrdersAdminUseCase } from '../../applications/get-orders-admin.usecase';
+import {
+  CheckoutGrpcResponse,
+  OrdersAdminGrpcResponse,
+} from '../../applications/ports/dtos/order.dto';
+import { CheckoutDto } from '../dtos/checkout.dto';
+import { GetOrdersAdminDto } from '../dtos/get-orders-admin.dto';
+import { RoleGuard } from '@common/guards/role.guard';
+import { Roles } from '@common/decorators/role.decorator';
+import { ROLE } from '@common/constants/enums/role.enum';
 
 @ApiTags('Orders')
 @Controller('orders')
 export class OrderController {
-  constructor(private readonly checkoutUseCase: CheckoutUseCase) {}
+  constructor(
+    private readonly checkoutUseCase: CheckoutUseCase,
+    private readonly getOrdersAdminUseCase: GetOrdersAdminUseCase,
+  ) {}
 
   @Post('checkout')
   @ApiBearerAuth()
@@ -37,6 +58,36 @@ export class OrderController {
     });
 
     Logger.log(`Checkout request: ${JSON.stringify(result)}`);
+
+    return result;
+  }
+
+  @Get('admin')
+  @ApiOperation({
+    summary: 'Get orders admin',
+  })
+  @ApiOkResponse({
+    type: ResponseDto<OrdersAdminGrpcResponse>,
+  })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles([ROLE.ADMIN])
+  @HttpCode(HttpStatus.OK)
+  async getOrdersAdmin(
+    @Query()
+    query: GetOrdersAdminDto,
+  ) {
+    const result = await this.getOrdersAdminUseCase.execute({
+      search: query.search,
+
+      status: query.status,
+
+      page: query.page,
+
+      limit: query.limit,
+    });
+
+    Logger.log(`Get orders admin: ${JSON.stringify(result)}`);
 
     return result;
   }

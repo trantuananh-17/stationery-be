@@ -76,8 +76,6 @@ export interface ReserveStockBodyDto {
   items: ReserveStockItemBodyDto[];
 }
 
-/* ================= CART RESPONSE ================= */
-
 export interface ProductAttributeResponse {
   name: string;
   value: string;
@@ -98,8 +96,6 @@ export interface ProductCartItemResponse {
   stock: number;
 }
 
-/* ================= STOCK RESPONSE ================= */
-
 export interface ReserveStockItemResponse {
   variantId: string;
   quantity: number;
@@ -113,8 +109,6 @@ export interface ReserveStockResponse {
   success: boolean;
   items: ReserveStockItemResponse[];
 }
-
-/* ================= PRODUCT INFO RESPONSE ================= */
 
 export interface ProductCategoryParentResponse {
   id: string;
@@ -199,8 +193,6 @@ export interface ProductInfoResponse {
   specifications: ProductSpecificationResponse[];
 }
 
-/* ================= PRODUCT LIST RESPONSE ================= */
-
 export interface ProductItemResponse {
   id: string;
   name: string;
@@ -224,8 +216,6 @@ export interface GetProductsResponse {
   limit: number;
   totalPages: number;
 }
-
-/* ================= COMMON RESPONSE ================= */
 
 export interface ProductIdResponse {
   id: string;

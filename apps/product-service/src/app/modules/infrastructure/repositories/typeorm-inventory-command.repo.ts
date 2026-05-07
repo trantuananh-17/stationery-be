@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { VariantOrmEntity } from '../entities/typeorm-variant.entity';
-import { getManager } from '../helpers/get-manager.helper';
 import { IInventoryCommandRepository } from '../../application/ports/repositories/inventory-command';
 import { VariantStockSnapshot } from '../../application/read-models/variant-stock.read-model';
 
@@ -13,21 +12,11 @@ export class TypeOrmInventoryCommandRepository implements IInventoryCommandRepos
     private readonly variantRepo: Repository<VariantOrmEntity>,
   ) {}
 
-  async findVariantsForUpdate(variantIds: string[]): Promise<VariantStockSnapshot[]> {
-    if (variantIds.length === 0) {
-      return [];
-    }
+  async findVariants(variantIds: string[]): Promise<VariantStockSnapshot[]> {
+    if (!variantIds.length) return [];
 
-    const manager = getManager();
-    const variantRepo = manager ? manager.getRepository(VariantOrmEntity) : this.variantRepo;
-
-    const variants = await variantRepo.find({
-      where: {
-        id: In(variantIds),
-      },
-      lock: {
-        mode: 'pessimistic_write',
-      },
+    const variants = await this.variantRepo.find({
+      where: { id: In(variantIds) },
       withDeleted: true,
     });
 
@@ -42,38 +31,85 @@ export class TypeOrmInventoryCommandRepository implements IInventoryCommandRepos
     }));
   }
 
-  async reserveStock(variantId: string, quantity: number): Promise<void> {
+  async findVariant(variantId: string): Promise<VariantStockSnapshot | null> {
+    const variant = await this.variantRepo.findOne({
+      where: { id: variantId },
+      withDeleted: true,
+    });
+
+    if (!variant) return null;
+
+    return {
+      variantId: variant.id,
+      productId: variant.productId,
+      sku: variant.sku,
+      stock: Number(variant.stock),
+      reservedStock: Number(variant.reservedStock),
+      isAvailable: variant.isAvailable,
+      deletedAt: variant.deletedAt,
+    };
+  }
+
+  async reserveStockAtomic(variantId: string, quantity: number): Promise<boolean> {
     if (quantity <= 0) {
       throw new Error('Quantity must be greater than 0');
     }
 
-    const manager = getManager();
-    const variantRepo = manager ? manager.getRepository(VariantOrmEntity) : this.variantRepo;
+    const result = await this.variantRepo
+      .createQueryBuilder()
+      .update(VariantOrmEntity)
+      .set({
+        reservedStock: () => `"reservedStock" + :quantity`,
+      })
+      .where(`id = :variantId`, { variantId })
+      .andWhere(`"deleted_at" IS NULL`)
+      .andWhere(`"is_available" = true`)
+      .andWhere(`"stock" - "reservedStock" >= :quantity`, { quantity })
+      .execute();
 
-    const variant = await variantRepo.findOne({
-      where: { id: variantId },
-      lock: {
-        mode: 'pessimistic_write',
-      },
-      withDeleted: true,
-    });
+    return !!result.affected;
+  }
 
-    if (!variant || variant.deletedAt) {
-      throw new Error(`Variant ${variantId} not found`);
-    }
+  async confirmStockAtomic(variantId: string, quantity: number): Promise<boolean> {
+    const result = await this.variantRepo
+      .createQueryBuilder()
+      .update(VariantOrmEntity)
+      .set({
+        stock: () => `"stock" - :quantity`,
+        reservedStock: () => `"reservedStock" - :quantity`,
+      })
+      .where(`id = :variantId`, { variantId })
+      .andWhere(`"reservedStock" >= :quantity`, { quantity })
+      .execute();
 
-    if (!variant.isAvailable) {
-      throw new Error(`Variant ${variantId} is inactive`);
-    }
+    return !!result.affected;
+  }
 
-    const availableStock = Number(variant.stock) - Number(variant.reservedStock);
+  async releaseStockAtomic(variantId: string, quantity: number): Promise<boolean> {
+    const result = await this.variantRepo
+      .createQueryBuilder()
+      .update(VariantOrmEntity)
+      .set({
+        reservedStock: () => `"reservedStock" - :quantity`,
+      })
+      .where(`id = :variantId`, { variantId })
+      .andWhere(`"reservedStock" >= :quantity`, { quantity })
+      .execute();
 
-    if (availableStock < quantity) {
-      throw new Error(`Insufficient stock for variant ${variantId}`);
-    }
+    return !!result.affected;
+  }
 
-    variant.reservedStock = Number(variant.reservedStock) + quantity;
+  async restockAtomic(variantId: string, quantity: number): Promise<boolean> {
+    const result = await this.variantRepo
+      .createQueryBuilder()
+      .update(VariantOrmEntity)
+      .set({
+        stock: () => `"stock" + :quantity`,
+      })
+      .setParameters({ quantity })
+      .where(`id = :variantId`, { variantId })
+      .execute();
 
-    await variantRepo.save(variant);
+    return !!result.affected;
   }
 }

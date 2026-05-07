@@ -85,6 +85,18 @@ export class OrderOrmEntity extends BaseEntity {
   @Column({ name: 'shipping_provider', type: 'varchar', length: 50, nullable: true })
   shippingProvider?: string | null;
 
+  @Column({ name: 'paid_at', type: 'timestamp', nullable: true })
+  paidAt?: Date | null;
+
+  @Column({ name: 'shipped_at', type: 'timestamp', nullable: true })
+  shippedAt?: Date | null;
+
+  @Column({ name: 'delivered_at', type: 'timestamp', nullable: true })
+  deliveredAt?: Date | null;
+
+  @Column({ name: 'cancelled_at', type: 'timestamp', nullable: true })
+  cancelledAt?: Date | null;
+
   @Column({ name: 'estimated_delivery', type: 'timestamp', nullable: true })
   estimatedDelivery?: Date | null;
 

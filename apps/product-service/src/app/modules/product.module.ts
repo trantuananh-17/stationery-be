@@ -12,6 +12,7 @@ import { GetRelatedHandler } from './application/queries/get-related/get-related
 import { GetItemHandler } from './application/queries/get-item/get-item.handler';
 import { ReserveStockHandler } from './application/commands/products/reserve-stock/reserve-stock.handler';
 import { GetProductsByAdminHandler } from './application/queries/get-products-admin/get-products-admin.handler';
+import { ConfirmStockEventHandler } from './application/commands/products/confirm-stock-event/confirm-stock-event.handler';
 
 @Module({
   imports: [CqrsModule, TypeOrmProvider, ProductInfraModule],
@@ -26,6 +27,7 @@ import { GetProductsByAdminHandler } from './application/queries/get-products-ad
     GetItemHandler,
     ReserveStockHandler,
     GetProductsByAdminHandler,
+    ConfirmStockEventHandler,
   ],
   exports: [],
 })

@@ -14,13 +14,15 @@ import { GetFeaturedQuery } from '../../application/queries/get-featured/get-fea
 import { GetRelatedProductsDto } from '../dtos/get-related.dto';
 import { GetRelatedQuery } from '../../application/queries/get-related/get-related.query';
 import { GetItemQuery } from '../../application/queries/get-item/get-item.query';
-import { GrpcMethod, Payload } from '@nestjs/microservices';
+import { EventPattern, GrpcMethod, Payload } from '@nestjs/microservices';
 import { ReserveStockDto } from '../dtos/reserve-stock.dto';
 import { ReserveStockCommand } from '../../application/commands/products/reserve-stock/reserve-stock.command';
 import { PaginatedResult } from '@common/interfaces/common/pagination.interface';
 import { ProductReadModel } from '../../application/read-models/product.read-model';
 import { ProductStatus } from '../../domain/enum/product-status.enum';
 import { GetProductsByAdminQuery } from '../../application/queries/get-products-admin/get-products-admin.query';
+import { OrderEventDto } from '../dtos/order-event.dto';
+import { ConfirmStockEventCommand } from '../../application/commands/products/confirm-stock-event/confirm-stock-event.command';
 
 @ApiTags('Products')
 @Controller('products')
@@ -269,4 +271,23 @@ export class ProductController {
       totalPages: result.pagination.totalPages,
     };
   }
+
+  @EventPattern('order.confirmed')
+  async handleConfirmed(@Payload() payload: OrderEventDto) {
+    await this.commandBus.execute(new ConfirmStockEventCommand(payload.eventId, payload.items));
+  }
+
+  // @EventPattern('order.canceled')
+  // async handlePaymentSucceeded(@Payload() payload: OrderUpdateStatusEventDto) {
+  //   await this.commandBus.execute(
+  //     new UpdateStatusCommand(
+  //       payload.eventId,
+  //       payload.orderId,
+  //       payload.status,
+  //       payload.paymentStatus,
+  //       payload.paymentTransactionId,
+  //       payload.paymentProvider,
+  //     ),
+  //   );
+  // }
 }

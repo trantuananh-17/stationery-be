@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req } from '@nestjs/common';
+import { Body, Controller, Post, Req, UseFilters, UseInterceptors } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { OptionalUserData } from '@common/decorators/optional-user-data.decorator';
@@ -9,15 +9,23 @@ import { CheckoutDto } from '../dtos/checkout.dto';
 import { EventPattern, GrpcMethod, Payload } from '@nestjs/microservices';
 import { OrderUpdateStatusEventDto } from '../dtos/updateStatus.dto';
 import { UpdateStatusCommand } from '../../application/commands/update-status/update-status.command';
+import { getPaymentDto } from '../dtos/get-checkout.dto';
+import { GetOrderPaymentQuery } from '../../application/queries/get-order-checkout/get-order-payment.query';
+import { GrpcLoggingInterceptor } from '@common/interceptors/grpcLogging.interceptor';
+import { OrderGrpcExceptionFilter } from '../filters/order-grpc-exception.filter';
+import { GetOrdersByAdminQuery } from '../../application/queries/get-orders-admin/get-orders-admin.query';
+import { GetOrdersAdminDto } from '../dtos/get-order-admin.dto';
 
-@Controller()
+@Controller('order')
+@UseInterceptors(GrpcLoggingInterceptor)
+@UseFilters(OrderGrpcExceptionFilter)
 export class OrderController {
   constructor(
     private readonly commandBus: CommandBus,
     private readonly queryBus: QueryBus,
   ) {}
 
-  @Post('order/checkout')
+  @Post('checkout')
   @ApiOperation({ summary: 'Add to cart' })
   @ApiResponse({ status: 200, description: 'Add to cart success' })
   // @UserData() user: JwtPayload,
@@ -50,10 +58,23 @@ export class OrderController {
     );
   }
 
+  @GrpcMethod('OrderService', 'getOrderPayment')
+  async getOrderPayment(data: getPaymentDto) {
+    return this.queryBus.execute(new GetOrderPaymentQuery(data.userId, data.orderId));
+  }
+
+  @GrpcMethod('OrderService', 'getOrdersAdmin')
+  async getOrdersAdmin(data: GetOrdersAdminDto) {
+    return this.queryBus.execute(
+      new GetOrdersByAdminQuery(data.search, data.status, data.page, data.limit),
+    );
+  }
+
   @EventPattern('order.update-status')
   async handlePaymentSucceeded(@Payload() payload: OrderUpdateStatusEventDto) {
     await this.commandBus.execute(
       new UpdateStatusCommand(
+        payload.eventId,
         payload.orderId,
         payload.status,
         payload.paymentStatus,

@@ -4,7 +4,12 @@ import { ClientGrpc } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { OrderPort } from '../../applications/ports/order.port';
 import { OrderGrpcService } from './order-grpc.interface';
-import { CheckoutGrpcRequest, CheckoutGrpcResponse } from '../../applications/ports/dtos/order.dto';
+import {
+  CheckoutGrpcRequest,
+  CheckoutGrpcResponse,
+  GetOrdersAdminGrpcRequest,
+  OrdersAdminGrpcResponse,
+} from '../../applications/ports/dtos/order.dto';
 
 @Injectable()
 export class OrderGrpcAdapter implements OrderPort, OnModuleInit {
@@ -21,5 +26,9 @@ export class OrderGrpcAdapter implements OrderPort, OnModuleInit {
 
   checkout(data: CheckoutGrpcRequest): Promise<CheckoutGrpcResponse> {
     return firstValueFrom(this.orderService.checkout(data));
+  }
+
+  getOrdersAdmin(data: GetOrdersAdminGrpcRequest): Promise<OrdersAdminGrpcResponse> {
+    return firstValueFrom(this.orderService.getOrdersAdmin(data));
   }
 }

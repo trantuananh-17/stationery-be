@@ -8,17 +8,41 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
 import { CONFIGURATION } from './configuration';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const CONFIG = CONFIGURATION();
-
   const globalPrefix = CONFIG.GLOBAL_PREFIX;
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
   app.enableCors({
     origin: '*',
+  });
+
+  const configService = app.get(ConfigService);
+
+  Logger.debug('GRPC CONFIG', JSON.stringify(configService.get('GRPC_SERV.GRPC_PAYMENT_SERVICE')));
+
+  const grpcPackage = configService.get<string>('GRPC_SERV.GRPC_PAYMENT_SERVICE.name');
+  const grpcProtoPath = configService.get<string>(
+    'GRPC_SERV.GRPC_PAYMENT_SERVICE.options.protoPath',
+  );
+  const grpcUrl = configService.get<string>('GRPC_SERV.GRPC_PAYMENT_SERVICE.options.url');
+
+  if (!grpcPackage || !grpcProtoPath) {
+    throw new Error('Missing GRPC_PAYMENT_SERVICE config');
+  }
+
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.GRPC,
+    options: {
+      package: grpcPackage,
+      protoPath: grpcProtoPath,
+      url: grpcUrl,
+    },
   });
 
   const config = new DocumentBuilder()
