@@ -7,11 +7,12 @@ import { GuardsModule } from '@common/guards/guards.module';
 import { OrderInfrasModule } from './infrastructure/order-infra.module';
 import { CheckoutUseCase } from './applications/checkout.usecase';
 import { GetOrdersAdminUseCase } from './applications/get-orders-admin.usecase';
+import { GetOrderUseCase } from './applications/get-order.usecase';
 
 @Module({
   imports: [OrderInfrasModule, JwtProvider, GuardsModule],
   controllers: [OrderController],
-  providers: [CheckoutUseCase, GetOrdersAdminUseCase],
+  providers: [CheckoutUseCase, GetOrdersAdminUseCase, GetOrderUseCase],
   exports: [],
 })
 export class OrderModule {}

@@ -7,12 +7,68 @@ import "google/protobuf/timestamp.proto";
 
 service OrderService {
   rpc checkout (CheckoutRequest) returns (CheckoutResponse);
-  rpc getOrderPayment (getOrderPaymentRequest) returns (OrderPaymentResponse);
+  rpc getOrderPayment (GetOrderPaymentRequest) returns (OrderPaymentResponse);
   rpc getOrdersAdmin (GetOrdersAdminRequest) returns (OrdersAdminResponse);
+  rpc getOrder (GetOrderRequest) returns (OrderDetailResponse);
+}
+
+message GetOrderRequest {
+  string order_id = 1;
+}
+
+message OrderDetailResponse {
+  string id = 1;
+  string order_number = 2;
+  string user_id = 3;
+  string customer_email = 4;
+  string status = 5;
+  string payment_status = 6;
+  string payment_method = 7;
+  optional string payment_transaction_id = 8;
+  optional string payment_provider = 9;
+  int32 subtotal = 10;
+  int32 tax = 11;
+  int32 shipping_cost = 12;
+  int32 discount = 13;
+  int32 total = 14;
+  optional string notes = 15;
+  optional string tracking_number = 16;
+  optional string shipping_provider = 17;
+  CheckoutAddress shipping_address = 18;
+  CheckoutAddress billing_address = 19;
+  repeated OrderDetailItemResponse items = 20;
+  int32 total_items = 21;
+  int32 total_unique_items = 22;
+  google.protobuf.Timestamp payment_expired_at = 23;
+  google.protobuf.Timestamp paid_at = 24;
+  google.protobuf.Timestamp shipped_at = 25;
+  google.protobuf.Timestamp delivered_at = 26;
+  google.protobuf.Timestamp cancelled_at = 27;
+  google.protobuf.Timestamp estimated_delivery = 28;
+  google.protobuf.Timestamp created_at = 29;
+  google.protobuf.Timestamp updated_at = 30;
+}
+
+message OrderDetailItemResponse {
+  string id = 1;
+  string product_id = 2;
+  optional string variant_id = 3;
+  string name = 4;
+  optional string sku = 5;
+  optional string image = 6;
+  int32 price = 7;
+  int32 quantity = 8;
+  int32 subtotal = 9;
+  repeated OrderItemAttributeResponse attributes = 10;
+}
+
+message OrderItemAttributeResponse {
+  string name = 1;
+  string value = 2;
 }
 
 message GetOrdersAdminRequest {
-  optional string search = 1;
+  optional string search = 1;  
   optional string status = 2;
   optional int32 page = 3;
   optional int32 limit = 4;
@@ -85,7 +141,7 @@ message CheckoutResponse {
   repeated CheckoutStockItem stock_items = 10;
 }
 
-message getOrderPaymentRequest {
+message GetOrderPaymentRequest {
   string user_id = 1;
   string order_id = 2;
 }

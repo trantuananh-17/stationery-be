@@ -75,3 +75,59 @@ export type OrderItemByAdminGrpc = {
 
   createdAt: GrpcTimestamp;
 };
+
+// Get Order
+export interface GetOrderGrpcRequest {
+  orderId: string;
+}
+
+export interface OrderDetailGrpcResponse {
+  id: string;
+  orderNumber: string;
+  userId: string;
+  customerEmail: string;
+  status: string;
+  paymentStatus: string;
+  paymentMethod: string;
+  paymentTransactionId?: string;
+  paymentProvider?: string;
+  subtotal: number;
+  tax: number;
+  shippingCost: number;
+  discount: number;
+  total: number;
+  notes?: string;
+  trackingNumber?: string;
+  shippingProvider?: string;
+  shippingAddress: CheckoutAddressGrpc;
+  billingAddress: CheckoutAddressGrpc;
+  items: OrderItemGrpc[];
+  totalItems: number;
+  totalUniqueItems: number;
+  paymentExpiredAt?: GrpcTimestamp;
+  paidAt?: GrpcTimestamp;
+  shippedAt?: GrpcTimestamp;
+  deliveredAt?: GrpcTimestamp;
+  cancelledAt?: GrpcTimestamp;
+  estimatedDelivery?: GrpcTimestamp;
+  createdAt: GrpcTimestamp;
+  updatedAt: GrpcTimestamp;
+}
+
+export interface OrderItemGrpc {
+  id: string;
+  productId: string;
+  variantId?: string;
+  name: string;
+  sku?: string;
+  image?: string;
+  price: number;
+  quantity: number;
+  subtotal: number;
+  attributes: OrderItemAttributeGrpc[];
+}
+
+export interface OrderItemAttributeGrpc {
+  name: string;
+  value: string;
+}

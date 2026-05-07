@@ -15,6 +15,8 @@ import { GrpcLoggingInterceptor } from '@common/interceptors/grpcLogging.interce
 import { OrderGrpcExceptionFilter } from '../filters/order-grpc-exception.filter';
 import { GetOrdersByAdminQuery } from '../../application/queries/get-orders-admin/get-orders-admin.query';
 import { GetOrdersAdminDto } from '../dtos/get-order-admin.dto';
+import { getOrderDto } from '../dtos/get-order.dto';
+import { GetOrderQuery } from '../../application/queries/get-order/get-order.query';
 
 @Controller('order')
 @UseInterceptors(GrpcLoggingInterceptor)
@@ -68,6 +70,11 @@ export class OrderController {
     return this.queryBus.execute(
       new GetOrdersByAdminQuery(data.search, data.status, data.page, data.limit),
     );
+  }
+
+  @GrpcMethod('OrderService', 'getOrder')
+  async getOrder(data: getOrderDto) {
+    return this.queryBus.execute(new GetOrderQuery(data.orderId));
   }
 
   @EventPattern('order.update-status')

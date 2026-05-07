@@ -7,6 +7,7 @@ import { CheckoutHandler } from './application/commands/checkout/checkout.handle
 import { UpdateStatusHandler } from './application/commands/update-status/update-status.handler';
 import { GetOrderPaymentHandler } from './application/queries/get-order-checkout/get-order-payment.handler';
 import { GetOrdersByAdminHandler } from './application/queries/get-orders-admin/get-orders-admin.handler';
+import { GetOrderHandler } from './application/queries/get-order/get-order.handler';
 
 @Module({
   imports: [CqrsModule, TypeOrmProvider, OrderInfraModule],
@@ -16,6 +17,7 @@ import { GetOrdersByAdminHandler } from './application/queries/get-orders-admin/
     UpdateStatusHandler,
     GetOrderPaymentHandler,
     GetOrdersByAdminHandler,
+    GetOrderHandler,
   ],
   exports: [],
 })

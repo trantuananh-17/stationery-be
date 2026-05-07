@@ -279,6 +279,10 @@ export class Order {
     return this.orderItems.length;
   }
 
+  get items(): OrderItem[] {
+    return [...this.orderItems];
+  }
+
   get id(): string {
     return this.params.id;
   }

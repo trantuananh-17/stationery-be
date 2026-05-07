@@ -8,6 +8,8 @@ import { OrderStatus } from '../../domain/enums/order-status.enum';
 import { IOrderQueryRepository } from '../../application/ports/repositories/order-query.repo';
 import { QueryResult } from '@common/interfaces/common/pagination.interface';
 import { OrderAdminDto } from '../../application/queries/get-orders-admin/get-orders-admin.dto';
+import { Order } from '../../domain/entities/order.entity';
+import { OrderItem } from '../../domain/entities/order-item.entity';
 
 @Injectable()
 export class TypeOrmOrderQueryRepository implements IOrderQueryRepository {
@@ -147,5 +149,77 @@ export class TypeOrmOrderQueryRepository implements IOrderQueryRepository {
       })),
       total,
     };
+  }
+
+  async findById(orderId: string): Promise<Order | null> {
+    const order = await this.orderRepository.findOne({
+      where: {
+        id: orderId,
+      },
+
+      relations: {
+        items: true,
+      },
+    });
+
+    if (!order) {
+      return null;
+    }
+
+    return this._toDomain(order);
+  }
+
+  private _toDomain(orm: OrderOrmEntity): Order {
+    const items =
+      orm.items?.map((item) =>
+        OrderItem.restore({
+          id: item.id,
+          orderId: item.orderId,
+          productId: item.productId,
+          variantId: item.variantId ?? undefined,
+          name: item.name,
+          sku: item.sku ?? undefined,
+          price: item.price,
+          quantity: item.quantity,
+          subtotal: item.subtotal,
+          image: item.image ?? undefined,
+          attributes: item.attributes,
+          createdAt: item.createdAt,
+          updatedAt: item.updatedAt,
+        }),
+      ) ?? [];
+
+    return Order.restore(
+      {
+        id: orm.id,
+        number: orm.number,
+        userId: orm.userId,
+        email: orm.email,
+        status: orm.status,
+        shippingAddress: orm.shippingAddress,
+        billingAddress: orm.billingAddress,
+        paymentMethod: orm.paymentMethod,
+        paymentStatus: orm.paymentStatus,
+        paymentTransactionId: orm.paymentTransactionId ?? undefined,
+        paymentProvider: orm.paymentProvider ?? undefined,
+        paymentExpiredAt: orm.paymentExpiredAt ?? undefined,
+        paidAt: orm.paidAt ?? undefined,
+        subtotal: orm.subtotal,
+        tax: orm.tax,
+        shippingCost: orm.shippingCost,
+        discount: orm.discount,
+        total: orm.total,
+        notes: orm.notes ?? undefined,
+        trackingNumber: orm.trackingNumber ?? undefined,
+        shippingProvider: orm.shippingProvider ?? undefined,
+        shippedAt: orm.shippedAt ?? undefined,
+        deliveredAt: orm.deliveredAt ?? undefined,
+        cancelledAt: orm.cancelledAt ?? undefined,
+        estimatedDelivery: orm.estimatedDelivery ?? undefined,
+        createdAt: orm.createdAt,
+        updatedAt: orm.updatedAt,
+      },
+      items,
+    );
   }
 }

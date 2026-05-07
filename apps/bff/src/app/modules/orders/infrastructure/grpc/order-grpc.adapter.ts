@@ -7,7 +7,9 @@ import { OrderGrpcService } from './order-grpc.interface';
 import {
   CheckoutGrpcRequest,
   CheckoutGrpcResponse,
+  GetOrderGrpcRequest,
   GetOrdersAdminGrpcRequest,
+  OrderDetailGrpcResponse,
   OrdersAdminGrpcResponse,
 } from '../../applications/ports/dtos/order.dto';
 
@@ -30,5 +32,9 @@ export class OrderGrpcAdapter implements OrderPort, OnModuleInit {
 
   getOrdersAdmin(data: GetOrdersAdminGrpcRequest): Promise<OrdersAdminGrpcResponse> {
     return firstValueFrom(this.orderService.getOrdersAdmin(data));
+  }
+
+  getOrder(data: GetOrderGrpcRequest): Promise<OrderDetailGrpcResponse> {
+    return firstValueFrom(this.orderService.getOrder(data));
   }
 }
