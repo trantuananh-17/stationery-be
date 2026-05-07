@@ -32,6 +32,8 @@ import { Roles } from '@common/decorators/role.decorator';
 import { ROLE } from '@common/constants/enums/role.enum';
 import { GetOrderDto } from '../dtos/get-order.dto';
 import { GetOrderUseCase } from '../../applications/get-order.usecase';
+import { JwtPayload } from '@common/interfaces/common/jwt-payload.interface';
+import { GetMyOrderUseCase } from '../../applications/get-my-order.usecase';
 
 @ApiTags('Orders')
 @Controller('orders')
@@ -40,6 +42,7 @@ export class OrderController {
     private readonly checkoutUseCase: CheckoutUseCase,
     private readonly getOrdersAdminUseCase: GetOrdersAdminUseCase,
     private readonly getOrderUseCase: GetOrderUseCase,
+    private readonly getMyOrderUseCase: GetMyOrderUseCase,
   ) {}
 
   @Post('checkout')
@@ -118,6 +121,35 @@ export class OrderController {
   ) {
     const result = await this.getOrderUseCase.execute({
       orderId: params.orderId,
+    });
+
+    Logger.log(`Get order detail: ${JSON.stringify(result)}`);
+
+    return result;
+  }
+
+  @Get('my-order/:orderId')
+  @ApiOperation({
+    summary: 'Get order detail for admin',
+  })
+  @ApiParam({
+    name: 'orderId',
+    description: 'Order ID',
+  })
+  @ApiOkResponse({
+    type: ResponseDto<OrderDetailGrpcResponse>,
+  })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @HttpCode(HttpStatus.OK)
+  async getMyOrder(
+    @UserData() user: JwtPayload,
+    @Param()
+    params: GetOrderDto,
+  ) {
+    const result = await this.getMyOrderUseCase.execute({
+      orderId: params.orderId,
+      userId: user.userId,
     });
 
     Logger.log(`Get order detail: ${JSON.stringify(result)}`);

@@ -8,6 +8,7 @@ import { UpdateStatusHandler } from './application/commands/update-status/update
 import { GetOrderPaymentHandler } from './application/queries/get-order-checkout/get-order-payment.handler';
 import { GetOrdersByAdminHandler } from './application/queries/get-orders-admin/get-orders-admin.handler';
 import { GetOrderHandler } from './application/queries/get-order/get-order.handler';
+import { GetMyOrderHandler } from './application/queries/get-my-order/get-my-order.handler';
 
 @Module({
   imports: [CqrsModule, TypeOrmProvider, OrderInfraModule],
@@ -18,6 +19,7 @@ import { GetOrderHandler } from './application/queries/get-order/get-order.handl
     GetOrderPaymentHandler,
     GetOrdersByAdminHandler,
     GetOrderHandler,
+    GetMyOrderHandler,
   ],
   exports: [],
 })

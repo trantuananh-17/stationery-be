@@ -10,6 +10,7 @@ service OrderService {
   rpc getOrderPayment (GetOrderPaymentRequest) returns (OrderPaymentResponse);
   rpc getOrdersAdmin (GetOrdersAdminRequest) returns (OrdersAdminResponse);
   rpc getOrder (GetOrderRequest) returns (OrderDetailResponse);
+  rpc getMyOrder (GetOrderRequest) returns (OrderDetailResponse);
 }
 
 message GetOrderRequest {

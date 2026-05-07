@@ -17,6 +17,7 @@ import { GetOrdersByAdminQuery } from '../../application/queries/get-orders-admi
 import { GetOrdersAdminDto } from '../dtos/get-order-admin.dto';
 import { getOrderDto } from '../dtos/get-order.dto';
 import { GetOrderQuery } from '../../application/queries/get-order/get-order.query';
+import { getMyOrderDto } from '../dtos/get-my-order.dto';
 
 @Controller('order')
 @UseInterceptors(GrpcLoggingInterceptor)
@@ -74,6 +75,11 @@ export class OrderController {
 
   @GrpcMethod('OrderService', 'getOrder')
   async getOrder(data: getOrderDto) {
+    return this.queryBus.execute(new GetOrderQuery(data.orderId));
+  }
+
+  @GrpcMethod('OrderService', 'getMyOrder')
+  async getMyOrder(data: getMyOrderDto) {
     return this.queryBus.execute(new GetOrderQuery(data.orderId));
   }
 

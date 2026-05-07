@@ -16,4 +16,6 @@ export abstract class IOrderQueryRepository {
   }): Promise<QueryResult<OrderAdminDto>>;
 
   abstract findById(orderId: string): Promise<Order | null>;
+
+  abstract findByIdAndUserId(orderId: string, userId: string): Promise<Order | null>;
 }

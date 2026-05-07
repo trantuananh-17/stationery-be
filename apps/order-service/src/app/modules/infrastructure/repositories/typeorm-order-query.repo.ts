@@ -169,6 +169,25 @@ export class TypeOrmOrderQueryRepository implements IOrderQueryRepository {
     return this._toDomain(order);
   }
 
+  async findByIdAndUserId(orderId: string, userId: string): Promise<Order | null> {
+    const order = await this.orderRepository.findOne({
+      where: {
+        id: orderId,
+        userId,
+      },
+
+      relations: {
+        items: true,
+      },
+    });
+
+    if (!order) {
+      return null;
+    }
+
+    return this._toDomain(order);
+  }
+
   private _toDomain(orm: OrderOrmEntity): Order {
     const items =
       orm.items?.map((item) =>

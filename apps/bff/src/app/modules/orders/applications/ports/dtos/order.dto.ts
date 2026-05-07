@@ -81,6 +81,11 @@ export interface GetOrderGrpcRequest {
   orderId: string;
 }
 
+export interface GetMyOrderGrpcRequest {
+  orderId: string;
+  userId: string;
+}
+
 export interface OrderDetailGrpcResponse {
   id: string;
   orderNumber: string;
