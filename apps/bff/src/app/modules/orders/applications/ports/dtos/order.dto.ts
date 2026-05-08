@@ -51,6 +51,7 @@ export type CheckoutStockItemGrpc = {
 export type GetOrdersAdminGrpcRequest = {
   search?: string;
   status?: string;
+  orderby?: string;
   page?: number;
   limit?: number;
 };

@@ -10,6 +10,7 @@ import { QueryResult } from '@common/interfaces/common/pagination.interface';
 import { OrderAdminDto } from '../../application/queries/get-orders-admin/get-orders-admin.dto';
 import { Order } from '../../domain/entities/order.entity';
 import { OrderItem } from '../../domain/entities/order-item.entity';
+import { OrderSort } from '../../domain/enums/order-sort.enum';
 
 @Injectable()
 export class TypeOrmOrderQueryRepository implements IOrderQueryRepository {
@@ -65,10 +66,11 @@ export class TypeOrmOrderQueryRepository implements IOrderQueryRepository {
   async findAll(filters: {
     search?: string;
     status?: OrderStatus;
+    orderBy?: OrderSort;
     page: number;
     limit: number;
   }): Promise<QueryResult<OrderAdminDto>> {
-    const { search, status, page, limit } = filters;
+    const { search, status, orderBy, page, limit } = filters;
 
     const qb = this.orderRepository
       .createQueryBuilder('o')
@@ -129,7 +131,26 @@ export class TypeOrmOrderQueryRepository implements IOrderQueryRepository {
       'o.created_at AS "createdAt"',
     ]);
 
-    qb.orderBy('o.created_at', 'DESC');
+    switch (orderBy) {
+      case OrderSort.PRICE_ASC:
+        qb.orderBy('o.total', 'ASC');
+        break;
+
+      case OrderSort.PRICE_DESC:
+        qb.orderBy('o.total', 'DESC');
+        break;
+
+      case OrderSort.CREATED_AT_ASC:
+        qb.orderBy('o.created_at', 'ASC');
+        break;
+
+      case OrderSort.CREATED_AT_DESC:
+        qb.orderBy('o.created_at', 'DESC');
+        break;
+
+      default:
+        qb.orderBy('o.created_at', 'DESC');
+    }
 
     qb.offset((page - 1) * limit).limit(limit);
 

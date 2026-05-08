@@ -5,11 +5,11 @@ import { Type } from 'class-transformer';
 import { IsIn, IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 const AdminOrderStatus = {
-  PENDING: 'PENDING',
-  PROCESSING: 'PROCESSING',
-  SHIPPED: 'SHIPPED',
-  DELIVERED: 'DELIVERED',
-  CANCELLED: 'CANCELLED',
+  PENDING: 'pending',
+  PROCESSING: 'processing',
+  SHIPPED: 'shipped',
+  DELIVERED: 'delevered',
+  CANCELLED: 'cancelled',
 } as const;
 
 export type AdminOrderStatus = (typeof AdminOrderStatus)[keyof typeof AdminOrderStatus];
@@ -18,11 +18,8 @@ const AdminOrderOrderBy = {
   CREATED_AT_DESC: 'created_at_desc',
   CREATED_AT_ASC: 'created_at_asc',
 
-  TOTAL_ASC: 'total_asc',
-  TOTAL_DESC: 'total_desc',
-
-  ORDER_NUMBER_ASC: 'order_number_asc',
-  ORDER_NUMBER_DESC: 'order_number_desc',
+  TOTAL_ASC: 'price_asc',
+  TOTAL_DESC: 'price_desc',
 } as const;
 
 export type AdminOrderOrderBy = (typeof AdminOrderOrderBy)[keyof typeof AdminOrderOrderBy];
@@ -47,9 +44,9 @@ export class GetOrdersAdminDto {
     enum: AdminOrderOrderBy,
     description: 'Order by option',
   })
-  // @IsOptional()
-  // @IsIn(Object.values(AdminOrderOrderBy))
-  // orderBy?: AdminOrderOrderBy;
+  @IsOptional()
+  @IsIn(Object.values(AdminOrderOrderBy))
+  orderBy?: AdminOrderOrderBy;
   @ApiPropertyOptional({
     default: 1,
   })

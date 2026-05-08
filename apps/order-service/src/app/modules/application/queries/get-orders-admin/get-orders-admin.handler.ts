@@ -18,13 +18,14 @@ export class GetOrdersByAdminHandler
   constructor(private readonly orderRepo: IOrderQueryRepository) {}
 
   async execute(query: GetOrdersByAdminQuery): Promise<GetOrdersByAdminResult> {
-    const { search, status, page, limit } = query;
+    const { search, status, orderBy, page, limit } = query;
 
     const normalizedSearch = search?.trim();
 
     const result = await this.orderRepo.findAll({
       search: normalizedSearch,
       status,
+      orderBy,
       page,
       limit,
     });

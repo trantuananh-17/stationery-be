@@ -18,6 +18,7 @@ import { GetOrdersAdminDto } from '../dtos/get-order-admin.dto';
 import { getOrderDto } from '../dtos/get-order.dto';
 import { GetOrderQuery } from '../../application/queries/get-order/get-order.query';
 import { getMyOrderDto } from '../dtos/get-my-order.dto';
+import { GetOrdersByAdminResult } from '../../application/queries/get-orders-admin/get-orders-admin.handler';
 
 @Controller('order')
 @UseInterceptors(GrpcLoggingInterceptor)
@@ -65,12 +66,28 @@ export class OrderController {
   async getOrderPayment(data: getPaymentDto) {
     return this.queryBus.execute(new GetOrderPaymentQuery(data.userId, data.orderId));
   }
-
   @GrpcMethod('OrderService', 'getOrdersAdmin')
-  async getOrdersAdmin(data: GetOrdersAdminDto) {
-    return this.queryBus.execute(
-      new GetOrdersByAdminQuery(data.search, data.status, data.page, data.limit),
+  async getOrdersAdmin(
+    @Payload()
+    payload: GetOrdersAdminDto,
+  ) {
+    const result: GetOrdersByAdminResult = await this.queryBus.execute(
+      new GetOrdersByAdminQuery(
+        payload.search,
+        payload.status,
+        payload.orderBy,
+        payload.page,
+        payload.limit,
+      ),
     );
+
+    return {
+      data: result.data,
+      total: result.pagination.total,
+      page: result.pagination.page,
+      limit: result.pagination.limit,
+      totalPages: result.pagination.totalPages,
+    };
   }
 
   @GrpcMethod('OrderService', 'getOrder')

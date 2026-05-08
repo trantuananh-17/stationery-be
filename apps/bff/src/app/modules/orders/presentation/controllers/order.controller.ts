@@ -85,15 +85,12 @@ export class OrderController {
     @Query()
     query: GetOrdersAdminDto,
   ) {
-    const result = await this.getOrdersAdminUseCase.execute({
-      search: query.search,
+    const normalizedQuery = {
+      ...query,
+      status: query.status?.trim().toUpperCase(),
+    };
 
-      status: query.status,
-
-      page: query.page,
-
-      limit: query.limit,
-    });
+    const result = await this.getOrdersAdminUseCase.execute(normalizedQuery);
 
     Logger.log(`Get orders admin: ${JSON.stringify(result)}`);
 

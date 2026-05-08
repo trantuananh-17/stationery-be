@@ -3,6 +3,7 @@ import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 
 import { OrderStatus } from '../../domain/enums/order-status.enum';
+import { OrderSort } from '../../domain/enums/order-sort.enum';
 
 export class GetOrdersAdminDto {
   @IsOptional()
@@ -12,6 +13,10 @@ export class GetOrdersAdminDto {
   @IsOptional()
   @IsEnum(OrderStatus)
   status?: OrderStatus;
+
+  @IsOptional()
+  @IsEnum(OrderSort)
+  orderBy?: OrderSort;
 
   @IsOptional()
   @Type(() => Number)

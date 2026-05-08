@@ -71,8 +71,9 @@ message OrderItemAttributeResponse {
 message GetOrdersAdminRequest {
   optional string search = 1;  
   optional string status = 2;
-  optional int32 page = 3;
-  optional int32 limit = 4;
+  optional string order_by = 3;
+  optional int32 page = 4;
+  optional int32 limit = 5;
 }
 
 message OrdersAdminResponse {
