@@ -9,7 +9,7 @@ export type OrderItemParams = {
   readonly id: string;
   readonly orderId: string;
   readonly productId: string;
-  readonly variantId?: string;
+  readonly variantId: string;
   name: string;
   sku?: string;
   price: number;
@@ -24,7 +24,7 @@ export type OrderItemParams = {
 export type CreateOrderItemParams = {
   orderId: string;
   productId: string;
-  variantId?: string;
+  variantId: string;
   name: string;
   sku?: string;
   price: number;
@@ -124,7 +124,7 @@ export class OrderItem {
     return this.params.productId;
   }
 
-  get variantId(): string | undefined {
+  get variantId(): string {
     return this.params.variantId;
   }
 

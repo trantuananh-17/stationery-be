@@ -8,32 +8,22 @@ import { IOrderCommandRepository } from '../../ports/repositories/order-command.
 
 import { UpdateStatusCommand } from './update-status.command';
 
+import { OrderNotFound } from '../../../domain/errors/order.error';
+
 @CommandHandler(UpdateStatusCommand)
 export class UpdateStatusHandler implements ICommandHandler<UpdateStatusCommand, void> {
   constructor(
     private readonly orderCommandRepo: IOrderCommandRepository,
-
     private readonly eventPublisher: IEventPublisher,
   ) {}
 
   async execute(command: UpdateStatusCommand): Promise<void> {
-    const { eventId, orderId, orderStatus, paymentStatus, paymentTransactionId, paymentProvider } =
-      command;
+    const { orderId, orderStatus } = command;
 
     const order = await this.orderCommandRepo.findById(orderId);
 
     if (!order) {
-      throw new Error(`Order not found: ${orderId}`);
-    }
-
-    switch (paymentStatus) {
-      case PaymentStatus.PAID:
-        order.markPaid(paymentTransactionId, paymentProvider);
-        break;
-
-      case PaymentStatus.FAILED:
-        order.markPaymentFailed(paymentTransactionId, paymentProvider);
-        break;
+      throw new OrderNotFound();
     }
 
     switch (orderStatus) {
@@ -47,6 +37,11 @@ export class UpdateStatusHandler implements ICommandHandler<UpdateStatusCommand,
 
       case OrderStatus.DELIVERED:
         order.markDelivered();
+
+        if (order.paymentMethod === 'COD' && order.paymentStatus !== PaymentStatus.PAID) {
+          order.markPaid();
+        }
+
         break;
 
       case OrderStatus.CANCELLED:
@@ -56,20 +51,56 @@ export class UpdateStatusHandler implements ICommandHandler<UpdateStatusCommand,
 
     await this.orderCommandRepo.save(order);
 
-    const orderItems = await this.orderCommandRepo.getOrderItemInput(orderId);
+    const projectionPromises: Promise<void>[] = [];
 
-    if (paymentStatus === PaymentStatus.PAID || orderStatus === OrderStatus.PROCESSING) {
-      await this.eventPublisher.emitOrderConfirmed({
-        eventId,
-        items: orderItems,
-      });
+    projectionPromises.push(
+      this.eventPublisher.emitSyncLastOrder({
+        userId: order.userId,
+
+        orderId: order.id,
+        orderNumber: order.number,
+
+        totalPrice: order.total,
+
+        orderStatus: order.status,
+        paymentStatus: order.paymentStatus,
+
+        orderedAt: order.createdAt,
+
+        items: order.items.map((item) => ({
+          productId: item.productId,
+          variantId: item.variantId,
+
+          name: item.name,
+
+          sku: item.sku,
+          thumbnail: item.image,
+
+          quantity: item.quantity,
+          price: item.price,
+          subtotal: item.subtotal,
+
+          attributes: item.attributes ?? [],
+        })),
+      }),
+    );
+
+    if (order.paymentMethod === 'COD' && order.paymentStatus === PaymentStatus.PAID) {
+      projectionPromises.push(
+        this.eventPublisher.emitSyncUserSumary({
+          userId: order.userId,
+          email: order.email,
+
+          amountSpentIncrement: order.total,
+          totalOrdersIncrement: 1,
+
+          lastOrderId: order.id,
+          lastOrderTotal: order.total,
+          lastOrderAt: order.createdAt,
+        }),
+      );
     }
 
-    if (paymentStatus === PaymentStatus.FAILED || orderStatus === OrderStatus.CANCELLED) {
-      await this.eventPublisher.emitOrderCanceled({
-        eventId,
-        items: orderItems,
-      });
-    }
+    await Promise.all(projectionPromises);
   }
 }

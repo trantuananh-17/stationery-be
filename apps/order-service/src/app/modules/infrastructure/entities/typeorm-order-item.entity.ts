@@ -14,8 +14,8 @@ export class OrderItemOrmEntity extends BaseEntity {
   @Column({ name: 'product_id', type: 'uuid' })
   productId: string;
 
-  @Column({ name: 'variant_id', type: 'uuid', nullable: true })
-  variantId?: string | null;
+  @Column({ name: 'variant_id', type: 'uuid' })
+  variantId: string;
 
   @Column({ type: 'varchar', length: 255 })
   name: string;

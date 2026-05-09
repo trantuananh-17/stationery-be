@@ -5,6 +5,7 @@ import { plainToInstance, Type } from 'class-transformer';
 import { TypeOrmConfiguration } from '@common/configuration/type-orm.config';
 import { GrpcConfiguration } from '@common/configuration/grpc.config';
 import { JwtConfiguration } from '@common/configuration/jwt.config';
+import { KafkaConfiguration } from '@common/configuration/kafka.config';
 
 class Configuration extends BaseConfiguration {
   @ValidateNested()
@@ -22,6 +23,10 @@ class Configuration extends BaseConfiguration {
   @ValidateNested()
   @Type(() => GrpcConfiguration)
   GRPC_SERV = new GrpcConfiguration();
+
+  @ValidateNested()
+  @Type(() => KafkaConfiguration)
+  KAFKA_CONFIG = new KafkaConfiguration();
 }
 
 export const CONFIGURATION = () => {

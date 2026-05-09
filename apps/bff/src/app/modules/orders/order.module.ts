@@ -9,11 +9,18 @@ import { CheckoutUseCase } from './applications/checkout.usecase';
 import { GetOrdersAdminUseCase } from './applications/get-orders-admin.usecase';
 import { GetOrderUseCase } from './applications/get-order.usecase';
 import { GetMyOrderUseCase } from './applications/get-my-order.usecase';
+import { UpdateOrderStatusUseCase } from './applications/update-order-status.usecase';
 
 @Module({
   imports: [OrderInfrasModule, JwtProvider, GuardsModule],
   controllers: [OrderController],
-  providers: [CheckoutUseCase, GetOrdersAdminUseCase, GetOrderUseCase, GetMyOrderUseCase],
+  providers: [
+    CheckoutUseCase,
+    GetOrdersAdminUseCase,
+    GetOrderUseCase,
+    GetMyOrderUseCase,
+    UpdateOrderStatusUseCase,
+  ],
   exports: [],
 })
 export class OrderModule {}

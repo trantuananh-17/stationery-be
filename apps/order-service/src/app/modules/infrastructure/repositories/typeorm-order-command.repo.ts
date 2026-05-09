@@ -42,7 +42,7 @@ export class TypeOrmOrderCommandRepository implements IOrderCommandRepository {
         id: item.id,
         orderId: item.orderId,
         productId: item.productId,
-        variantId: item.variantId ?? undefined,
+        variantId: item.variantId,
         name: item.name,
         sku: item.sku ?? undefined,
         price: item.price,
@@ -180,7 +180,7 @@ export class TypeOrmOrderCommandRepository implements IOrderCommandRepository {
     orm.id = item.id;
     orm.orderId = item.orderId;
     orm.productId = item.productId;
-    orm.variantId = item.variantId ?? undefined;
+    orm.variantId = item.variantId;
     orm.name = item.name;
     orm.sku = item.sku ?? undefined;
     orm.price = item.price;

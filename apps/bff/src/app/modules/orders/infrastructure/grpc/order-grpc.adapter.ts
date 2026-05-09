@@ -12,6 +12,7 @@ import {
   GetOrdersAdminGrpcRequest,
   OrderDetailGrpcResponse,
   OrdersAdminGrpcResponse,
+  UpdateOrderStatusRequest,
 } from '../../applications/ports/dtos/order.dto';
 
 @Injectable()
@@ -29,6 +30,10 @@ export class OrderGrpcAdapter implements OrderPort, OnModuleInit {
 
   checkout(data: CheckoutGrpcRequest): Promise<CheckoutGrpcResponse> {
     return firstValueFrom(this.orderService.checkout(data));
+  }
+
+  updateOrderStatus(data: UpdateOrderStatusRequest): Promise<void> {
+    return firstValueFrom(this.orderService.updateOrderStatus(data));
   }
 
   getOrdersAdmin(data: GetOrdersAdminGrpcRequest): Promise<OrdersAdminGrpcResponse> {

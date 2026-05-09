@@ -2,7 +2,7 @@ import { BaseError } from './base.error';
 
 export class OrderNotFound extends BaseError {
   constructor() {
-    super('ORDER_NOT_FOUND', 'Order payment not found');
+    super('ORDER_NOT_FOUND', 'Order not found');
   }
 }
 export class OrderNotPayable extends BaseError {

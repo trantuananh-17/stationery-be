@@ -137,3 +137,26 @@ export interface OrderItemAttributeGrpc {
   name: string;
   value: string;
 }
+
+export interface PaymentStatus {
+  PENDING: 'PENDING';
+  PAID: 'PAID';
+  FAILED: 'FAILED';
+  REFUNDED: 'REFUNDED';
+}
+
+export const OrderStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  SHIPPED: 'SHIPPED',
+  DELIVERED: 'DELIVERED',
+  CANCELLED: 'CANCELLED',
+  EXPIRED: 'EXPIRED',
+} as const;
+
+export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus];
+
+export interface UpdateOrderStatusRequest {
+  orderId: string;
+  status: OrderStatus;
+}

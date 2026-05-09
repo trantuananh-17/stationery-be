@@ -7,7 +7,7 @@ import { CheckoutCommand } from '../../application/commands/checkout/checkout.co
 import { JwtPayload } from '@common/interfaces/common/jwt-payload.interface';
 import { CheckoutDto } from '../dtos/checkout.dto';
 import { EventPattern, GrpcMethod, Payload } from '@nestjs/microservices';
-import { OrderUpdateStatusEventDto } from '../dtos/updateStatus.dto';
+import { OrderUpdateStatusEventDto } from '../dtos/update-status.dto';
 import { UpdateStatusCommand } from '../../application/commands/update-status/update-status.command';
 import { getPaymentDto } from '../dtos/get-checkout.dto';
 import { GetOrderPaymentQuery } from '../../application/queries/get-order-checkout/get-order-payment.query';
@@ -19,6 +19,8 @@ import { getOrderDto } from '../dtos/get-order.dto';
 import { GetOrderQuery } from '../../application/queries/get-order/get-order.query';
 import { getMyOrderDto } from '../dtos/get-my-order.dto';
 import { GetOrdersByAdminResult } from '../../application/queries/get-orders-admin/get-orders-admin.handler';
+import { HandlePaymentCommand } from '../../application/commands/handle-payment/handle-payment.command';
+import { HandleWebhookEventDto } from '../dtos/handler-webhook.dto';
 
 @Controller('order')
 @UseInterceptors(GrpcLoggingInterceptor)
@@ -101,9 +103,9 @@ export class OrderController {
   }
 
   @EventPattern('order.update-status')
-  async handlePaymentSucceeded(@Payload() payload: OrderUpdateStatusEventDto) {
+  async handlePaymentSucceeded(@Payload() payload: HandleWebhookEventDto) {
     await this.commandBus.execute(
-      new UpdateStatusCommand(
+      new HandlePaymentCommand(
         payload.eventId,
         payload.orderId,
         payload.status,
@@ -112,5 +114,10 @@ export class OrderController {
         payload.paymentProvider,
       ),
     );
+  }
+
+  @GrpcMethod('OrderService', 'updateOrderStatus')
+  async updateOrderStatus(@Payload() payload: OrderUpdateStatusEventDto) {
+    await this.commandBus.execute(new UpdateStatusCommand(payload.orderId, payload.status));
   }
 }

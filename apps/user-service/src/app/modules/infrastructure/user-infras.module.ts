@@ -12,9 +12,23 @@ import { TypeOrmUserCommandRepository } from './repositories/typeorm-user.comman
 import { TypeOrmRoleQueryRepository } from './repositories/typeorm-role.query';
 import { IUserQueryRepository } from '../application/ports/repositories/user-query.repo';
 import { TypeOrmUserQueryRepository } from './repositories/typeorm-user.query';
+import { CustomerSummaryOrmEntity } from './entities/typeorm-customer-summary.entity';
+import { LastOrderOrmEntity } from './entities/typeorm-last-order.entity';
+import { ICustomerSummaryCommandRepository } from '../application/ports/repositories/customer-summary-command.repo';
+import { TypeormCustomerSummaryRepository } from './repositories/typeorm-customer-summary.command';
+import { ILastOrderCommandRepository } from '../application/ports/repositories/last-order-command.repo';
+import { TypeormLastOrderRepository } from './repositories/typeorm-lastorder.command';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserOrmEntity, RoleOrmEntity, PermissionOrmEntity])],
+  imports: [
+    TypeOrmModule.forFeature([
+      UserOrmEntity,
+      RoleOrmEntity,
+      PermissionOrmEntity,
+      CustomerSummaryOrmEntity,
+      LastOrderOrmEntity,
+    ]),
+  ],
   providers: [
     {
       provide: IUserCommandRepository,
@@ -28,7 +42,21 @@ import { TypeOrmUserQueryRepository } from './repositories/typeorm-user.query';
       provide: IRoleQueryRepository,
       useClass: TypeOrmRoleQueryRepository,
     },
+    {
+      provide: ICustomerSummaryCommandRepository,
+      useClass: TypeormCustomerSummaryRepository,
+    },
+    {
+      provide: ILastOrderCommandRepository,
+      useClass: TypeormLastOrderRepository,
+    },
   ],
-  exports: [IUserCommandRepository, IRoleQueryRepository, IUserQueryRepository],
+  exports: [
+    IUserCommandRepository,
+    IRoleQueryRepository,
+    IUserQueryRepository,
+    ICustomerSummaryCommandRepository,
+    ILastOrderCommandRepository,
+  ],
 })
 export class UserInfraModule {}

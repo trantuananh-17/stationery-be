@@ -11,6 +11,7 @@ service OrderService {
   rpc getOrdersAdmin (GetOrdersAdminRequest) returns (OrdersAdminResponse);
   rpc getOrder (GetOrderRequest) returns (OrderDetailResponse);
   rpc getMyOrder (GetOrderRequest) returns (OrderDetailResponse);
+  rpc updateOrderStatus (UpdateOrderStatusRequest) returns (google.protobuf.Empty);
 }
 
 message GetOrderRequest {
@@ -175,3 +176,8 @@ message OrderPaymentResponse {
   float total = 13;             
   google.protobuf.Timestamp paymentExpiredAt = 14; 
 } 
+
+message UpdateOrderStatusRequest{
+  string orderId = 1;
+  string status = 2;
+}

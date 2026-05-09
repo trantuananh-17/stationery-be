@@ -2,7 +2,7 @@ import { IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 import { PaymentStatus } from '../../domain/enums/payment-status.enum';
 import { OrderStatus } from '../../domain/enums/order-status.enum';
 
-export class OrderUpdateStatusEventDto {
+export class HandleWebhookEventDto {
   @IsString()
   eventId: string;
 

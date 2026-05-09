@@ -1,3 +1,10 @@
+import { ROLE } from '@common/constants/enums/role.enum';
+import { Roles } from '@common/decorators/role.decorator';
+import { UserData } from '@common/decorators/user-data.decorator';
+import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
+import { RoleGuard } from '@common/guards/role.guard';
+import { JwtPayload } from '@common/interfaces/common/jwt-payload.interface';
+import { ResponseDto } from '@common/interfaces/gateway/response.interface';
 import {
   Body,
   Controller,
@@ -7,18 +14,14 @@ import {
   Logger,
   Param,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
-
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
-
-import { UserData } from '@common/decorators/user-data.decorator';
-import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
-
-import { ResponseDto } from '@common/interfaces/gateway/response.interface';
-
 import { CheckoutUseCase } from '../../applications/checkout.usecase';
+import { GetMyOrderUseCase } from '../../applications/get-my-order.usecase';
+import { GetOrderUseCase } from '../../applications/get-order.usecase';
 import { GetOrdersAdminUseCase } from '../../applications/get-orders-admin.usecase';
 import {
   CheckoutGrpcResponse,
@@ -26,14 +29,10 @@ import {
   OrdersAdminGrpcResponse,
 } from '../../applications/ports/dtos/order.dto';
 import { CheckoutDto } from '../dtos/checkout.dto';
-import { GetOrdersAdminDto } from '../dtos/get-orders-admin.dto';
-import { RoleGuard } from '@common/guards/role.guard';
-import { Roles } from '@common/decorators/role.decorator';
-import { ROLE } from '@common/constants/enums/role.enum';
 import { GetOrderDto } from '../dtos/get-order.dto';
-import { GetOrderUseCase } from '../../applications/get-order.usecase';
-import { JwtPayload } from '@common/interfaces/common/jwt-payload.interface';
-import { GetMyOrderUseCase } from '../../applications/get-my-order.usecase';
+import { GetOrdersAdminDto } from '../dtos/get-orders-admin.dto';
+import { OrderUpdateStatusDto } from '../dtos/update-status.dto';
+import { UpdateOrderStatusUseCase } from '../../applications/update-order-status.usecase';
 
 @ApiTags('Orders')
 @Controller('orders')
@@ -43,6 +42,7 @@ export class OrderController {
     private readonly getOrdersAdminUseCase: GetOrdersAdminUseCase,
     private readonly getOrderUseCase: GetOrderUseCase,
     private readonly getMyOrderUseCase: GetMyOrderUseCase,
+    private readonly updateOrderStatusUseCase: UpdateOrderStatusUseCase,
   ) {}
 
   @Post('checkout')
@@ -66,6 +66,23 @@ export class OrderController {
     });
 
     Logger.log(`Checkout request: ${JSON.stringify(result)}`);
+
+    return result;
+  }
+
+  @Put('/:orderId/status')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Update order status' })
+  @ApiOkResponse({ type: ResponseDto<boolean> })
+  @HttpCode(HttpStatus.OK)
+  async updateStatus(@Param('orderId') orderId: string, @Body() body: OrderUpdateStatusDto) {
+    const result = await this.updateOrderStatusUseCase.execute({
+      orderId,
+      status: body.status,
+    });
+
+    Logger.log(`Update order status request: ${JSON.stringify(result)}`);
 
     return result;
   }

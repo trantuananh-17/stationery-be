@@ -7,6 +7,7 @@ import {
   GetOrdersAdminGrpcRequest,
   OrderDetailGrpcResponse,
   OrdersAdminGrpcResponse,
+  UpdateOrderStatusRequest,
 } from '../../applications/ports/dtos/order.dto';
 
 export interface OrderGrpcService {
@@ -14,4 +15,5 @@ export interface OrderGrpcService {
   getOrdersAdmin(data: GetOrdersAdminGrpcRequest): Observable<OrdersAdminGrpcResponse>;
   getOrder(data: GetOrderGrpcRequest): Observable<OrderDetailGrpcResponse>;
   getMyOrder(data: GetMyOrderGrpcRequest): Observable<OrderDetailGrpcResponse>;
+  updateOrderStatus(data: UpdateOrderStatusRequest): Observable<void>;
 }

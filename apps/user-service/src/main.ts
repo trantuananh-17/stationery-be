@@ -9,6 +9,7 @@ import { AppModule } from './app/app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
 import { CONFIGURATION } from './configuration';
+import { QUEUE_GROUPS } from '@common/constants/enums/queue.enum';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -18,22 +19,36 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
 
-  app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.TCP,
-    options: {
-      host: configService.get<string>('TCP_SERV.TCP_USER_SERVICE.options.host'),
-      port: configService.get<number>('TCP_SERV.TCP_USER_SERVICE.options.port'),
-    },
-  });
+  const grpcPackage = configService.get<string>('GRPC_SERV.GRPC_USER_SERVICE.name');
+  const grpcProtoPath = configService.get<string>('GRPC_SERV.GRPC_USER_SERVICE.options.protoPath');
+  const grpcUrl = configService.get<string>('GRPC_SERV.GRPC_USER_SERVICE.options.url');
+
+  if (!grpcPackage || !grpcProtoPath) {
+    throw new Error('Missing GRPC_USER_SERVICE config');
+  }
 
   Logger.debug('GRPC CONFIG', JSON.stringify(configService.get('GRPC_SERV.GRPC_USER_SERVICE')));
 
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.GRPC,
     options: {
-      package: configService.get<string>('GRPC_SERV.GRPC_USER_SERVICE.name'),
-      protoPath: configService.get<string>('GRPC_SERV.GRPC_USER_SERVICE.options.protoPath'),
-      url: configService.get<string>('GRPC_SERV.GRPC_USER_SERVICE.options.url'),
+      package: grpcPackage,
+      protoPath: grpcProtoPath,
+      url: grpcUrl,
+    },
+  });
+
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.KAFKA,
+    options: {
+      client: {
+        clientId: 'user-service',
+        brokers: [configService.getOrThrow<string>('KAFKA_CONFIG.URL')],
+      },
+      consumer: {
+        groupId: QUEUE_GROUPS.USER,
+        allowAutoTopicCreation: true,
+      },
     },
   });
 

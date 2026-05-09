@@ -14,12 +14,17 @@ import { TokenService } from './services/token.service';
 import { ICredentialQueryRepository } from '../application/ports/repositories/credential-query.repo';
 import { TypeOrmCredentialQueryRepository } from './repositories/typeorm-credential.query';
 import { JwtProvider } from '@common/configuration/jwt.config';
+import { KafkaModule } from '@common/kafka/kafka.module';
+import { QUEUE_SERVICES } from '@common/constants/enums/queue.enum';
+import { IEventPublisher } from '../application/ports/producers/event-publisher.port';
+import { EventPublisherKafka } from './kafka/event-publisher.kafka';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([CredentialOrmEntity]),
     ClientsModule.registerAsync([GrpcProvider(GRPC_SERVICES.USER_SERVICE)]),
     JwtProvider,
+    KafkaModule.register(QUEUE_SERVICES.AUTH),
   ],
   providers: [
     UserGrpcAdapter,
@@ -43,6 +48,10 @@ import { JwtProvider } from '@common/configuration/jwt.config';
       provide: ITokenService,
       useClass: TokenService,
     },
+    {
+      provide: IEventPublisher,
+      useClass: EventPublisherKafka,
+    },
   ],
   exports: [
     UserPort,
@@ -50,6 +59,7 @@ import { JwtProvider } from '@common/configuration/jwt.config';
     ICredentialQueryRepository,
     IPasswordService,
     ITokenService,
+    IEventPublisher,
   ],
 })
 export class AuthInfraModule {}

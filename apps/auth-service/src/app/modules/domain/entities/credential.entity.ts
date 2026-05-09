@@ -104,6 +104,7 @@ export class Credential {
     }
 
     this.params.isEmailVerified = true;
+    this.params.isActive = true;
 
     this.clearVerificationToken();
 
