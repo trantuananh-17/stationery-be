@@ -26,6 +26,8 @@ export class UpdateStatusHandler implements ICommandHandler<UpdateStatusCommand,
       throw new OrderNotFound();
     }
 
+    const projectionPromises: Promise<void>[] = [];
+
     switch (orderStatus) {
       case OrderStatus.PROCESSING:
         order.markProcessing();
@@ -33,12 +35,23 @@ export class UpdateStatusHandler implements ICommandHandler<UpdateStatusCommand,
 
       case OrderStatus.SHIPPED:
         order.markShipped();
+
+        projectionPromises.push(
+          this.eventPublisher.emitOrderConfirmed({
+            eventId: crypto.randomUUID(),
+            items: order.items.map((item) => ({
+              variantId: item.variantId,
+              quantity: item.quantity,
+            })),
+          }),
+        );
+
         break;
 
       case OrderStatus.DELIVERED:
         order.markDelivered();
 
-        if (order.paymentMethod === 'COD' && order.paymentStatus !== PaymentStatus.PAID) {
+        if (order.paymentMethod === 'cod' && order.paymentStatus !== PaymentStatus.PAID) {
           order.markPaid();
         }
 
@@ -50,8 +63,6 @@ export class UpdateStatusHandler implements ICommandHandler<UpdateStatusCommand,
     }
 
     await this.orderCommandRepo.save(order);
-
-    const projectionPromises: Promise<void>[] = [];
 
     projectionPromises.push(
       this.eventPublisher.emitSyncLastOrder({
@@ -85,7 +96,7 @@ export class UpdateStatusHandler implements ICommandHandler<UpdateStatusCommand,
       }),
     );
 
-    if (order.paymentMethod === 'COD' && order.paymentStatus === PaymentStatus.PAID) {
+    if (order.paymentMethod === 'cod' && order.paymentStatus === PaymentStatus.PAID) {
       projectionPromises.push(
         this.eventPublisher.emitSyncUserSumary({
           userId: order.userId,

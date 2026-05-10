@@ -27,12 +27,16 @@ import {
   CheckoutGrpcResponse,
   OrderDetailGrpcResponse,
   OrdersAdminGrpcResponse,
+  OrdersByUserIdGrpcResponse,
 } from '../../applications/ports/dtos/order.dto';
 import { CheckoutDto } from '../dtos/checkout.dto';
 import { GetOrderDto } from '../dtos/get-order.dto';
 import { GetOrdersAdminDto } from '../dtos/get-orders-admin.dto';
 import { OrderUpdateStatusDto } from '../dtos/update-status.dto';
 import { UpdateOrderStatusUseCase } from '../../applications/update-order-status.usecase';
+import { UserPort } from '../../../user/application/ports/user.port';
+import { GetOrdersByUserIdUseCase } from '../../applications/get-orders-userid.usecase';
+import { GetOrdersByUserIdDto } from '../dtos/get-orders-by-user-id.dto';
 
 @ApiTags('Orders')
 @Controller('orders')
@@ -43,6 +47,7 @@ export class OrderController {
     private readonly getOrderUseCase: GetOrderUseCase,
     private readonly getMyOrderUseCase: GetMyOrderUseCase,
     private readonly updateOrderStatusUseCase: UpdateOrderStatusUseCase,
+    private readonly getOrdersByUserIdUseCase: GetOrdersByUserIdUseCase,
   ) {}
 
   @Post('checkout')
@@ -167,6 +172,29 @@ export class OrderController {
     });
 
     Logger.log(`Get order detail: ${JSON.stringify(result)}`);
+
+    return result;
+  }
+
+  @Get('my-orders')
+  @ApiOperation({
+    summary: 'Get my orders',
+  })
+  @ApiOkResponse({
+    type: ResponseDto<OrdersByUserIdGrpcResponse>,
+  })
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async getOrdersByUserId(@UserData() user: JwtPayload, @Query() query: GetOrdersByUserIdDto) {
+    const result = await this.getOrdersByUserIdUseCase.execute({
+      userId: user.userId,
+      status: query.status,
+      page: query.page ?? 1,
+      limit: query.limit ?? 10,
+    });
+
+    Logger.log(`Get my orders: ${JSON.stringify(result)}`);
 
     return result;
   }

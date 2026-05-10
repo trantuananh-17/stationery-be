@@ -51,7 +51,7 @@ export type CheckoutStockItemGrpc = {
 export type GetOrdersAdminGrpcRequest = {
   search?: string;
   status?: string;
-  orderby?: string;
+  orderBy?: string;
   page?: number;
   limit?: number;
 };
@@ -159,4 +159,43 @@ export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus];
 export interface UpdateOrderStatusRequest {
   orderId: string;
   status: OrderStatus;
+}
+
+export type GetOrdersByUserIdGrpcRequest = {
+  userId: string;
+  status?: string;
+  page?: number;
+  limit?: number;
+};
+
+export type OrdersByUserIdGrpcResponse = {
+  data: CustomerOrderDetailGrpc[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+};
+
+export interface CustomerOrderDetailGrpc {
+  id: string;
+  orderNumber: string;
+  status: string;
+  paymentStatus: string;
+  paymentMethod: string;
+  subtotal: number;
+  shippingCost: number;
+  discount: number;
+  total: number;
+  trackingNumber?: string;
+  shippingProvider?: string;
+  shippingAddress: CheckoutAddressGrpc;
+  items: OrderItemGrpc[];
+  totalItems: number;
+  totalUniqueItems: number;
+  estimatedDelivery?: GrpcTimestamp;
+  paidAt?: GrpcTimestamp;
+  shippedAt?: GrpcTimestamp;
+  deliveredAt?: GrpcTimestamp;
+  cancelledAt?: GrpcTimestamp;
+  createdAt: GrpcTimestamp;
 }

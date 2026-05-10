@@ -4,18 +4,22 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { UserController } from './presentation/controllers/user.controller';
 import { CreateUserHandler } from './application/commands/create-user/create-user.handler';
 import { UserInfraModule } from './infrastructure/user-infras.module';
-import { GetUserHandler } from './application/queries/get-user-auth/get-user-auth.handler';
+import { GetUserAuthHandler } from './application/queries/get-user-auth/get-user-auth.handler';
 import { UpsertCustomerSummaryHandler } from './application/commands/upsert-sumary/upsert-sumary.handler';
 import { UpsertLastOrderHandler } from './application/commands/upsert-last-order/upsert-last-order.handler';
+import { GetUserHandler } from './application/queries/get-user/get-user.handler';
+import { GetUsersHandler } from './application/queries/get-users/get-users.handler';
 
 @Module({
   imports: [CqrsModule, TypeOrmProvider, UserInfraModule],
   controllers: [UserController],
   providers: [
     CreateUserHandler,
-    GetUserHandler,
+    GetUserAuthHandler,
     UpsertCustomerSummaryHandler,
     UpsertLastOrderHandler,
+    GetUserHandler,
+    GetUsersHandler,
   ],
 })
 export class UserModule {}

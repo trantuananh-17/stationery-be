@@ -21,6 +21,9 @@ import { getMyOrderDto } from '../dtos/get-my-order.dto';
 import { GetOrdersByAdminResult } from '../../application/queries/get-orders-admin/get-orders-admin.handler';
 import { HandlePaymentCommand } from '../../application/commands/handle-payment/handle-payment.command';
 import { HandleWebhookEventDto } from '../dtos/handler-webhook.dto';
+import { GetOrdersByUserIdDto } from '../dtos/get-orders-by-user.dto';
+import { GetMyOrdersQuery } from '../../application/queries/get-my-orders/get-my-orders.query';
+import { GetMyOrdersResult } from '../../application/queries/get-my-orders/get-my-orders.handler';
 
 @Controller('order')
 @UseInterceptors(GrpcLoggingInterceptor)
@@ -119,5 +122,23 @@ export class OrderController {
   @GrpcMethod('OrderService', 'updateOrderStatus')
   async updateOrderStatus(@Payload() payload: OrderUpdateStatusEventDto) {
     await this.commandBus.execute(new UpdateStatusCommand(payload.orderId, payload.status));
+  }
+
+  @GrpcMethod('OrderService', 'getOrdersByUserId')
+  async getOrdersByUserId(
+    @Payload()
+    payload: GetOrdersByUserIdDto,
+  ) {
+    const result: GetMyOrdersResult = await this.queryBus.execute(
+      new GetMyOrdersQuery(payload.userId, payload.status, payload.page, payload.limit),
+    );
+
+    return {
+      data: result.data,
+      total: result.pagination.total,
+      page: result.pagination.page,
+      limit: result.pagination.limit,
+      totalPages: result.pagination.totalPages,
+    };
   }
 }

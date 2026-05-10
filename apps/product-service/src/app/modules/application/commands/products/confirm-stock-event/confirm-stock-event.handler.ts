@@ -13,13 +13,13 @@ export class ConfirmStockEventHandler implements ICommandHandler<ConfirmStockEve
   ) {}
 
   async execute(command: ConfirmStockEventCommand): Promise<void> {
-    const inserted = await this.processedEventRepo.tryInsert(command.eventId, 'ORDER_CONFIRMED');
-
-    if (!inserted) {
-      return;
-    }
-
     await this.uow.runInTransaction(async () => {
+      const inserted = await this.processedEventRepo.tryInsert(command.eventId, 'ORDER_CONFIRMED');
+
+      if (!inserted) {
+        return;
+      }
+
       for (const item of command.items) {
         const ok = await this.inventoryRepo.confirmStockAtomic(item.variantId, item.quantity);
 

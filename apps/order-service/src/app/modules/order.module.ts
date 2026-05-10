@@ -10,6 +10,7 @@ import { GetOrdersByAdminHandler } from './application/queries/get-orders-admin/
 import { GetOrderHandler } from './application/queries/get-order/get-order.handler';
 import { GetMyOrderHandler } from './application/queries/get-my-order/get-my-order.handler';
 import { HandlePaymentHandler } from './application/commands/handle-payment/handle-payment.handler';
+import { GetMyOrdersHandler } from './application/queries/get-my-orders/get-my-orders.handler';
 
 @Module({
   imports: [CqrsModule, TypeOrmProvider, OrderInfraModule],
@@ -22,6 +23,7 @@ import { HandlePaymentHandler } from './application/commands/handle-payment/hand
     GetOrdersByAdminHandler,
     GetOrderHandler,
     GetMyOrderHandler,
+    GetMyOrdersHandler,
   ],
   exports: [],
 })

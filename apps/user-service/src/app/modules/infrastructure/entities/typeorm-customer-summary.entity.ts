@@ -1,5 +1,6 @@
-import { Column, Entity, Index } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, OneToOne } from 'typeorm';
 import { BaseEntity } from '@common/databases/base.entity';
+import { UserOrmEntity } from './typeorm-user.entity';
 
 @Entity({ name: 'customer_summaries' })
 export class CustomerSummaryOrmEntity extends BaseEntity {
@@ -77,4 +78,8 @@ export class CustomerSummaryOrmEntity extends BaseEntity {
     type: 'timestamp',
   })
   customerSince: Date;
+
+  @OneToOne(() => UserOrmEntity)
+  @JoinColumn({ name: 'user_id' })
+  user: UserOrmEntity;
 }

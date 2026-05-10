@@ -10,6 +10,7 @@ import { GetOrdersAdminUseCase } from './applications/get-orders-admin.usecase';
 import { GetOrderUseCase } from './applications/get-order.usecase';
 import { GetMyOrderUseCase } from './applications/get-my-order.usecase';
 import { UpdateOrderStatusUseCase } from './applications/update-order-status.usecase';
+import { GetOrdersByUserIdUseCase } from './applications/get-orders-userid.usecase';
 
 @Module({
   imports: [OrderInfrasModule, JwtProvider, GuardsModule],
@@ -20,6 +21,7 @@ import { UpdateOrderStatusUseCase } from './applications/update-order-status.use
     GetOrderUseCase,
     GetMyOrderUseCase,
     UpdateOrderStatusUseCase,
+    GetOrdersByUserIdUseCase,
   ],
   exports: [],
 })

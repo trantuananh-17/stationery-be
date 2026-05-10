@@ -1,7 +1,9 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm';
 import { BaseEntity } from '@common/databases/base.entity';
 import { Gender } from '../../domain/enums/gender.enum';
 import { RoleOrmEntity } from './typeorm-role.entity';
+import { CustomerSummaryOrmEntity } from './typeorm-customer-summary.entity';
+import { LastOrderOrmEntity } from './typeorm-last-order.entity';
 
 @Entity({ name: 'users' })
 export class UserOrmEntity extends BaseEntity {
@@ -43,4 +45,10 @@ export class UserOrmEntity extends BaseEntity {
   @ManyToOne(() => RoleOrmEntity, (role) => role.users)
   @JoinColumn({ name: 'role_id' })
   role: RoleOrmEntity;
+
+  @OneToOne(() => CustomerSummaryOrmEntity, (summary) => summary.user)
+  customerSummary: CustomerSummaryOrmEntity;
+
+  @OneToOne(() => LastOrderOrmEntity, (lastOrder) => lastOrder.user)
+  lastOrder: LastOrderOrmEntity;
 }

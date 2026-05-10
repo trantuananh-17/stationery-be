@@ -41,13 +41,13 @@ export class HandlePaymentHandler implements ICommandHandler<HandlePaymentComman
     await this.orderCommandRepo.save(order);
 
     if (paymentStatus === PaymentStatus.PAID) {
-      await this.eventPublisher.emitOrderConfirmed({
-        eventId,
-        items: order.items.map((item) => ({
-          variantId: item.variantId,
-          quantity: item.quantity,
-        })),
-      });
+      // await this.eventPublisher.emitOrderConfirmed({
+      //   eventId,
+      //   items: order.items.map((item) => ({
+      //     variantId: item.variantId,
+      //     quantity: item.quantity,
+      //   })),
+      // });
 
       await this.eventPublisher.emitSyncUserSumary({
         userId: order.userId,

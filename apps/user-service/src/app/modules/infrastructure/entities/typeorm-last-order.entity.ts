@@ -1,5 +1,6 @@
-import { Column, Entity, Index } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, OneToOne } from 'typeorm';
 import { BaseEntity } from '@common/databases/base.entity';
+import { UserOrmEntity } from './typeorm-user.entity';
 
 @Entity({
   name: 'last_order',
@@ -78,4 +79,8 @@ export class LastOrderOrmEntity extends BaseEntity {
       value: string;
     }[];
   }[];
+
+  @OneToOne(() => UserOrmEntity)
+  @JoinColumn({ name: 'user_id' })
+  user: UserOrmEntity;
 }

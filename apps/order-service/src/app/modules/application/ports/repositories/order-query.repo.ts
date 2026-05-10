@@ -4,6 +4,7 @@ import { OrderPaymentDto } from '../../queries/get-order-checkout/get-order-paym
 import { OrderAdminDto } from '../../queries/get-orders-admin/get-orders-admin.dto';
 import { Order } from '../../../domain/entities/order.entity';
 import { OrderSort } from '../../../domain/enums/order-sort.enum';
+import { CustomerOrderDetail } from '../../queries/get-my-orders/get-my-orders.dto';
 
 export abstract class IOrderQueryRepository {
   abstract getPayment(userId: string, orderId: string): Promise<OrderPaymentDto | null>;
@@ -19,4 +20,13 @@ export abstract class IOrderQueryRepository {
   abstract findById(orderId: string): Promise<Order | null>;
 
   abstract findByIdAndUserId(orderId: string, userId: string): Promise<Order | null>;
+
+  abstract findOrdersByUserId(
+    userId: string,
+    filters: {
+      status?: OrderStatus;
+      page: number;
+      limit: number;
+    },
+  ): Promise<QueryResult<CustomerOrderDetail>>;
 }

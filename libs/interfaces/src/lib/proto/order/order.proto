@@ -12,10 +12,55 @@ service OrderService {
   rpc getOrder (GetOrderRequest) returns (OrderDetailResponse);
   rpc getMyOrder (GetOrderRequest) returns (OrderDetailResponse);
   rpc updateOrderStatus (UpdateOrderStatusRequest) returns (google.protobuf.Empty);
+  rpc getOrdersByUserId (GetOrdersByUserIdRequest) returns (OrdersByUserIdResponse);
 }
 
 message GetOrderRequest {
   string order_id = 1;
+}
+
+message GetOrdersByUserIdRequest {
+  string user_id = 1;
+  optional string status = 2;
+  optional int32 page = 3;
+  optional int32 limit = 4;
+}
+
+message OrdersByUserIdResponse {
+  repeated CustomerOrderDetailResponse data = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+  int32 total_pages = 5;
+}
+
+message CustomerOrderDetailResponse {
+  string id = 1;
+  string order_number = 2;
+  string status = 3;
+  string payment_status = 4;
+  string payment_method = 5;
+
+  int32 subtotal = 6;
+  int32 shipping_cost = 7;
+  int32 discount = 8;
+  int32 total = 9;
+
+  optional string tracking_number = 10;
+  optional string shipping_provider = 11;
+
+  CheckoutAddress shipping_address = 12;
+  repeated OrderDetailItemResponse items = 13;
+
+  int32 total_items = 14;
+  int32 total_unique_items = 15;
+
+  google.protobuf.Timestamp estimated_delivery = 16;
+  google.protobuf.Timestamp paid_at = 17;
+  google.protobuf.Timestamp shipped_at = 18;
+  google.protobuf.Timestamp delivered_at = 19;
+  google.protobuf.Timestamp cancelled_at = 20;
+  google.protobuf.Timestamp created_at = 21;
 }
 
 message OrderDetailResponse {

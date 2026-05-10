@@ -10,6 +10,11 @@ import { SyncCustomerSummaryDto } from '../dtos/sync-customer-summary.dto';
 import { UpsertSummaryCommand } from '../../application/commands/upsert-sumary/upsert-sumary.command';
 import { SyncLastOrderDto } from '../dtos/sync-last-order.dto';
 import { UpsertLastOrderCommand } from '../../application/commands/upsert-last-order/upsert-last-order.command';
+import { GetUsersDto } from '../dtos/get-users.dto';
+import { GetUsersQuery } from '../../application/queries/get-users/get-users.query';
+import { getUserDto } from '../dtos/get-user.dto';
+import { GetUserQuery } from '../../application/queries/get-user/get-user.query';
+import { GetUsersResult } from '../../application/queries/get-users/get-users.handler';
 
 @Controller()
 @UseInterceptors(GrpcLoggingInterceptor)
@@ -31,6 +36,26 @@ export class UserController {
   @GrpcMethod('UserService', 'getUserAuth')
   getUserAuth(@Payload() { userId }: { userId: string }) {
     return this.queryBus.execute(new GetUserAuthQuery(userId));
+  }
+
+  @GrpcMethod('UserService', 'getUsers')
+  async getUsers(payload: GetUsersDto) {
+    const result: GetUsersResult = await this.queryBus.execute(
+      new GetUsersQuery(payload.search, payload.orderBy, payload.page, payload.limit),
+    );
+
+    return {
+      data: result.data,
+      total: result.pagination.total,
+      page: result.pagination.page,
+      limit: result.pagination.limit,
+      totalPages: result.pagination.totalPages,
+    };
+  }
+
+  @GrpcMethod('UserService', 'getUser')
+  getUser(payload: getUserDto) {
+    return this.queryBus.execute(new GetUserQuery(payload.userId));
   }
 
   @MessagePattern('customer.summary.sync')

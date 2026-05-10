@@ -5,7 +5,7 @@ import { GetUserAuthDto } from './get-user-auth.dto';
 import { UserNotFound } from '../../../domain/errors/user-not-found.error';
 
 @QueryHandler(GetUserAuthQuery)
-export class GetUserHandler implements IQueryHandler<GetUserAuthQuery> {
+export class GetUserAuthHandler implements IQueryHandler<GetUserAuthQuery> {
   constructor(private readonly userRepo: IUserQueryRepository) {}
 
   async execute(query: GetUserAuthQuery): Promise<GetUserAuthDto | null> {
