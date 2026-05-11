@@ -3,6 +3,7 @@ export enum QUEUE_GROUPS {
   ORDER = 'order',
   PRODUCT = 'product',
   USER = 'user',
+  NOTIFICATION = 'notification',
 }
 
 export enum QUEUE_SERVICES {

@@ -10,6 +10,8 @@ export enum GRPC_SERVICES {
   CART_SERVICE = 'GRPC_CART_SERVICE',
   PRODUCT_SERVICE = 'GRPC_PRODUCT_SERVICE',
   PAYMENT_SERVICE = 'GRPC_PAYMENT_SERVICE',
+  NOTIFICATION_SERVICE = 'GRPC_NOTIFICATION_SERVICE',
+  ANALYTICS_SERVICE = 'GRPC_ANALYTICS_SERVICE',
 }
 
 type GrpcServiceConfig = {
@@ -48,6 +50,16 @@ const GRPC_SERVICE_CONFIG: Record<keyof typeof GRPC_SERVICES, GrpcServiceConfig>
     proto: './proto/payment.proto',
     hostEnv: 'PAYMENT_SERVICE_HOST',
     portEnv: 'PAYMENT_SERVICE_PORT',
+  },
+  NOTIFICATION_SERVICE: {
+    proto: './proto/notification.proto',
+    hostEnv: 'NOTIFICATION_SERVICE_HOST',
+    portEnv: 'NOTIFICATION_SERVICE_PORT',
+  },
+  ANALYTICS_SERVICE: {
+    proto: './proto/analytics.proto',
+    hostEnv: 'ANALYTICS_SERVICE_HOST',
+    portEnv: 'ANALYTICS_SERVICE_PORT',
   },
 };
 
