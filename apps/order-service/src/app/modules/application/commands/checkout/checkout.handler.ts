@@ -91,7 +91,7 @@ export class CheckoutHandler implements ICommandHandler<CheckoutCommand, Checkou
         sku: item.skuSnapshot,
         price: item.unitPriceSnapshot,
         quantity: item.quantity,
-        image: item.productThumbnailSnapshot,
+        image: item.imageVariantSnapshot || item.productThumbnailSnapshot,
         attributes: item.attributesSnapshot,
       })),
     });

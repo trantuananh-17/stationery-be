@@ -2,7 +2,6 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
 import { IProductQueryRepository } from '../../ports/repositories/product-query.repo';
 import { GetProductsByAdminQuery } from './get-products-admin.query';
-import { ProductReadModel } from '../../read-models/product.read-model';
 import { PaginatedResult } from '@common/interfaces/common/pagination.interface';
 
 type GrpcTimestamp = {

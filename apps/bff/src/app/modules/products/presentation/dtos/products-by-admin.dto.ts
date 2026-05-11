@@ -19,6 +19,7 @@ const AdminProductStatus = {
   ACTIVE: 'active',
   DRAFT: 'draft',
   ARCHIVED: 'archived',
+  DELETED: 'deleted',
 } as const;
 
 export type AdminProductStatus = (typeof AdminProductStatus)[keyof typeof AdminProductStatus];

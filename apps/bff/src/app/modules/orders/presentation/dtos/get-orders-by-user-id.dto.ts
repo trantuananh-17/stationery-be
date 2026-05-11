@@ -1,16 +1,22 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, Min } from 'class-validator';
+import { IsEnum, IsIn, IsInt, IsOptional, Min } from 'class-validator';
 import { OrderStatus } from '../../applications/ports/dtos/order.dto';
 
+const AdminOrderStatus = {
+  PENDING: 'pending',
+  PROCESSING: 'processing',
+  SHIPPED: 'shipped',
+  DELIVERED: 'delevered',
+  CANCELLED: 'cancelled',
+} as const;
+
+export type AdminOrderStatus = (typeof AdminOrderStatus)[keyof typeof AdminOrderStatus];
+
 export class GetOrdersByUserIdDto {
-  @ApiPropertyOptional({
-    enum: OrderStatus,
-    example: OrderStatus.PENDING,
-  })
   @IsOptional()
-  @IsEnum(OrderStatus)
-  status?: OrderStatus;
+  @IsIn(Object.values(AdminOrderStatus))
+  status?: AdminOrderStatus;
 
   @ApiPropertyOptional({
     example: 1,

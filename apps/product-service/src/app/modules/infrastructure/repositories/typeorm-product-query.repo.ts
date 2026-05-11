@@ -416,8 +416,19 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       })
       .leftJoin('p.variants', 'all_variants')
       .leftJoin('p.category', 'c')
-      .leftJoin('p.brand', 'b')
-      .andWhere('p.deletedAt IS NULL');
+      .leftJoin('p.brand', 'b');
+    // .withDeleted();
+    // .andWhere('p.deletedAt IS NULL');
+
+    if (status === ProductStatus.DELETED) {
+      qb.andWhere('p.deleted_at IS NOT NULL');
+    } else {
+      qb.andWhere('p.deleted_at IS NULL');
+
+      if (status) {
+        qb.andWhere('p.status = :status', { status });
+      }
+    }
 
     if (keywords.length > 0) {
       qb.andWhere(
@@ -441,9 +452,9 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       );
     }
 
-    if (status) {
-      qb.andWhere('p.status = :status', { status });
-    }
+    // if (status) {
+    //   qb.andWhere('p.status = :status', { status });
+    // }
 
     const total = await qb.clone().getCount();
 

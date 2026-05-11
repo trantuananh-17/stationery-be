@@ -41,12 +41,21 @@ export class TypeOrmCartQueryRepository implements ICartQueryRepository {
       productId: item.productId,
       variantId: item.variantId,
       quantity: item.quantity,
+
       productNameSnapshot: item.productNameSnapshot,
       variantNameSnapshot: item.variantNameSnapshot,
+
       skuSnapshot: item.skuSnapshot ?? undefined,
-      imageSnapshot: item.imageVariantSnapshot ?? item.productThumbnailSnapshot ?? undefined,
+
+      productThumbnailSnapshot:
+        item.imageVariantSnapshot || item.productThumbnailSnapshot || undefined,
+
+      imageVariantSnapshot: item.imageVariantSnapshot || undefined,
+
       unitPriceSnapshot: item.unitPriceSnapshot,
+
       attributesSnapshot: item.attributesSnapshot ?? [],
+
       subtotal: item.unitPriceSnapshot * item.quantity,
     }));
 

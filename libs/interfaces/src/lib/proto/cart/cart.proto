@@ -145,13 +145,15 @@ message CheckoutCartItem {
   string variantNameSnapshot = 5;
 
   optional string skuSnapshot = 6;
-  optional string imageSnapshot = 7;
 
-  double unitPriceSnapshot = 8;
+  optional string productThumbnailSnapshot = 7;
+  optional string imageVariantSnapshot = 8;
 
-  repeated CheckoutCartAttribute attributesSnapshot = 9;
+  double unitPriceSnapshot = 9;
 
-  double subtotal = 10;
+  repeated CheckoutCartAttribute attributesSnapshot = 10;
+
+  double subtotal = 11;
 }
 
 message GetCartForCheckoutResponse {

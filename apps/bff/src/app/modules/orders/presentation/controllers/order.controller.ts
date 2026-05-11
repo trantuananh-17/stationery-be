@@ -189,7 +189,7 @@ export class OrderController {
   async getOrdersByUserId(@UserData() user: JwtPayload, @Query() query: GetOrdersByUserIdDto) {
     const result = await this.getOrdersByUserIdUseCase.execute({
       userId: user.userId,
-      status: query.status,
+      status: query.status?.trim().toUpperCase(),
       page: query.page ?? 1,
       limit: query.limit ?? 10,
     });

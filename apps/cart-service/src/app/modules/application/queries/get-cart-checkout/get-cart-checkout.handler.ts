@@ -22,6 +22,8 @@ export class GetCartCheckoutHandler
       throw new Error('Cart not found');
     }
 
+    console.log(cart);
+
     return cart;
   }
 }
