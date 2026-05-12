@@ -1,10 +1,18 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { ConfigModule } from '@nestjs/config';
+import { CONFIGURATION } from '../configuration';
+import { AnalyticsModule } from './modules/analytics.module';
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: ['apps/analytics-service/.env', '.env'],
+      load: [CONFIGURATION],
+    }),
+    AnalyticsModule,
+  ],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

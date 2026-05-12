@@ -4,6 +4,7 @@ export enum QUEUE_GROUPS {
   PRODUCT = 'product',
   USER = 'user',
   NOTIFICATION = 'notification',
+  ANALYTICS = 'analytics',
 }
 
 export enum QUEUE_SERVICES {

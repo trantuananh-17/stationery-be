@@ -3,15 +3,66 @@
  * This is only a minimal backend to get started.
  */
 
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app/app.module';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { ConfigService } from '@nestjs/config';
+import { CONFIGURATION } from './configuration';
+import { QUEUE_GROUPS } from '@common/constants/enums/queue.enum';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const globalPrefix = 'api';
+  const CONFIG = CONFIGURATION();
+
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+
+  const configService = app.get(ConfigService);
+  const globalPrefix = CONFIG.GLOBAL_PREFIX;
+
+  const grpcPackage = configService.get<string>('GRPC_SERV.GRPC_ANALYTICS_SERVICE.name');
+  const grpcProtoPath = configService.get<string>(
+    'GRPC_SERV.GRPC_ANALYTICS_SERVICE.options.protoPath',
+  );
+  const grpcUrl = configService.get<string>('GRPC_SERV.GRPC_ANALYTICS_SERVICE.options.url');
+
+  if (!grpcPackage || !grpcProtoPath) {
+    throw new Error('Missing GRPC_ANALYTICS_SERVICE config');
+  }
+
+  Logger.debug(
+    'GRPC CONFIG',
+    JSON.stringify(configService.get('GRPC_SERV.GRPC_ANALYTICS_SERVICE')),
+  );
+
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.GRPC,
+    options: {
+      package: grpcPackage,
+      protoPath: grpcProtoPath,
+      url: grpcUrl,
+    },
+  });
+
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.KAFKA,
+    options: {
+      client: {
+        clientId: 'analytics-service',
+        brokers: [configService.getOrThrow<string>('KAFKA_CONFIG.URL')],
+      },
+      consumer: {
+        groupId: QUEUE_GROUPS.ANALYTICS,
+        allowAutoTopicCreation: true,
+      },
+    },
+  });
+
+  // const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
-  const port = process.env.PORT || 3000;
+  const port = CONFIG.APP_CONFIG.PORT;
+
+  await app.startAllMicroservices();
   await app.listen(port);
   Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`);
 }
