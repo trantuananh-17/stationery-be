@@ -4,12 +4,31 @@ import { Repository } from 'typeorm';
 import { NotificationOrmEntity } from '../entities/typeorm-notification.entity';
 import { INotificationCommandRepository } from '../../application/ports/repositories/notification-command.repo';
 import { Notification } from '../../domain/entities/notification.entity';
+import { NotificationStatus } from '../../domain/enums/notification-status.enum';
 @Injectable()
-export class TypeOrmNotificationRepository implements INotificationCommandRepository {
+export class TypeOrmNotificationCommandRepository implements INotificationCommandRepository {
   constructor(
     @InjectRepository(NotificationOrmEntity)
     private readonly notificationRepo: Repository<NotificationOrmEntity>,
   ) {}
+
+  async markAllAsRead(receiverId: string): Promise<void> {
+    await this.notificationRepo
+      .createQueryBuilder()
+      .update(NotificationOrmEntity)
+      .set({
+        status: NotificationStatus.READ,
+
+        readAt: new Date(),
+      })
+      .where('receiverId = :receiverId', {
+        receiverId,
+      })
+      .andWhere('status = :status', {
+        status: NotificationStatus.UNREAD,
+      })
+      .execute();
+  }
 
   async findById(id: string): Promise<Notification | null> {
     const entity = await this.notificationRepo.findOne({

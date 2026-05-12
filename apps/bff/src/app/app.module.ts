@@ -15,6 +15,7 @@ import { CartModule } from './modules/cart/cart.module';
 import { WebhookModule } from './modules/webhook/webhook.module';
 import { OrderModule } from './modules/orders/order.module';
 import { PaymentModule } from './modules/payment/payment.module';
+import { NotificationModule } from './modules/notification/notification.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { PaymentModule } from './modules/payment/payment.module';
     WebhookModule,
     OrderModule,
     PaymentModule,
+    NotificationModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['apps/bff/.env'],
