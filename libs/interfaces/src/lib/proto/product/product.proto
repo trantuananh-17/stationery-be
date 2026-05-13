@@ -14,6 +14,53 @@ service ProductService {
   rpc getProductBySlug (GetProductBySlugRequest) returns (ProductInfoResponse);
   rpc getProducts (GetProductsRequest) returns (GetProductsResponse);
   rpc getProductsByAdmin (GetProductsByAdminRequest) returns (GetProductsResponse);
+
+  rpc searchProductsForAdvisor (ProductSearchRequest) returns (ProductSearchResponse);
+  
+}
+/* ================= AI ================= */
+message ProductSearchRequest {
+  string keyword = 1;
+  string audience = 2;
+  string need = 3;
+  string category = 4;
+  string brand = 5;
+  int32 budget_min = 6;
+  int32 budget_max = 7;
+  string sort_by = 8;
+  int32 limit = 9;
+}
+
+message Product {
+  string id = 1;
+  string product_name = 2;
+  string slug = 3;
+
+  string category_id = 4;
+  string category_name = 5;
+
+  string brand_id = 6;
+  string brand_name = 7;
+
+  string description = 8;
+  string short_description = 9;
+  string thumbnail = 10;
+
+  string variant_id = 11;
+  string variant_name = 12;
+  string sku = 13;
+  int32 price = 14;
+  int32 compare_at_price = 15;
+  int32 stock = 16;
+  string variant_image = 17;
+
+  bool featured = 18;
+  string product_url = 19;
+}
+
+message ProductSearchResponse {
+  repeated Product items = 1;
+   int32 total = 2;
 }
 
 /* ================= CART ================= */

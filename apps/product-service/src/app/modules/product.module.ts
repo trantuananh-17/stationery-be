@@ -13,10 +13,12 @@ import { GetItemHandler } from './application/queries/get-item/get-item.handler'
 import { ReserveStockHandler } from './application/commands/products/reserve-stock/reserve-stock.handler';
 import { GetProductsByAdminHandler } from './application/queries/get-products-admin/get-products-admin.handler';
 import { ConfirmStockEventHandler } from './application/commands/products/confirm-stock-event/confirm-stock-event.handler';
+import { GetProductAiHandler } from './application/queries/get-product-ai/get-product-ai.handler';
+import { ProductAiController } from './presentation/controllers/product-ai.controller';
 
 @Module({
   imports: [CqrsModule, TypeOrmProvider, ProductInfraModule],
-  controllers: [ProductController],
+  controllers: [ProductController, ProductAiController],
   providers: [
     CreateProductHandler,
     UpdateProductHandler,
@@ -28,6 +30,7 @@ import { ConfirmStockEventHandler } from './application/commands/products/confir
     ReserveStockHandler,
     GetProductsByAdminHandler,
     ConfirmStockEventHandler,
+    GetProductAiHandler,
   ],
   exports: [],
 })

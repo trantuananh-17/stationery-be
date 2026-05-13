@@ -20,6 +20,14 @@ module.exports = {
       outputHashing: 'none',
       generatePackageJson: true,
       sourceMap: true,
+      assets: [
+        './src/assets',
+        {
+          glob: '**/*',
+          input: 'libs/interfaces/src/lib/proto/product',
+          output: './proto',
+        },
+      ],
     }),
   ],
 };

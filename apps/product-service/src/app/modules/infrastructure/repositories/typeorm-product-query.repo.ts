@@ -1,7 +1,7 @@
 import { QueryResult } from '@common/interfaces/common/pagination.interface';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { IProductQueryRepository } from '../../application/ports/repositories/product-query.repo';
 import { ProductInfoReadModel } from '../../application/read-models/product-info.read-model';
 import { ProductItemReadModel } from '../../application/read-models/product-item.read.model';
@@ -11,6 +11,8 @@ import { ProductStatus } from '../../domain/enum/product-status.enum';
 import { ProductOrmEntity } from '../entities/typeorm-product.entity';
 import { SpecificationOrmEntity } from '../entities/typeorm-specification.enity';
 import { VariantOrmEntity } from '../entities/typeorm-variant.entity';
+import { GetProductAiDto } from '../../application/queries/get-product-ai/get-product-ai.dto';
+import { ProductAiReadModel } from '../../application/read-models/product-ai.read-model';
 
 @Injectable()
 export class TypeOrmProductQueryRepository implements IProductQueryRepository {
@@ -668,4 +670,494 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       total,
     };
   }
+
+  private normalizeAiText(input?: string): string {
+    return (input || '')
+      .toLowerCase()
+      .trim()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/đ/g, 'd')
+      .replace(/[^a-z0-9\s.]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  private buildAiSearchTerms(...texts: Array<string | undefined>): string[] {
+    const text = texts
+      .filter((item): item is string => Boolean(item?.trim()))
+      .join(' ')
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}\s.]/gu, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!text) {
+      return [];
+    }
+
+    const stopWords = new Set(
+      [
+        'cho',
+        'cần',
+        'mua',
+        'tìm',
+        'kiếm',
+        'tư',
+        'vấn',
+        'sản',
+        'phẩm',
+        'nào',
+        'gì',
+        'với',
+        'và',
+        'hoặc',
+        'trong',
+        'khoảng',
+        'dưới',
+        'trên',
+        'giá',
+        'rẻ',
+        'loại',
+        'cái',
+        'chiếc',
+        'mình',
+        'tôi',
+        'em',
+        'anh',
+        'chị',
+        'đi',
+        'in',
+      ].map((word) => this.normalizeAiText(word)),
+    );
+
+    return Array.from(
+      new Set(
+        text
+          .split(/\s+/)
+          .map((word) => word.trim())
+          .filter(Boolean)
+          .filter((word) => {
+            const normalizedWord = this.normalizeAiText(word);
+
+            return (
+              word.length >= 2 || /^[a-z]\d+$/i.test(word) || /^[a-z]\d+$/i.test(normalizedWord)
+            );
+          })
+          .filter((word) => !stopWords.has(this.normalizeAiText(word))),
+      ),
+    ).slice(0, 8);
+  }
+
+  private buildAiProductSearchCondition(paramName: string): string {
+    return `
+    LOWER(product.name) LIKE LOWER(:${paramName})
+    OR LOWER(product.baseName) LIKE LOWER(:${paramName})
+    OR LOWER(product.shortDescription) LIKE LOWER(:${paramName})
+    OR LOWER(product.description) LIKE LOWER(:${paramName})
+    OR LOWER(category.name) LIKE LOWER(:${paramName})
+    OR LOWER(brand.name) LIKE LOWER(:${paramName})
+    OR CAST(product.searchKeywords AS text) ILIKE :${paramName}
+  `;
+  }
+
+  private buildAiVariantSearchCondition(paramName: string): string {
+    return `
+    LOWER(variant.name) LIKE LOWER(:${paramName})
+    OR LOWER(variant.sku) LIKE LOWER(:${paramName})
+  `;
+  }
+
+  private async resolveAiVariantFilterFromDb(
+    rawKeywordTerms: string[],
+    activeStatuses: ProductStatus[],
+  ): Promise<{
+    productTerms: string[];
+    variantNames: string[];
+    variantTermKeys: Set<string>;
+  }> {
+    if (rawKeywordTerms.length === 0) {
+      return {
+        productTerms: [],
+        variantNames: [],
+        variantTermKeys: new Set<string>(),
+      };
+    }
+
+    const variantQb = this.productRepo
+      .createQueryBuilder('product')
+      .innerJoin('product.variants', 'variant')
+      .select('DISTINCT variant.name', 'name')
+      .where('product.deletedAt IS NULL')
+      .andWhere('variant.deletedAt IS NULL')
+      .andWhere('variant.isAvailable = :isAvailable', {
+        isAvailable: true,
+      })
+      .andWhere('(variant.stock - variant.reservedStock) > 0')
+      .andWhere('variant.name IS NOT NULL')
+      .andWhere("TRIM(variant.name) <> ''");
+
+    if (activeStatuses.length > 0) {
+      variantQb.andWhere('product.status IN (:...activeStatuses)', {
+        activeStatuses,
+      });
+    }
+
+    const rows = await variantQb.getRawMany<{ name: string }>();
+
+    const dbVariantNames = rows
+      .map((row) => row.name?.trim())
+      .filter((name): name is string => Boolean(name));
+
+    const matchedVariantNames = new Set<string>();
+    const variantTermKeys = new Set<string>();
+
+    for (const variantName of dbVariantNames) {
+      const normalizedVariantName = this.normalizeAiText(variantName);
+      const normalizedVariantParts = this.buildAiSearchTerms(variantName).map((term) =>
+        this.normalizeAiText(term),
+      );
+
+      for (const keywordTerm of rawKeywordTerms) {
+        const normalizedKeywordTerm = this.normalizeAiText(keywordTerm);
+
+        const isMatched =
+          normalizedVariantName === normalizedKeywordTerm ||
+          normalizedVariantParts.includes(normalizedKeywordTerm);
+
+        if (isMatched) {
+          matchedVariantNames.add(variantName);
+          variantTermKeys.add(normalizedKeywordTerm);
+        }
+      }
+    }
+
+    const productTerms = rawKeywordTerms.filter((term) => {
+      return !variantTermKeys.has(this.normalizeAiText(term));
+    });
+
+    return {
+      productTerms,
+      variantNames: Array.from(matchedVariantNames),
+      variantTermKeys,
+    };
+  }
+
+  async findProductsForAiAdvisor(filters: GetProductAiDto): Promise<ProductAiReadModel[]> {
+    const limit = this.normalizeAiLimit(filters.limit);
+
+    const activeStatuses = Object.values(ProductStatus).filter(
+      (status) => status !== ProductStatus.DRAFT,
+    );
+
+    const rawKeywordTerms = this.buildAiSearchTerms(filters.keyword);
+    const contextTerms = this.buildAiSearchTerms(filters.audience, filters.need);
+
+    const variantFilter = await this.resolveAiVariantFilterFromDb(rawKeywordTerms, activeStatuses);
+
+    const keywordTerms = variantFilter.productTerms;
+    const variantNames = variantFilter.variantNames;
+
+    console.log('AI_PRODUCT_SEARCH_DEBUG:', {
+      keyword: filters.keyword,
+      rawKeywordTerms,
+      keywordTerms,
+      variantNames,
+      audience: filters.audience,
+      need: filters.need,
+    });
+
+    const qb = this.productRepo
+      .createQueryBuilder('product')
+      .innerJoin('product.variants', 'variant')
+      .leftJoin('product.category', 'category')
+      .leftJoin('product.brand', 'brand')
+      .leftJoinAndSelect('product.specifications', 'spec')
+      .where('product.deletedAt IS NULL')
+      .andWhere('variant.deletedAt IS NULL')
+      .andWhere('variant.isAvailable = :isAvailable', {
+        isAvailable: true,
+      })
+      .andWhere('(variant.stock - variant.reservedStock) > 0');
+
+    if (activeStatuses.length > 0) {
+      qb.andWhere('product.status IN (:...activeStatuses)', {
+        activeStatuses,
+      });
+    }
+
+    /**
+     * 1. Keyword sản phẩm.
+     *
+     * Ví dụ:
+     * - "bút đỏ" => keywordTerms = ["bút"]
+     * - "giấy A3" => keywordTerms = ["giấy"]
+     *
+     * Không search variant.name ở đây.
+     */
+    if (keywordTerms.length > 0) {
+      qb.andWhere(
+        new Brackets((subQb) => {
+          keywordTerms.forEach((term, index) => {
+            const paramName = `keywordTerm${index}`;
+            const value = `%${term}%`;
+            const condition = this.buildAiProductSearchCondition(paramName);
+
+            if (index === 0) {
+              subQb.where(condition, {
+                [paramName]: value,
+              });
+            } else {
+              subQb.orWhere(condition, {
+                [paramName]: value,
+              });
+            }
+          });
+        }),
+      );
+    }
+
+    /**
+     * 2. Keyword variant.
+     *
+     * Ví dụ:
+     * - "bút đỏ" => variantNames = ["Đỏ"]
+     * - "giấy A3" => variantNames = ["A3"]
+     *
+     * Có variant requested thì bắt buộc variant phải match.
+     */
+    if (variantNames.length > 0) {
+      qb.andWhere(
+        new Brackets((subQb) => {
+          variantNames.forEach((variantName, index) => {
+            const paramName = `variantName${index}`;
+            const value = `%${variantName}%`;
+            const condition = this.buildAiVariantSearchCondition(paramName);
+
+            if (index === 0) {
+              subQb.where(condition, {
+                [paramName]: value,
+              });
+            } else {
+              subQb.orWhere(condition, {
+                [paramName]: value,
+              });
+            }
+          });
+        }),
+      );
+    }
+
+    /**
+     * 3. Chỉ dùng audience + need khi user không truyền keyword.
+     *
+     * Tránh case:
+     * keyword = "bút đỏ"
+     * audience = "học sinh"
+     * need = "đi học"
+     *
+     * Rồi audience/need kéo ra sản phẩm khác variant.
+     */
+    if (rawKeywordTerms.length === 0 && contextTerms.length > 0) {
+      qb.andWhere(
+        new Brackets((subQb) => {
+          contextTerms.forEach((term, index) => {
+            const paramName = `contextTerm${index}`;
+            const value = `%${term}%`;
+            const condition = this.buildAiProductSearchCondition(paramName);
+
+            if (index === 0) {
+              subQb.where(condition, {
+                [paramName]: value,
+              });
+            } else {
+              subQb.orWhere(condition, {
+                [paramName]: value,
+              });
+            }
+          });
+        }),
+      );
+    }
+
+    const category = filters.category?.trim();
+
+    if (category) {
+      qb.andWhere(
+        new Brackets((subQb) => {
+          subQb
+            .where('LOWER(category.name) LIKE LOWER(:category)', {
+              category: `%${category}%`,
+            })
+            .orWhere('CAST(product.categoryId AS text) = :categoryId', {
+              categoryId: category,
+            });
+        }),
+      );
+    }
+
+    const brand = filters.brand?.trim();
+
+    if (brand) {
+      qb.andWhere(
+        new Brackets((subQb) => {
+          subQb
+            .where('LOWER(brand.name) LIKE LOWER(:brand)', {
+              brand: `%${brand}%`,
+            })
+            .orWhere('CAST(product.brandId AS text) = :brandId', {
+              brandId: brand,
+            });
+        }),
+      );
+    }
+
+    if (filters.budgetMin && filters.budgetMin > 0) {
+      qb.andWhere('variant.price >= :budgetMin', {
+        budgetMin: filters.budgetMin,
+      });
+    }
+
+    if (filters.budgetMax && filters.budgetMax > 0) {
+      qb.andWhere('variant.price <= :budgetMax', {
+        budgetMax: filters.budgetMax,
+      });
+    }
+
+    qb.select('product.id', 'product_id')
+      .addSelect('product.name', 'product_name')
+      .addSelect('product.slug', 'product_slug')
+      .addSelect('product.categoryId', 'category_id')
+      .addSelect('product.brandId', 'brand_id')
+      .addSelect('product.short_description', 'product_short_description')
+      .addSelect('product.description', 'product_description')
+      .addSelect('product.thumbnail', 'product_thumbnail')
+      .addSelect('category.name', 'category_name')
+      .addSelect('brand.name', 'brand_name')
+      .addSelect('variant.id', 'variant_id')
+      .addSelect('variant.name', 'variant_name')
+      .addSelect('variant.sku', 'variant_sku')
+      .addSelect('variant.price', 'variant_price')
+      .addSelect('variant.compare_at_price', 'variant_compare_at_price')
+      .addSelect('variant.stock', 'variant_stock')
+      .addSelect('variant.reservedStock', 'variant_reserved_stock')
+      .addSelect('variant.image', 'variant_image')
+      .addSelect('variant.is_default', 'variant_is_default')
+      .addSelect('variant.sortOrder', 'variant_sort_order');
+
+    if (filters.sortBy === 'price_asc') {
+      qb.orderBy('variant.price', 'ASC')
+        .addOrderBy('variant.isDefault', 'DESC')
+        .addOrderBy('variant.sortOrder', 'ASC');
+    } else if (filters.sortBy === 'price_desc') {
+      qb.orderBy('variant.price', 'DESC')
+        .addOrderBy('variant.isDefault', 'DESC')
+        .addOrderBy('variant.sortOrder', 'ASC');
+    } else {
+      qb.orderBy('variant.isDefault', 'DESC')
+        .addOrderBy('variant.sortOrder', 'ASC')
+        .addOrderBy('variant.price', 'ASC');
+    }
+
+    qb.limit(limit * 3);
+
+    const rows = await qb.getRawMany<ProductAiRawRow>();
+
+    return this.mapAiProductRows(rows, limit);
+  }
+  private normalizeAiLimit(limit?: number): number {
+    if (!limit || limit <= 0) {
+      return 8;
+    }
+
+    if (limit > 20) {
+      return 20;
+    }
+
+    return limit;
+  }
+
+  private mapAiProductRows(rows: ProductAiRawRow[], limit: number): ProductAiReadModel[] {
+    const result: ProductAiReadModel[] = [];
+    const usedProductIds = new Set<string>();
+
+    for (const row of rows) {
+      const productId = String(row.product_id);
+
+      if (usedProductIds.has(productId)) {
+        continue;
+      }
+
+      usedProductIds.add(productId);
+
+      const stock = Number(row.variant_stock || 0);
+      const reservedStock = Number(row.variant_reserved_stock || 0);
+      const availableStock = Math.max(stock - reservedStock, 0);
+
+      const product = new ProductAiReadModel();
+
+      product.productId = productId;
+      product.productName = row.product_name || '';
+      product.slug = row.product_slug || '';
+
+      product.categoryId = row.category_id || '';
+      product.categoryName = row.category_name || '';
+
+      product.brandId = row.brand_id || '';
+      product.brandName = row.brand_name || '';
+
+      product.shortDescription = row.product_short_description || '';
+      product.description = row.product_description || '';
+      product.thumbnail = row.product_thumbnail || '';
+
+      product.variantId = String(row.variant_id);
+      product.variantName = row.variant_name || '';
+      product.sku = row.variant_sku || '';
+
+      product.price = Math.round(Number(row.variant_price || 0));
+      product.compareAtPrice = Math.round(Number(row.variant_compare_at_price || 0));
+      product.stock = availableStock;
+
+      product.thumbnail = row.product_thumbnail || '';
+      product.variantImage = row.variant_image || '';
+      product.productUrl = `/products/${row.product_slug}`;
+
+      result.push(product);
+
+      if (result.length >= limit) {
+        break;
+      }
+    }
+
+    return result;
+  }
 }
+
+type ProductAiRawRow = {
+  product_id: string;
+  product_name: string;
+  product_slug: string;
+
+  category_id: string | null;
+  category_name: string | null;
+
+  brand_id: string | null;
+  brand_name: string | null;
+
+  product_short_description: string | null;
+  product_description: string | null;
+  product_thumbnail: string | null;
+
+  variant_id: string;
+  variant_name: string;
+  variant_sku: string | null;
+
+  variant_price: string | number | null;
+  variant_compare_at_price: string | number | null;
+  variant_stock: string | number | null;
+  variant_reserved_stock: string | number | null;
+
+  variant_image: string | null;
+  variant_is_default: boolean | null;
+  variant_sort_order: number | null;
+};

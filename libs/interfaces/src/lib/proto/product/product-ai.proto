@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package GRPC_PRODUCT_AI_SERVICE;
+
+
+service ProductAiGrpcService {
+  rpc GetFeaturedProducts (FeaturedProductRequest) returns (ProductSearchResponse);
+}
+
+
+
+message FeaturedProductRequest {
+  int32 limit = 1;
+}
+
