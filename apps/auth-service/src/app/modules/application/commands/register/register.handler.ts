@@ -43,6 +43,15 @@ export class RegisterHandler implements ICommandHandler<RegisterCommand> {
       isVerified: true,
     });
 
+    await this.eventPublisher.emitCustomerCreated({
+      eventId: crypto.randomUUID(),
+      customerId: userId,
+      email,
+      firstName,
+      lastName,
+      createdAt: new Date().toISOString(),
+    });
+
     return { userId };
   }
 }

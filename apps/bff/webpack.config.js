@@ -57,6 +57,11 @@ module.exports = {
           input: 'libs/interfaces/src/lib/proto/notification',
           output: './proto',
         },
+        {
+          glob: '**/*',
+          input: 'libs/interfaces/src/lib/proto/analytics',
+          output: './proto',
+        },
       ],
     }),
   ],

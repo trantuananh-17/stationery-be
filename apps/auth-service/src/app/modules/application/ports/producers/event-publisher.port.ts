@@ -6,4 +6,13 @@ export abstract class IEventPublisher {
     isActive?: boolean;
     isVerified?: boolean;
   }): Promise<void>;
+
+  abstract emitCustomerCreated(payload: {
+    eventId: string;
+    customerId: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    createdAt: string;
+  }): Promise<void>;
 }

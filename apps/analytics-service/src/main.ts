@@ -10,6 +10,7 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
 import { CONFIGURATION } from './configuration';
 import { QUEUE_GROUPS } from '@common/constants/enums/queue.enum';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -54,6 +55,37 @@ async function bootstrap() {
       consumer: {
         groupId: QUEUE_GROUPS.ANALYTICS,
         allowAutoTopicCreation: true,
+      },
+    },
+  });
+
+  const config = new DocumentBuilder()
+    .setTitle('Stationery-bff API')
+    .setDescription('The Stationery-bff API description')
+    .setVersion('1.0.0')
+    .addBearerAuth({
+      description: 'Default JWT Authorization',
+      type: 'http',
+      in: 'header',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+      name: 'Authorization',
+    })
+    .build();
+
+  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup(`${globalPrefix}/docs`, app, documentFactory, {
+    swaggerOptions: {
+      operationsSorter: (a: any, b: any): number => {
+        const order: Record<string, number> = {
+          post: 1,
+          get: 2,
+          put: 3,
+          patch: 4,
+          delete: 5,
+        };
+
+        return (order[a.get('method')] ?? 99) - (order[b.get('method')] ?? 99);
       },
     },
   });

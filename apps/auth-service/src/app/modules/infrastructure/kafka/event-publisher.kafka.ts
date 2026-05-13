@@ -16,4 +16,21 @@ export class EventPublisherKafka implements IEventPublisher {
   }): Promise<void> {
     await firstValueFrom(this.kafkaService.emit('customer.summary.sync', payload));
   }
+
+  async emitCustomerCreated(payload: {
+    eventId: string;
+    customerId: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    createdAt: string;
+  }): Promise<void> {
+    await firstValueFrom(
+      this.kafkaService.emit(
+        'customer.created',
+
+        payload,
+      ),
+    );
+  }
 }

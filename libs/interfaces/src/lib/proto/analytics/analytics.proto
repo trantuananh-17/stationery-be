@@ -1,14 +1,126 @@
-
 syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 
 package GRPC_ANALYTICS_SERVICE;
 
-service InventoryService {
-  rpc Ping (PingRequest) returns (PingResponse);
+service AnalyticsService {
+  rpc GetDailySummary(DailyRangeRequest) returns (DailySummaryResponse);
+  rpc GetDailyGrowth(DailyRangeRequest) returns (DailyGrowthResponse);
+  rpc GetSalesSummary(DailyRangeRequest) returns (SalesSummaryResponse);
+  rpc GetSalesChart(DailyRangeRequest) returns (SalesChartResponse);
+  rpc GetTopProducts(TopProductsRequest) returns (TopProductsResponse);
+  rpc GetCategoryRevenue(DailyRangeRequest) returns (CategoryRevenueResponse);
+  rpc GetRecentTransactions(RecentTransactionsRequest) returns (RecentTransactionsResponse);
+  rpc GetOrderStatusSummary(DailyRangeRequest) returns (OrderStatusSummaryResponse);
+  rpc GetGoalProgress(GoalProgressRequest) returns (GoalProgressResponse);
 }
 
-message PingRequest {}
+message DailyRangeRequest {
+  string startDate = 1;
+  string endDate = 2;
+}
 
-message PingResponse {
-  string message = 1;
+message TopProductsRequest {
+  string startDate = 1;
+  string endDate = 2;
+  int32 limit = 3;
+}
+
+message RecentTransactionsRequest {
+  int32 limit = 1;
+}
+
+message GoalProgressRequest {
+  string bucketMonth = 1;
+}
+
+message DailySummaryResponse {
+  double totalRevenue = 1;
+  double averageOrderValue = 2;
+  int32 totalOrders = 3;
+  int32 newCustomers = 4;
+}
+
+message DailyGrowthResponse {
+  double revenueGrowth = 1;
+  double averageOrderValueGrowth = 2;
+  double ordersGrowth = 3;
+  double newCustomersGrowth = 4;
+}
+
+message SalesSummaryResponse {
+  double totalRevenue = 1;
+  double totalOrders = 2;
+  double totalProfit = 3;
+  double averageOrderValue = 4;
+}
+
+message SalesChartResponse {
+  repeated SalesChartItem data = 1;
+}
+
+message SalesChartItem {
+  google.protobuf.Timestamp date = 1;
+  double revenue = 2;
+  double orders = 3;
+  double estimatedProfit = 4;
+}
+
+message TopProductsResponse {
+  repeated TopProduct data = 1;
+}
+
+message TopProduct {
+  string productId = 1;
+  string productName = 2;
+  int32 quantitySold = 3;
+  double totalRevenue = 4;
+}
+
+message CategoryRevenueResponse {
+  repeated CategoryRevenue data = 1;
+}
+
+message CategoryRevenue {
+  string categoryId = 1;
+  string categoryName = 2;
+  double revenue = 3;
+}
+
+message RecentTransactionsResponse {
+  repeated Transaction data = 1;
+}
+
+message Transaction {
+  string orderId = 1;
+  string customerName = 2;
+  string totalAmount = 3;
+  double totalItems = 4;
+  string status = 5;
+  google.protobuf.Timestamp orderedAt = 6;
+}
+
+
+message OrderStatusSummaryResponse {
+  int32 pendingOrders = 1;
+  int32 processingOrders = 2;
+  int32 shippedOrders = 3;
+  int32 deliveredOrders = 4;
+  int32 cancelledOrders = 5;
+}
+
+message GoalProgressResponse {
+  double revenueGoal = 1;
+  double currentRevenue = 2;
+  double revenueProgress = 3;
+
+  int32 ordersGoal = 4;
+  int32 currentOrders = 5;
+  double ordersProgress = 6;
+
+  int32 customersGoal = 7;
+  int32 currentCustomers = 8;
+  double customersProgress = 9;
 }

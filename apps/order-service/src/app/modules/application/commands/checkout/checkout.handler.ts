@@ -5,6 +5,7 @@ import { IProductGrpcPort } from '../../ports/grpc/product-grpc.port';
 import { ICartGrpcPort } from '../../ports/grpc/cart-grpc.port';
 import { Order } from '../../../domain/entities/order.entity';
 import { IOrderCommandRepository } from '../../ports/repositories/order-command.repo';
+import { IEventPublisher } from '../../ports/producers/event-publisher.port';
 
 export type CheckoutStockItem = {
   variantId: string;
@@ -41,6 +42,7 @@ export class CheckoutHandler implements ICommandHandler<CheckoutCommand, Checkou
     private readonly cartGrpcPort: ICartGrpcPort,
     private readonly dataContext: IUnitOfWork,
     private readonly orderCommandRepo: IOrderCommandRepository,
+    private readonly eventPublisher: IEventPublisher,
   ) {}
 
   async execute(command: CheckoutCommand): Promise<CheckoutResult> {
@@ -105,6 +107,17 @@ export class CheckoutHandler implements ICommandHandler<CheckoutCommand, Checkou
     //   userId,
     //   variantIds: cart.items.map((item) => item.variantId),
     // });
+
+    await this.eventPublisher.emitOrderCreated({
+      eventId: crypto.randomUUID(),
+      orderId: order.id,
+      customerId: order.userId,
+      customerName: `${shippingAddress.firstName} ${shippingAddress.lastName}`,
+      totalAmount: order.total,
+      totalItems: order.totalItems,
+
+      createdAt: new Date().toISOString(),
+    });
 
     return {
       success: true,

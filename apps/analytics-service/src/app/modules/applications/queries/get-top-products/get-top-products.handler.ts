@@ -8,6 +8,14 @@ export class GetTopProductsHandler implements IQueryHandler<GetTopProductsQuery>
   constructor(private readonly repository: IProductPerformanceQueryRepository) {}
 
   async execute(query: GetTopProductsQuery) {
-    return this.repository.getTopProducts(query.startDate, query.endDate, query.limit);
+    const products = await this.repository.getTopProducts(
+      query.startDate,
+      query.endDate,
+      query.limit,
+    );
+
+    return {
+      data: products,
+    };
   }
 }

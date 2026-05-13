@@ -29,4 +29,103 @@ export class EventPublisherKafka implements IEventPublisher {
   async emitOrderReturned(payload: { eventId: string; items: ItemInput[] }) {
     await firstValueFrom(this.kafkaService.emit('order.returned', payload));
   }
+
+  async emitOrderCreated(payload: {
+    eventId: string;
+    orderId: string;
+    customerId: string;
+    customerName: string;
+    totalAmount: number;
+    totalItems: number;
+    createdAt: string;
+  }): Promise<void> {
+    await firstValueFrom(
+      this.kafkaService.emit(
+        'order.created',
+
+        payload,
+      ),
+    );
+  }
+
+  async emitOrderPaid(payload: {
+    eventId: string;
+    orderId: string;
+    customerId: string;
+    totalAmount: number;
+    totalItems: number;
+    paidAt: string;
+    items: {
+      productId: string;
+      productName: string;
+      categoryId: string;
+      categoryName: string;
+      quantity: number;
+      subtotal: number;
+    }[];
+  }): Promise<void> {
+    await firstValueFrom(
+      this.kafkaService.emit(
+        'order.paid',
+
+        payload,
+      ),
+    );
+  }
+
+  async emitOrderProcessing(payload: {
+    eventId: string;
+    orderId: string;
+    processedAt: string;
+  }): Promise<void> {
+    await firstValueFrom(
+      this.kafkaService.emit(
+        'order.processing',
+
+        payload,
+      ),
+    );
+  }
+
+  async emitOrderShipped(payload: {
+    eventId: string;
+    orderId: string;
+    shippedAt: string;
+  }): Promise<void> {
+    await firstValueFrom(
+      this.kafkaService.emit(
+        'order.shipped',
+
+        payload,
+      ),
+    );
+  }
+
+  async emitOrderDelivered(payload: {
+    eventId: string;
+    orderId: string;
+    deliveredAt: string;
+  }): Promise<void> {
+    await firstValueFrom(
+      this.kafkaService.emit(
+        'order.delivered',
+
+        payload,
+      ),
+    );
+  }
+
+  async emitOrderCancelled(payload: {
+    eventId: string;
+    orderId: string;
+    cancelledAt: string;
+  }): Promise<void> {
+    await firstValueFrom(
+      this.kafkaService.emit(
+        'order.cancelled',
+
+        payload,
+      ),
+    );
+  }
 }
