@@ -15,6 +15,8 @@ import { GetProductsByAdminHandler } from './application/queries/get-products-ad
 import { ConfirmStockEventHandler } from './application/commands/products/confirm-stock-event/confirm-stock-event.handler';
 import { GetProductAiHandler } from './application/queries/get-product-ai/get-product-ai.handler';
 import { ProductAiController } from './presentation/controllers/product-ai.controller';
+import { DeleteProductHandler } from './application/commands/products/delete-product/delete-product.handler';
+import { RestoreProductHandler } from './application/commands/products/restore-product/restore-product.command';
 
 @Module({
   imports: [CqrsModule, TypeOrmProvider, ProductInfraModule],
@@ -31,6 +33,8 @@ import { ProductAiController } from './presentation/controllers/product-ai.contr
     GetProductsByAdminHandler,
     ConfirmStockEventHandler,
     GetProductAiHandler,
+    DeleteProductHandler,
+    RestoreProductHandler,
   ],
   exports: [],
 })

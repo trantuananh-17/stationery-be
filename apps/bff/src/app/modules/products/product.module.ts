@@ -10,6 +10,8 @@ import { CreateProductUseCase } from './application/create-product.usecase';
 import { UpdateProductUseCase } from './application/update-product.usecase';
 import { GetProductsByAdminUseCase } from './application/get-products-admin.usecase';
 import { AdminProductController } from './presentation/controllers/admin-product.controller';
+import { DeleteProductUseCase } from './application/delete-product.usecase';
+import { RestoreProductUseCase } from './application/restore-product.usecase';
 
 @Module({
   imports: [ProductInfrasModule, JwtProvider, GuardsModule],
@@ -21,6 +23,8 @@ import { AdminProductController } from './presentation/controllers/admin-product
     CreateProductUseCase,
     UpdateProductUseCase,
     GetProductsByAdminUseCase,
+    DeleteProductUseCase,
+    RestoreProductUseCase,
   ],
   exports: [JwtProvider, GuardsModule],
 })

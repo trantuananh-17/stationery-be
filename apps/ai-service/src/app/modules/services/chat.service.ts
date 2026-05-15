@@ -5,6 +5,7 @@ import { VectorStoreService } from './vector-store.service';
 import { ToolRouterService } from './tool-router.service';
 import { RagToolService } from './rag-tool.service';
 import { ProductAdvisorToolService } from './product-advisor-tool.service';
+import { ChatToolResponseDto } from '../dto/chat-tool-response.dto';
 
 @Injectable()
 export class ChatService {
@@ -23,7 +24,7 @@ export class ChatService {
     return this.vectorStoreService.ingest(body);
   }
 
-  async query(question: string) {
+  async query(question: string): Promise<ChatToolResponseDto> {
     console.time('TOTAL');
 
     if (!question?.trim()) {
@@ -31,17 +32,24 @@ export class ChatService {
 
       return {
         success: false,
+        tool: 'ask_rag',
+        intent: 'general',
+        response: '',
         message: 'Empty question',
       };
     }
 
     const toolChoice = await this.toolRouterService.chooseTool(question);
 
-    let result: any;
+    let result: ChatToolResponseDto;
 
     switch (toolChoice.name) {
       case 'get_product_advisor':
-        result = await this.productAdvisorToolService.advise(toolChoice.question);
+        result = await this.productAdvisorToolService.advise(
+          toolChoice.question,
+          toolChoice.intent,
+          toolChoice.filter,
+        );
         break;
 
       case 'ask_rag':

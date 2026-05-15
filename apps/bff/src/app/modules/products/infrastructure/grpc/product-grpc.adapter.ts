@@ -14,6 +14,7 @@ import {
   ProductCartItemResponse,
   ProductIdResponse,
   ProductInfoResponse,
+  ProductMutationResponse,
   ReserveStockBodyDto,
   ReserveStockResponse,
   UpdateProductBodyDto,
@@ -68,5 +69,12 @@ export class ProductGrpcAdapter implements ProductPort, OnModuleInit {
         variantId,
       }),
     );
+  }
+
+  deleteProduct(data: GetProductByIdBodyDto): Promise<ProductMutationResponse> {
+    return firstValueFrom(this.productService.deleteProduct(data));
+  }
+  restoreProduct(data: GetProductByIdBodyDto): Promise<ProductMutationResponse> {
+    return firstValueFrom(this.productService.restoreProduct(data));
   }
 }

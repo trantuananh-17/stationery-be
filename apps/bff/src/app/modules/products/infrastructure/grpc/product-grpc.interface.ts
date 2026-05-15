@@ -9,6 +9,7 @@ import {
   ProductCartItemResponse,
   ProductIdResponse,
   ProductInfoResponse,
+  ProductMutationResponse,
   ReserveStockBodyDto,
   ReserveStockResponse,
   UpdateProductBodyDto,
@@ -30,4 +31,8 @@ export interface ProductGrpcService {
   reserveStock(data: ReserveStockBodyDto): Observable<ReserveStockResponse>;
 
   getProductCartItem(data: { variantId: string }): Observable<ProductCartItemResponse>;
+
+  deleteProduct(data: GetProductByIdBodyDto): Observable<ProductMutationResponse>;
+
+  restoreProduct(data: GetProductByIdBodyDto): Observable<ProductMutationResponse>;
 }

@@ -16,6 +16,10 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
+  app.enableCors({
+    origin: '*',
+  });
+
   const config = new DocumentBuilder()
     .setTitle('Stationery-bff API')
     .setDescription('The Stationery-bff API description')
@@ -51,7 +55,10 @@ async function bootstrap() {
   const port = CONFIG.APP_CONFIG.PORT;
 
   await app.startAllMicroservices();
-  await app.listen(port);
+  // await app.listen(port);
+  const host = '0.0.0.0';
+
+  await app.listen(port, host);
   Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`);
 }
 

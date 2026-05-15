@@ -4,10 +4,12 @@ import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { VectorStoreService } from './vector-store.service';
 import { AiLlmService } from './ai-llm.service';
 import { rewriteQuery } from '../helper/query-rewrite';
+import type { ChatResponseIntent, ChatToolResponseDto } from '../dto/chat-tool-response.dto';
+import { extractTokenUsage } from '../helper/token.helper';
 
 type RagChatResponse = {
-  response: string;
-  intent: 'policy' | 'support' | 'general';
+  response?: string;
+  intent?: 'policy' | 'support' | 'general';
 };
 
 @Injectable()
@@ -17,10 +19,13 @@ export class RagToolService {
     private readonly vectorStoreService: VectorStoreService,
   ) {}
 
-  async ask(question: string) {
+  async ask(question: string): Promise<ChatToolResponseDto> {
     if (!question?.trim()) {
       return {
         success: false,
+        tool: 'ask_rag',
+        intent: 'general',
+        response: '',
         message: 'Empty question',
       };
     }
@@ -32,7 +37,25 @@ export class RagToolService {
 
     const docs = await this.vectorStoreService.similaritySearch(searchQuery, 8, 4);
 
+    if (!docs.length) {
+      return {
+        success: true,
+        tool: 'ask_rag',
+        intent: 'general',
+        response: 'Xin lỗi, mình chưa có thông tin về vấn đề này 😢',
+      };
+    }
+
     const context = docs.map((doc) => doc.pageContent).join('\n\n');
+
+    if (!context.trim()) {
+      return {
+        success: true,
+        tool: 'ask_rag',
+        intent: 'general',
+        response: 'Xin lỗi, mình chưa có thông tin về vấn đề này 😢',
+      };
+    }
 
     const prompt = ChatPromptTemplate.fromMessages([
       [
@@ -59,7 +82,7 @@ THÁI ĐỘ:
   "response": "Câu trả lời đầy đủ, rõ ràng, lịch sự",
   "intent": "policy|support|general"
 }}
-        `,
+        `.trim(),
       ],
       [
         'human',
@@ -69,7 +92,7 @@ Câu hỏi:
 
 Context:
 {context}
-        `,
+        `.trim(),
       ],
     ]);
 
@@ -80,18 +103,34 @@ Context:
 
     console.log('RAG_FINAL_PROMPT:\n', formattedPrompt);
 
-    const chain = prompt.pipe(this.aiLlmService.client).pipe(new JsonOutputParser());
-
-    const result = (await chain.invoke({
+    const llmMessage = await prompt.pipe(this.aiLlmService.client).invoke({
       question,
       context,
-    })) as RagChatResponse;
+    });
+
+    const ragTokenUsage = extractTokenUsage(llmMessage);
+
+    console.log('RAG_TOKEN_USAGE:', ragTokenUsage);
+
+    const result = (await new JsonOutputParser().invoke(llmMessage)) as RagChatResponse;
 
     return {
       success: true,
       tool: 'ask_rag',
-      ...result,
-      contextUsed: docs.length,
+      intent: this.normalizeRagIntent(result.intent),
+      response: result.response?.trim() || 'Xin lỗi, mình chưa có thông tin về vấn đề này 😢',
     };
+  }
+
+  private normalizeRagIntent(intent?: string): ChatResponseIntent {
+    if (intent === 'policy') {
+      return 'policy';
+    }
+
+    if (intent === 'support') {
+      return 'support';
+    }
+
+    return 'general';
   }
 }

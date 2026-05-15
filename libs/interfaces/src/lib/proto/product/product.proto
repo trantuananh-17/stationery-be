@@ -10,6 +10,8 @@ service ProductService {
 
   rpc createProduct (CreateProductRequest) returns (google.protobuf.Empty);
   rpc updateProduct (UpdateProductRequest) returns (ProductIdResponse);
+  rpc deleteProduct(GetProductByIdRequest) returns (ProductMutationResponse);
+  rpc restoreProduct(GetProductByIdRequest) returns (ProductMutationResponse);
   rpc getProductById (GetProductByIdRequest) returns (ProductInfoResponse);
   rpc getProductBySlug (GetProductBySlugRequest) returns (ProductInfoResponse);
   rpc getProducts (GetProductsRequest) returns (GetProductsResponse);
@@ -18,6 +20,11 @@ service ProductService {
   rpc searchProductsForAdvisor (ProductSearchRequest) returns (ProductSearchResponse);
   
 }
+
+message ProductMutationResponse {
+  string productId = 1;
+}
+
 /* ================= AI ================= */
 message ProductSearchRequest {
   string keyword = 1;
@@ -29,6 +36,7 @@ message ProductSearchRequest {
   int32 budget_max = 7;
   string sort_by = 8;
   int32 limit = 9;
+  string advisor_intent = 10;
 }
 
 message Product {

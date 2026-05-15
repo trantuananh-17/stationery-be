@@ -46,7 +46,10 @@ async function bootstrap() {
     SwaggerModule.setup(`${globalPrefix}/docs`, app, documentFactory);
 
     const port = CONFIG.APP_CONFIG.PORT;
-    await app.listen(port);
+    // await app.listen(port);
+    const host = '0.0.0.0';
+
+    await app.listen(port, host);
     Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`);
     Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}/docs`);
   } catch (error) {

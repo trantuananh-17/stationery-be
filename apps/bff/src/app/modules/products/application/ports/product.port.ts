@@ -8,6 +8,7 @@ import {
   ProductCartItemResponse,
   ProductIdResponse,
   ProductInfoResponse,
+  ProductMutationResponse,
   ReserveStockBodyDto,
   ReserveStockResponse,
   UpdateProductBodyDto,
@@ -29,4 +30,8 @@ export abstract class ProductPort {
   abstract reserveStock(data: ReserveStockBodyDto): Promise<ReserveStockResponse>;
 
   abstract getProductCartItem(variantId: string): Promise<ProductCartItemResponse>;
+
+  abstract deleteProduct(data: GetProductByIdBodyDto): Promise<ProductMutationResponse>;
+
+  abstract restoreProduct(data: GetProductByIdBodyDto): Promise<ProductMutationResponse>;
 }

@@ -46,6 +46,10 @@ export interface GetProductByIdBodyDto {
   id: string;
 }
 
+export interface ProductMutationResponse {
+  productId: string;
+}
+
 export interface GetProductBySlugBodyDto {
   slug: string;
 }

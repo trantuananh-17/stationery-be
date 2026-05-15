@@ -50,3 +50,9 @@ export interface ProductGrpcService {
     data: SearchProductsForAdvisorRequest,
   ): Observable<SearchProductsForAdvisorResponse>;
 }
+
+export type ChatTokenUsageDto = {
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+};

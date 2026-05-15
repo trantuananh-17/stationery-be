@@ -3,6 +3,8 @@ import { QueryBus } from '@nestjs/cqrs';
 import { GrpcMethod, Payload } from '@nestjs/microservices';
 
 import {
+  ProductAiAdvisorIntent,
+  ProductAiSortBy,
   SearchProductsForAdvisorGrpcRequest,
   SearchProductsForAdvisorGrpcResponse,
 } from '../../application/queries/get-product-ai/get-product-ai.dto';
@@ -24,19 +26,21 @@ export class ProductAiController {
         need: payload.need || '',
         category: payload.category || '',
         brand: payload.brand || '',
-        budgetMin: Number(payload.budget_min || 0),
-        budgetMax: Number(payload.budget_max || 0),
-        sortBy: payload.sort_by || 'relevant',
+        budgetMin: Number(payload.budget_min ?? payload.budgetMin ?? 0),
+        budgetMax: Number(payload.budget_max ?? payload.budgetMax ?? 0),
+        sortBy: this.normalizeSortBy(payload.sort_by ?? payload.sortBy),
         limit: Number(payload.limit || 8),
+        advisorIntent: this.normalizeAdvisorIntent(payload.advisor_intent ?? payload.advisorIntent),
       }),
     );
-
-    console.log(products);
 
     return {
       total: products.length,
       items: products.map((product) => ({
+        id: product.productId,
+
         productId: product.productId,
+
         productName: product.productName,
         slug: product.slug,
 
@@ -64,5 +68,36 @@ export class ProductAiController {
         productUrl: product.productUrl,
       })),
     };
+  }
+
+  private normalizeSortBy(sortBy?: string): ProductAiSortBy {
+    if (sortBy === 'price_asc') {
+      return 'price_asc';
+    }
+
+    if (sortBy === 'price_desc') {
+      return 'price_desc';
+    }
+
+    return 'relevant';
+  }
+
+  private normalizeAdvisorIntent(intent?: string): ProductAiAdvisorIntent {
+    const allowedIntents: ProductAiAdvisorIntent[] = [
+      'general',
+      'recommend_by_budget',
+      'quality_durability',
+      'brand_fit',
+      'cost_saving',
+      'combo_bundle',
+      'alternative_product',
+      'quantity_advice',
+    ];
+
+    if (intent && allowedIntents.includes(intent as ProductAiAdvisorIntent)) {
+      return intent as ProductAiAdvisorIntent;
+    }
+
+    return 'general';
   }
 }

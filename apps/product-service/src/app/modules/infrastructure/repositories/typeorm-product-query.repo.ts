@@ -11,7 +11,10 @@ import { ProductStatus } from '../../domain/enum/product-status.enum';
 import { ProductOrmEntity } from '../entities/typeorm-product.entity';
 import { SpecificationOrmEntity } from '../entities/typeorm-specification.enity';
 import { VariantOrmEntity } from '../entities/typeorm-variant.entity';
-import { GetProductAiDto } from '../../application/queries/get-product-ai/get-product-ai.dto';
+import {
+  GetProductAiDto,
+  ProductAiAdvisorIntent,
+} from '../../application/queries/get-product-ai/get-product-ai.dto';
 import { ProductAiReadModel } from '../../application/read-models/product-ai.read-model';
 
 @Injectable()
@@ -683,6 +686,25 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       .trim();
   }
 
+  private normalizeAiAdvisorIntent(intent?: string): ProductAiAdvisorIntent {
+    const allowedIntents: ProductAiAdvisorIntent[] = [
+      'general',
+      'recommend_by_budget',
+      'quality_durability',
+      'brand_fit',
+      'cost_saving',
+      'combo_bundle',
+      'alternative_product',
+      'quantity_advice',
+    ];
+
+    if (intent && allowedIntents.includes(intent as ProductAiAdvisorIntent)) {
+      return intent as ProductAiAdvisorIntent;
+    }
+
+    return 'general';
+  }
+
   private buildAiSearchTerms(...texts: Array<string | undefined>): string[] {
     const text = texts
       .filter((item): item is string => Boolean(item?.trim()))
@@ -727,7 +749,6 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
         'anh',
         'chị',
         'đi',
-        'in',
       ].map((word) => this.normalizeAiText(word)),
     );
 
@@ -747,6 +768,55 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
           .filter((word) => !stopWords.has(this.normalizeAiText(word))),
       ),
     ).slice(0, 8);
+  }
+
+  private buildAiComboSearchTerms(keyword?: string): string[] {
+    const normalizedKeyword = this.normalizeAiText(keyword);
+
+    if (!normalizedKeyword) {
+      return [];
+    }
+
+    const terms: string[] = [];
+
+    if (
+      normalizedKeyword.includes('giay') ||
+      normalizedKeyword.includes('a4') ||
+      normalizedKeyword.includes('a5')
+    ) {
+      terms.push('bìa hồ sơ', 'file tài liệu', 'kẹp giấy', 'ghim bấm', 'giấy note');
+    }
+
+    if (
+      normalizedKeyword.includes('but') ||
+      normalizedKeyword.includes('viet') ||
+      normalizedKeyword.includes('bi') ||
+      normalizedKeyword.includes('gel')
+    ) {
+      terms.push('sổ tay', 'giấy note', 'bút xóa', 'hộp bút');
+    }
+
+    if (
+      normalizedKeyword.includes('bang keo') ||
+      normalizedKeyword.includes('keo') ||
+      normalizedKeyword.includes('dong goi')
+    ) {
+      terms.push('kéo', 'dao rọc giấy', 'thùng carton', 'tem nhãn');
+    }
+
+    if (
+      normalizedKeyword.includes('bia') ||
+      normalizedKeyword.includes('ho so') ||
+      normalizedKeyword.includes('file')
+    ) {
+      terms.push('kẹp giấy', 'ghim bấm', 'trình ký', 'giấy note');
+    }
+
+    if (normalizedKeyword.includes('may tinh') || normalizedKeyword.includes('casio')) {
+      terms.push('bút bi', 'sổ tay', 'giấy note');
+    }
+
+    return this.buildAiSearchTerms(...terms);
   }
 
   private buildAiProductSearchCondition(paramName: string): string {
@@ -844,13 +914,20 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
   }
 
   async findProductsForAiAdvisor(filters: GetProductAiDto): Promise<ProductAiReadModel[]> {
-    const limit = this.normalizeAiLimit(filters.limit);
+    const advisorIntent = this.normalizeAiAdvisorIntent(filters.advisorIntent);
+    const limit = this.normalizeAiLimit(filters.limit, advisorIntent);
 
     const activeStatuses = Object.values(ProductStatus).filter(
       (status) => status !== ProductStatus.DRAFT,
     );
 
-    const rawKeywordTerms = this.buildAiSearchTerms(filters.keyword);
+    const originalKeywordTerms = this.buildAiSearchTerms(filters.keyword);
+
+    const comboKeywordTerms =
+      advisorIntent === 'combo_bundle' ? this.buildAiComboSearchTerms(filters.keyword) : [];
+
+    const rawKeywordTerms = comboKeywordTerms.length > 0 ? comboKeywordTerms : originalKeywordTerms;
+
     const contextTerms = this.buildAiSearchTerms(filters.audience, filters.need);
 
     const variantFilter = await this.resolveAiVariantFilterFromDb(rawKeywordTerms, activeStatuses);
@@ -860,11 +937,19 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
 
     console.log('AI_PRODUCT_SEARCH_DEBUG:', {
       keyword: filters.keyword,
+      advisorIntent,
+      originalKeywordTerms,
+      comboKeywordTerms,
       rawKeywordTerms,
       keywordTerms,
       variantNames,
       audience: filters.audience,
       need: filters.need,
+      category: filters.category,
+      brand: filters.brand,
+      budgetMin: filters.budgetMin,
+      budgetMax: filters.budgetMax,
+      sortBy: filters.sortBy,
     });
 
     const qb = this.productRepo
@@ -886,15 +971,6 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       });
     }
 
-    /**
-     * 1. Keyword sản phẩm.
-     *
-     * Ví dụ:
-     * - "bút đỏ" => keywordTerms = ["bút"]
-     * - "giấy A3" => keywordTerms = ["giấy"]
-     *
-     * Không search variant.name ở đây.
-     */
     if (keywordTerms.length > 0) {
       qb.andWhere(
         new Brackets((subQb) => {
@@ -917,15 +993,6 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       );
     }
 
-    /**
-     * 2. Keyword variant.
-     *
-     * Ví dụ:
-     * - "bút đỏ" => variantNames = ["Đỏ"]
-     * - "giấy A3" => variantNames = ["A3"]
-     *
-     * Có variant requested thì bắt buộc variant phải match.
-     */
     if (variantNames.length > 0) {
       qb.andWhere(
         new Brackets((subQb) => {
@@ -948,16 +1015,6 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       );
     }
 
-    /**
-     * 3. Chỉ dùng audience + need khi user không truyền keyword.
-     *
-     * Tránh case:
-     * keyword = "bút đỏ"
-     * audience = "học sinh"
-     * need = "đi học"
-     *
-     * Rồi audience/need kéo ra sản phẩm khác variant.
-     */
     if (rawKeywordTerms.length === 0 && contextTerms.length > 0) {
       qb.andWhere(
         new Brackets((subQb) => {
@@ -1032,6 +1089,7 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       .addSelect('product.short_description', 'product_short_description')
       .addSelect('product.description', 'product_description')
       .addSelect('product.thumbnail', 'product_thumbnail')
+      .addSelect('product.featured', 'product_featured')
       .addSelect('category.name', 'category_name')
       .addSelect('brand.name', 'brand_name')
       .addSelect('variant.id', 'variant_id')
@@ -1045,36 +1103,96 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       .addSelect('variant.is_default', 'variant_is_default')
       .addSelect('variant.sortOrder', 'variant_sort_order');
 
-    if (filters.sortBy === 'price_asc') {
-      qb.orderBy('variant.price', 'ASC')
-        .addOrderBy('variant.isDefault', 'DESC')
-        .addOrderBy('variant.sortOrder', 'ASC');
-    } else if (filters.sortBy === 'price_desc') {
-      qb.orderBy('variant.price', 'DESC')
-        .addOrderBy('variant.isDefault', 'DESC')
-        .addOrderBy('variant.sortOrder', 'ASC');
-    } else {
-      qb.orderBy('variant.isDefault', 'DESC')
-        .addOrderBy('variant.sortOrder', 'ASC')
-        .addOrderBy('variant.price', 'ASC');
-    }
+    this.applyAiAdvisorOrdering(qb, filters, advisorIntent);
 
-    qb.limit(limit * 3);
+    qb.limit(Math.min(limit * 3, 90));
 
     const rows = await qb.getRawMany<ProductAiRawRow>();
 
     return this.mapAiProductRows(rows, limit);
   }
-  private normalizeAiLimit(limit?: number): number {
-    if (!limit || limit <= 0) {
-      return 8;
+
+  private applyAiAdvisorOrdering(
+    qb: any,
+    filters: GetProductAiDto,
+    advisorIntent: ProductAiAdvisorIntent,
+  ): void {
+    if (advisorIntent === 'cost_saving') {
+      qb.orderBy('variant.price', 'ASC')
+        .addOrderBy('product.featured', 'DESC')
+        .addOrderBy('variant.isDefault', 'DESC')
+        .addOrderBy('variant.sortOrder', 'ASC');
+
+      return;
     }
 
-    if (limit > 20) {
-      return 20;
+    if (advisorIntent === 'quality_durability') {
+      qb.orderBy('product.featured', 'DESC')
+        .addOrderBy('brand.name', 'ASC')
+        .addOrderBy('variant.isDefault', 'DESC')
+        .addOrderBy('variant.price', 'DESC');
+
+      return;
     }
 
-    return limit;
+    if (advisorIntent === 'brand_fit') {
+      qb.orderBy('brand.name', 'ASC')
+        .addOrderBy('product.featured', 'DESC')
+        .addOrderBy('variant.isDefault', 'DESC')
+        .addOrderBy('variant.sortOrder', 'ASC');
+
+      return;
+    }
+
+    if (advisorIntent === 'combo_bundle') {
+      qb.orderBy('product.featured', 'DESC')
+        .addOrderBy('variant.isDefault', 'DESC')
+        .addOrderBy('variant.sortOrder', 'ASC')
+        .addOrderBy('variant.price', 'ASC');
+
+      return;
+    }
+
+    if (filters.sortBy === 'price_asc') {
+      qb.orderBy('variant.price', 'ASC')
+        .addOrderBy('variant.isDefault', 'DESC')
+        .addOrderBy('variant.sortOrder', 'ASC');
+
+      return;
+    }
+
+    if (filters.sortBy === 'price_desc') {
+      qb.orderBy('variant.price', 'DESC')
+        .addOrderBy('variant.isDefault', 'DESC')
+        .addOrderBy('variant.sortOrder', 'ASC');
+
+      return;
+    }
+
+    qb.orderBy('product.featured', 'DESC')
+      .addOrderBy('variant.isDefault', 'DESC')
+      .addOrderBy('variant.sortOrder', 'ASC')
+      .addOrderBy('variant.price', 'ASC');
+  }
+
+  private normalizeAiLimit(
+    limit?: number,
+    advisorIntent: ProductAiAdvisorIntent = 'general',
+  ): number {
+    const defaultLimit =
+      advisorIntent === 'combo_bundle' || advisorIntent === 'alternative_product'
+        ? 30
+        : advisorIntent === 'quantity_advice'
+          ? 20
+          : 24;
+
+    const value = Number(limit || defaultLimit);
+
+    if (!Number.isFinite(value) || value <= 0) {
+      return defaultLimit;
+    }
+
+    return Math.min(value, 30);
   }
 
   private mapAiProductRows(rows: ProductAiRawRow[], limit: number): ProductAiReadModel[] {
@@ -1118,8 +1236,9 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       product.compareAtPrice = Math.round(Number(row.variant_compare_at_price || 0));
       product.stock = availableStock;
 
-      product.thumbnail = row.product_thumbnail || '';
       product.variantImage = row.variant_image || '';
+
+      product.featured = Boolean(row.product_featured);
       product.productUrl = `/products/${row.product_slug}`;
 
       result.push(product);
@@ -1147,6 +1266,7 @@ type ProductAiRawRow = {
   product_short_description: string | null;
   product_description: string | null;
   product_thumbnail: string | null;
+  product_featured: boolean | null;
 
   variant_id: string;
   variant_name: string;

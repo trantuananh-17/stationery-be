@@ -57,7 +57,9 @@ async function bootstrap() {
   const port = CONFIG.APP_CONFIG.PORT;
 
   await app.startAllMicroservices();
-  await app.listen(port);
+  const host = '0.0.0.0';
+
+  await app.listen(port, host);
   Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`);
 }
 

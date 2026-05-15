@@ -23,6 +23,8 @@ import { ProductStatus } from '../../domain/enum/product-status.enum';
 import { GetProductsByAdminQuery } from '../../application/queries/get-products-admin/get-products-admin.query';
 import { OrderEventDto } from '../dtos/order-event.dto';
 import { ConfirmStockEventCommand } from '../../application/commands/products/confirm-stock-event/confirm-stock-event.command';
+import { DeleteProductCommand } from '../../application/commands/products/delete-product/delete-product.command';
+import { RestoreProductCommand } from '../../application/commands/products/restore-product/restore-product.handler';
 
 @ApiTags('Products')
 @Controller('products')
@@ -272,6 +274,16 @@ export class ProductController {
       limit: result.pagination.limit,
       totalPages: result.pagination.totalPages,
     };
+  }
+
+  @GrpcMethod('ProductService', 'deleteProduct')
+  async deleteProductGrpc(@Payload() payload: { id: string }) {
+    return this.commandBus.execute(new DeleteProductCommand(payload.id));
+  }
+
+  @GrpcMethod('ProductService', 'restoreProduct')
+  async restoreProductGrpc(@Payload() payload: { id: string }) {
+    return this.commandBus.execute(new RestoreProductCommand(payload.id));
   }
 
   @EventPattern('order.confirmed')
