@@ -11,6 +11,7 @@ import { RemoveItemHandler } from './application/commands/remove-item/remove-ite
 import { ClearCartHandler } from './application/commands/clear-cart/clear-cart.handler';
 import { MergeCartHandler } from './application/commands/merge-cart/merge-carthandler';
 import { GetCartCheckoutHandler } from './application/queries/get-cart-checkout/get-cart-checkout.handler';
+import { CheckoutCartHandler } from './application/commands/checkout-cart/checkout-cart.handler';
 
 @Module({
   imports: [CqrsModule, TypeOrmProvider, CartInfraModule],
@@ -24,6 +25,7 @@ import { GetCartCheckoutHandler } from './application/queries/get-cart-checkout/
     ClearCartHandler,
     MergeCartHandler,
     GetCartCheckoutHandler,
+    CheckoutCartHandler,
   ],
   exports: [],
 })

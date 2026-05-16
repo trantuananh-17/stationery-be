@@ -1,4 +1,4 @@
-import { Controller } from '@nestjs/common';
+import { Controller, UseFilters, UseInterceptors } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { GrpcMethod, Payload } from '@nestjs/microservices';
 
@@ -10,8 +10,12 @@ import {
 } from '../../application/queries/get-product-ai/get-product-ai.dto';
 import { GetProductAiQuery } from '../../application/queries/get-product-ai/get-product-ai.query';
 import { ProductAiReadModel } from '../../application/read-models/product-ai.read-model';
+import { ProductGrpcExceptionFilter } from '../filters/product.filter';
+import { GrpcLoggingInterceptor } from '@common/interceptors/grpcLogging.interceptor';
 
 @Controller()
+@UseInterceptors(GrpcLoggingInterceptor)
+@UseFilters(ProductGrpcExceptionFilter)
 export class ProductAiController {
   constructor(private readonly queryBus: QueryBus) {}
 

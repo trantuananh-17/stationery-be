@@ -3,6 +3,7 @@ import { IInventoryCommandRepository } from '../../../ports/repositories/invento
 import { IUnitOfWork } from '../../../ports/services/unit-of-work.port';
 import { IProcessedEventRepository } from '../../../ports/repositories/process-event.repo';
 import { ReturnStockEventCommand } from './return-stock-event.command';
+import { ConfirmStockFailedError } from '../../../../domain/errors/product.error';
 
 @CommandHandler(ReturnStockEventCommand)
 export class ReturnStockEventHandler implements ICommandHandler<ReturnStockEventCommand> {
@@ -24,7 +25,7 @@ export class ReturnStockEventHandler implements ICommandHandler<ReturnStockEvent
         const ok = await this.inventoryRepo.restockAtomic(item.variantId, item.quantity);
 
         if (!ok) {
-          throw new Error(`Confirm stock failed for variant ${item.variantId}`);
+          throw new ConfirmStockFailedError(item.variantId);
         }
       }
     });

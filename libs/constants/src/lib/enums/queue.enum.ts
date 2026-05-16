@@ -5,6 +5,7 @@ export enum QUEUE_GROUPS {
   USER = 'user',
   NOTIFICATION = 'notification',
   ANALYTICS = 'analytics',
+  CART = 'cart',
 }
 
 export enum QUEUE_SERVICES {

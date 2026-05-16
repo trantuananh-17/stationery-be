@@ -9,25 +9,15 @@ import {
   Post,
   Query,
 } from '@nestjs/common';
-
 import { ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
-
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-
-import { GrpcMethod } from '@nestjs/microservices';
-
+import { EventPattern, GrpcMethod, Payload } from '@nestjs/microservices';
 import { CreateNotificationCommand } from '../../application/commands/create-notification/create-notification.command';
-
 import { MarkReadCommand } from '../../application/commands/mark-read/mark-read.command';
-
 import { MarkAllAsReadCommand } from '../../application/commands/mark-read-all/mark-read-all.command';
-
 import { GetNotificationsQuery } from '../../application/queries/get-notifications/get-notifications.query';
-
 import { GetUnreadCountQuery } from '../../application/queries/get-unread-count/get-unread-count.query';
-
 import { NotificationType } from '../../domain/enums/notification-type.enum';
-
 import { NotificationStatus } from '../../domain/enums/notification-status.enum';
 
 @ApiTags('Notifications')
@@ -153,11 +143,8 @@ export class NotificationController {
   @GrpcMethod('NotificationService', 'GetNotifications')
   async getNotificationsGrpc(payload: {
     receiverId: string;
-
     page: number;
-
     limit: number;
-
     status?: NotificationStatus;
 
     type?: NotificationType;
@@ -186,5 +173,27 @@ export class NotificationController {
   @GrpcMethod('NotificationService', 'MarkAllAsRead')
   async markAllAsReadGrpc(payload: { receiverId: string }) {
     return this.commandBus.execute(new MarkAllAsReadCommand(payload.receiverId));
+  }
+
+  @EventPattern('notification.create')
+  async createNotificationEvent(
+    @Payload()
+    payload: {
+      receiverId: string;
+      type: NotificationType;
+      title: string;
+      message: string;
+      metadata?: Record<string, any>;
+    },
+  ) {
+    return this.commandBus.execute(
+      new CreateNotificationCommand(
+        payload.receiverId,
+        payload.type,
+        payload.title,
+        payload.message,
+        payload.metadata,
+      ),
+    );
   }
 }

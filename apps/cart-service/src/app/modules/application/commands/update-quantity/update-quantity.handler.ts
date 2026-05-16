@@ -1,9 +1,22 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+
 import { UpdateQuantityCommand } from './update-quantity.command';
+
 import { IProductGrpcPort } from '../../ports/grpc/product-grpc.port';
 import { IUnitOfWork } from '../../ports/services/unit-of-work.port';
-import { Cart } from '../../../domain/entities/cart.entity';
 import { ICartCommandRepository } from '../../ports/repositories/cart-command.repo';
+
+import { Cart } from '../../../domain/entities/cart.entity';
+
+import {
+  CartItemNotFoundError,
+  CartNotFoundError,
+  CartUserOrSessionRequiredError,
+  InvalidCartItemQuantityError,
+  ProductNotFoundInCartError,
+  ProductOutOfStockError,
+  QuantityExceedsStockError,
+} from '../../../domain/errors/cart.error';
 
 @CommandHandler(UpdateQuantityCommand)
 export class UpdateQuantityHandler implements ICommandHandler<UpdateQuantityCommand> {
@@ -17,11 +30,11 @@ export class UpdateQuantityHandler implements ICommandHandler<UpdateQuantityComm
     const { variantId, quantity, userId, sessionId } = command;
 
     if (!userId && !sessionId) {
-      throw new Error('userId or sessionId is required');
+      throw new CartUserOrSessionRequiredError();
     }
 
     if (quantity < 0) {
-      throw new Error('Quantity must be greater than or equal to 0');
+      throw new InvalidCartItemQuantityError();
     }
 
     return await this.dataContext.runInTransaction(async () => {
@@ -34,18 +47,20 @@ export class UpdateQuantityHandler implements ICommandHandler<UpdateQuantityComm
       }
 
       if (!cart) {
-        throw new Error('Cart not found');
+        throw new CartNotFoundError();
       }
 
       const existedItem = cart.getItemByVariantId(variantId);
 
       if (!existedItem) {
-        throw new Error('Cart item not found');
+        throw new CartItemNotFoundError();
       }
 
       if (quantity === 0) {
         cart.removeItem(existedItem.id);
+
         await this.cartCommandRepo.save(cart);
+
         return;
       }
 
@@ -54,15 +69,15 @@ export class UpdateQuantityHandler implements ICommandHandler<UpdateQuantityComm
       });
 
       if (!productCartItem) {
-        throw new Error('Product not found');
+        throw new ProductNotFoundInCartError();
       }
 
       if (productCartItem.stock <= 0) {
-        throw new Error('Product is out of stock');
+        throw new ProductOutOfStockError();
       }
 
       if (quantity > productCartItem.stock) {
-        throw new Error(`Quantity exceeds stock. Available stock: ${productCartItem.stock}`);
+        throw new QuantityExceedsStockError();
       }
 
       cart.updateItemQuantity(existedItem.id, quantity);

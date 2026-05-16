@@ -125,7 +125,6 @@ export class ReserveStockHandler
         );
 
         if (!ok) {
-          // 🔥 race condition → phải lấy data mới
           const latest = await this.inventoryCommandRepo.findVariant(item.variantId);
 
           const availableStock = latest ? Math.max(latest.stock - latest.reservedStock, 0) : 0;

@@ -438,19 +438,21 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
     if (keywords.length > 0) {
       qb.andWhere(
         `
-      to_tsvector(
-        'simple',
-        unaccent(
-          array_to_string(
-            ARRAY(
-              SELECT jsonb_array_elements_text(p.search_keywords)
-            ),
-            ' '
-          )
-        )
-      )
+    (
+      to_tsvector('simple', unaccent(coalesce(p.name, '')))
       @@ plainto_tsquery('simple', unaccent(:query))
-      `,
+
+      OR
+
+      to_tsvector('simple', unaccent(coalesce(c.name, '')))
+      @@ plainto_tsquery('simple', unaccent(:query))
+
+      OR
+
+      to_tsvector('simple', unaccent(coalesce(b.name, '')))
+      @@ plainto_tsquery('simple', unaccent(:query))
+    )
+    `,
         {
           query: keywords.join(' '),
         },
@@ -572,19 +574,21 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
     if (keywords.length > 0) {
       qb.andWhere(
         `
-      to_tsvector(
-        'simple',
-        unaccent(
-          array_to_string(
-            ARRAY(
-              SELECT jsonb_array_elements_text(p.search_keywords)
-            ),
-            ' '
-          )
-        )
-      )
+    (
+      to_tsvector('simple', unaccent(coalesce(p.name, '')))
       @@ plainto_tsquery('simple', unaccent(:query))
-      `,
+
+      OR
+
+      to_tsvector('simple', unaccent(coalesce(c.name, '')))
+      @@ plainto_tsquery('simple', unaccent(:query))
+
+      OR
+
+      to_tsvector('simple', unaccent(coalesce(b.name, '')))
+      @@ plainto_tsquery('simple', unaccent(:query))
+    )
+    `,
         {
           query: keywords.join(' '),
         },
@@ -627,6 +631,14 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
     qb.groupBy('p.id').addGroupBy('v.id').addGroupBy('c.id').addGroupBy('b.id');
 
     switch (orderBy) {
+      case ProductOrderBy.CREATED_AT_ASC:
+        qb.orderBy('p.created_at', 'ASC').addOrderBy('p.id', 'ASC');
+        break;
+
+      case ProductOrderBy.CREATED_AT_DESC:
+        qb.orderBy('p.created_at', 'DESC').addOrderBy('p.id', 'DESC');
+        break;
+
       case ProductOrderBy.PRICE_ASC:
         qb.orderBy('v.price', 'ASC');
         break;
@@ -644,7 +656,7 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
         break;
 
       default:
-        qb.orderBy('p.created_at', 'DESC');
+        qb.orderBy('p.created_at', 'DESC').addOrderBy('p.id', 'DESC');
     }
 
     qb.offset((page - 1) * limit).limit(limit);

@@ -2,6 +2,7 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { ICartQueryRepository } from '../../ports/repositories/cart-query.repo';
 import { GetCartCheckoutQuery } from './get-cart-checkout.query';
 import { CheckoutCartResult } from '../../dtos/checkout-cart.result';
+import { CartNotFoundError } from '../../../domain/errors/cart.error';
 
 @QueryHandler(GetCartCheckoutQuery)
 export class GetCartCheckoutHandler
@@ -19,7 +20,7 @@ export class GetCartCheckoutHandler
     const cart = await this.cartQueryRepo.findCartInfoByCheckout(userId);
 
     if (!cart) {
-      throw new Error('Cart not found');
+      throw new CartNotFoundError();
     }
 
     console.log(cart);

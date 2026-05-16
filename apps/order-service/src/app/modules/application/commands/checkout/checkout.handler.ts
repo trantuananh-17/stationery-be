@@ -102,11 +102,9 @@ export class CheckoutHandler implements ICommandHandler<CheckoutCommand, Checkou
       await this.orderCommandRepo.save(order);
     });
 
-    // Sau khi save order thành công thì mới clear cart
-    // await this.cartGrpcPort.clearCartItems({
-    //   userId,
-    //   variantIds: cart.items.map((item) => item.variantId),
-    // });
+    await this.cartGrpcPort.checkoutCart({
+      userId,
+    });
 
     await this.eventPublisher.emitOrderCreated({
       eventId: crypto.randomUUID(),
@@ -115,6 +113,24 @@ export class CheckoutHandler implements ICommandHandler<CheckoutCommand, Checkou
       customerName: `${shippingAddress.firstName} ${shippingAddress.lastName}`,
       totalAmount: order.total,
       totalItems: order.totalItems,
+
+      createdAt: new Date().toISOString(),
+    });
+
+    await this.eventPublisher.emitNotificationOrderCreated({
+      eventId: crypto.randomUUID(),
+      receiverId: 'e6d14eb9-268c-4a74-88b0-4b0d9731443b',
+      type: 'ORDER_CREATED',
+      title: 'Có đơn hàng mới',
+      message: `Đơn hàng ${order.number} vừa được tạo bởi ${shippingAddress.firstName} ${shippingAddress.lastName}`,
+      metadata: {
+        orderId: order.id,
+        orderNumber: order.number,
+        customerId: order.userId,
+        customerName: `${shippingAddress.firstName} ${shippingAddress.lastName}`,
+        totalAmount: order.total,
+        totalItems: order.totalItems,
+      },
 
       createdAt: new Date().toISOString(),
     });

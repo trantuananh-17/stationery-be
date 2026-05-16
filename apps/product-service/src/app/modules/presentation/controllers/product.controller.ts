@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, ParseUUIDPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  ParseUUIDPipe,
+  UseFilters,
+  UseInterceptors,
+} from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateProductCommand } from '../../application/commands/products/create-product/create-product.command';
@@ -25,9 +36,13 @@ import { OrderEventDto } from '../dtos/order-event.dto';
 import { ConfirmStockEventCommand } from '../../application/commands/products/confirm-stock-event/confirm-stock-event.command';
 import { DeleteProductCommand } from '../../application/commands/products/delete-product/delete-product.command';
 import { RestoreProductCommand } from '../../application/commands/products/restore-product/restore-product.handler';
+import { GrpcLoggingInterceptor } from '@common/interceptors/grpcLogging.interceptor';
+import { ProductGrpcExceptionFilter } from '../filters/product.filter';
 
 @ApiTags('Products')
 @Controller('products')
+@UseInterceptors(GrpcLoggingInterceptor)
+@UseFilters(ProductGrpcExceptionFilter)
 export class ProductController {
   constructor(
     private readonly commandBus: CommandBus,

@@ -2,6 +2,7 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { GetCartCountQuery } from './get-cart-count.query';
 import { ICartQueryRepository } from '../../ports/repositories/cart-query.repo';
 import { Cart } from '../../../domain/entities/cart.entity';
+import { CartUserOrSessionRequiredError } from '../../../domain/errors/cart.error';
 
 export interface GetCartCountResult {
   count: number;
@@ -15,7 +16,7 @@ export class GetCartCountHandler implements IQueryHandler<GetCartCountQuery, Get
     const { userId, sessionId } = query;
 
     if (!userId && !sessionId) {
-      throw new Error('userId or sessionId is required');
+      throw new CartUserOrSessionRequiredError();
     }
 
     let cart: Cart | null = null;

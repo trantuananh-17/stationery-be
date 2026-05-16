@@ -23,3 +23,11 @@ export type CheckoutCartResult = {
   subtotal: number;
   totalItems: number;
 };
+
+export type CheckoutCartRequest = {
+  userId: string;
+};
+
+export type CheckoutCartResponse = {
+  cartId: string;
+};

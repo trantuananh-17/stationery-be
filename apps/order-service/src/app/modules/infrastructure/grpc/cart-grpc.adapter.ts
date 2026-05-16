@@ -3,7 +3,11 @@ import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientGrpc } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 
-import { CheckoutCartResult } from '../../application/ports/contracts/cart.contract';
+import {
+  CheckoutCartRequest,
+  CheckoutCartResponse,
+  CheckoutCartResult,
+} from '../../application/ports/contracts/cart.contract';
 import { ICartGrpcPort } from '../../application/ports/grpc/cart-grpc.port';
 import { ICartGrpcService } from './cart-grpc.interface';
 
@@ -22,5 +26,9 @@ export class CartGrpcAdapter implements ICartGrpcPort, OnModuleInit {
 
   getCartForCheckout(data: { userId: string }): Promise<CheckoutCartResult> {
     return firstValueFrom(this.cartService.getCartForCheckout(data));
+  }
+
+  checkoutCart(data: CheckoutCartRequest): Promise<CheckoutCartResponse> {
+    return firstValueFrom(this.cartService.checkoutCart(data));
   }
 }

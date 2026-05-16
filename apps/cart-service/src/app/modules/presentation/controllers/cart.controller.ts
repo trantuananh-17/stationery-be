@@ -24,12 +24,14 @@ import { GetCartCountQuery } from '../../application/queries/get-cart-count/get-
 import { RemoveItemCommand } from '../../application/commands/remove-item/remove-item.command';
 import { ClearCartCommand } from '../../application/commands/clear-cart/clear-cart.command';
 import { MergeCartCommand } from '../../application/commands/merge-cart/merge-cart.command';
-import { GrpcMethod, Payload } from '@nestjs/microservices';
+import { GrpcMethod, MessagePattern, Payload } from '@nestjs/microservices';
 import { GetCartCheckoutQuery } from '../../application/queries/get-cart-checkout/get-cart-checkout.query';
+import { CartGrpcExceptionFilter } from '../filters/cart-gprc.filter';
+import { CheckoutCartCommand } from '../../application/commands/checkout-cart/checkout-cart.command';
 
 @Controller()
-// @UseInterceptors(GrpcLoggingInterceptor)
-// @UseFilters(AuthGrpcExceptionFilter)
+@UseInterceptors(GrpcLoggingInterceptor)
+@UseFilters(CartGrpcExceptionFilter)
 export class CartController {
   constructor(
     private readonly commandBus: CommandBus,
@@ -234,5 +236,15 @@ export class CartController {
     },
   ) {
     return this.queryBus.execute(new GetCartCountQuery(payload.userId, payload.sessionId));
+  }
+
+  @GrpcMethod('CartService', 'checkoutCart')
+  async checkoutCart(
+    @Payload()
+    payload: {
+      userId: string;
+    },
+  ) {
+    return this.commandBus.execute(new CheckoutCartCommand(payload.userId));
   }
 }

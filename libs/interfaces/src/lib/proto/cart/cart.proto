@@ -17,6 +17,16 @@ service CartService {
   rpc removeCartItem(RemoveCartItemRequest) returns (google.protobuf.Empty);
   rpc clearCart(ClearCartRequest) returns (google.protobuf.Empty);
   rpc mergeCart(MergeCartRequest) returns (google.protobuf.Empty);
+
+   rpc checkoutCart(CheckoutCartRequest) returns (CheckoutCartResponse);
+}
+
+message CheckoutCartRequest {
+  string userId = 1;
+}
+
+message CheckoutCartResponse {
+  string cartId = 1;
 }
 
 message PingRequest {}

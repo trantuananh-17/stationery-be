@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
 import { VariantAttribute } from './variant-attribute.entity';
+import { InvalidPriceError, InvalidStockError, SkuRequiredError } from '../errors/product.error';
 
 export type VariantParams = {
   readonly id: string;
@@ -36,15 +37,15 @@ export class Variant {
     isDefault?: boolean;
   }): Variant {
     if (data.price < 0) {
-      throw new Error('Price cannot be negative');
+      throw new InvalidPriceError();
     }
 
     if (!data.sku || !data.sku.trim()) {
-      throw new Error('SKU is required');
+      throw new SkuRequiredError();
     }
 
     if (data.stock < 0) {
-      throw new Error('Stock cannot be negative');
+      throw new InvalidStockError();
     }
     const now = new Date();
 
@@ -77,7 +78,7 @@ export class Variant {
   }) {
     if (data.price !== undefined) {
       if (data.price < 0) {
-        throw new Error('Price cannot be negative');
+        throw new InvalidPriceError();
       }
       this.params.price = data.price;
     }
@@ -88,7 +89,7 @@ export class Variant {
 
     if (data.stock !== undefined) {
       if (data.stock < 0) {
-        throw new Error('Stock cannot be negative');
+        throw new InvalidStockError();
       }
 
       this.params.stock = data.stock;

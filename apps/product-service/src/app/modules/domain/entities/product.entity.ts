@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { Variant } from './variant.entity';
 import { Specification } from './specification.entity';
 import { ProductStatus } from '../enum/product-status.enum';
+import { InvalidStockError } from '../errors/product.error';
 
 export type ProductParams = {
   readonly id: string;
@@ -180,6 +181,10 @@ export class Product {
 
         if (!existingVariant) {
           throw new Error(`Variant with id ${input.id} not found`);
+        }
+
+        if (input.stock < existingVariant.reservedStock) {
+          throw new InvalidStockError();
         }
 
         existingVariant.restore();

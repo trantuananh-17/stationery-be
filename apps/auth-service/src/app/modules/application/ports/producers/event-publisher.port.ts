@@ -15,4 +15,14 @@ export abstract class IEventPublisher {
     lastName: string;
     createdAt: string;
   }): Promise<void>;
+
+  abstract emitNotificationCreated(payload: {
+    eventId: string;
+    receiverId: string;
+    type: string;
+    title: string;
+    message: string;
+    metadata?: Record<string, any>;
+    createdAt: string;
+  }): Promise<void>;
 }

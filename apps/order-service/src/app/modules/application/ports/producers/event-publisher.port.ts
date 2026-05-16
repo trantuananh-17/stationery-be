@@ -66,4 +66,24 @@ export abstract class IEventPublisher {
     orderId: string;
     cancelledAt: string;
   }): Promise<void>;
+
+  abstract emitNotificationOrderCreated(payload: {
+    eventId: string;
+    receiverId: string;
+    type: string;
+    title: string;
+    message: string;
+    metadata?: Record<string, any>;
+    createdAt: string;
+  }): Promise<void>;
+
+  abstract emitNotificationPaymentSuccess(payload: {
+    eventId: string;
+    receiverId: string;
+    type: string;
+    title: string;
+    message: string;
+    metadata?: Record<string, any>;
+    createdAt: string;
+  }): Promise<void>;
 }

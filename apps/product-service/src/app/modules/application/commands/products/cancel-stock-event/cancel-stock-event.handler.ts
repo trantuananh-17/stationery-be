@@ -3,6 +3,7 @@ import { IInventoryCommandRepository } from '../../../ports/repositories/invento
 import { IUnitOfWork } from '../../../ports/services/unit-of-work.port';
 import { IProcessedEventRepository } from '../../../ports/repositories/process-event.repo';
 import { CancelStockEventCommand } from './cancel-stock-event.command';
+import { CancelStockFailedError } from '../../../../domain/errors/product.error';
 
 @CommandHandler(CancelStockEventCommand)
 export class CancelStockEventHandler implements ICommandHandler<CancelStockEventCommand> {
@@ -24,7 +25,7 @@ export class CancelStockEventHandler implements ICommandHandler<CancelStockEvent
         const ok = await this.inventoryRepo.releaseStockAtomic(item.variantId, item.quantity);
 
         if (!ok) {
-          throw new Error(`Cancel stock failed for variant ${item.variantId}`);
+          throw new CancelStockFailedError(item.variantId);
         }
       }
     });

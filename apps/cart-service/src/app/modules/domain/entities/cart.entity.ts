@@ -5,6 +5,16 @@ import {
   CartItemAttributeSnapshot,
   UpdateCartItemSnapshotParams,
 } from './cart-item.entity';
+import {
+  CartCheckedOutCannotExpireError,
+  CartCurrencyRequiredError,
+  CartEmptyError,
+  CartIdRequiredError,
+  CartItemNotFoundError,
+  CartNotActiveError,
+  CartUserOrSessionRequiredError,
+  OnlyActiveCartCanBeMergedError,
+} from '../errors/cart.error';
 
 export type CartParams = {
   readonly id: string;
@@ -49,11 +59,11 @@ export class Cart {
 
   static create(data: CreateCartParams): Cart {
     if (!data.userId && !data.sessionId) {
-      throw new Error('userId or sessionId is required');
+      throw new CartUserOrSessionRequiredError();
     }
 
     if (!data.currency?.trim()) {
-      throw new Error('currency is required');
+      throw new CartCurrencyRequiredError();
     }
 
     const now = new Date();
@@ -79,15 +89,15 @@ export class Cart {
 
   private validate(): void {
     if (!this.params.id?.trim()) {
-      throw new Error('id is required');
+      throw new CartIdRequiredError();
     }
 
     if (!this.params.userId && !this.params.sessionId) {
-      throw new Error('userId or sessionId is required');
+      throw new CartUserOrSessionRequiredError();
     }
 
     if (!this.params.currency?.trim()) {
-      throw new Error('currency is required');
+      throw new CartCurrencyRequiredError();
     }
   }
 
@@ -97,7 +107,7 @@ export class Cart {
 
   private canModify(): void {
     if (this.params.status !== StatusCart.ACTIVE) {
-      throw new Error('Cart is not active');
+      throw new CartNotActiveError();
     }
   }
 
@@ -137,7 +147,7 @@ export class Cart {
     const index = this.cartItems.findIndex((item) => item.id === cartItemId);
 
     if (index === -1) {
-      throw new Error('Cart item not found');
+      throw new CartItemNotFoundError();
     }
 
     this.cartItems.splice(index, 1);
@@ -155,7 +165,7 @@ export class Cart {
     const item = this.cartItems.find((cartItem) => cartItem.id === cartItemId);
 
     if (!item) {
-      throw new Error('Cart item not found');
+      throw new CartItemNotFoundError();
     }
 
     item.changeQuantity(quantity);
@@ -168,7 +178,7 @@ export class Cart {
     const item = this.cartItems.find((cartItem) => cartItem.id === cartItemId);
 
     if (!item) {
-      throw new Error('Cart item not found');
+      throw new CartItemNotFoundError();
     }
 
     item.updateSnapshot(snapshot);
@@ -184,7 +194,7 @@ export class Cart {
 
   expire(): void {
     if (this.params.status === StatusCart.CHECK_OUT) {
-      throw new Error('Checked out cart cannot be expired');
+      throw new CartCheckedOutCannotExpireError();
     }
 
     this.params.status = StatusCart.EXPIRED;
@@ -193,11 +203,11 @@ export class Cart {
 
   checkout(): void {
     if (this.params.status !== StatusCart.ACTIVE) {
-      throw new Error('Cart is not active');
+      throw new CartNotActiveError();
     }
 
     if (this.cartItems.length === 0) {
-      throw new Error('Cart is empty');
+      throw new CartEmptyError();
     }
 
     this.params.status = StatusCart.CHECK_OUT;
@@ -214,7 +224,7 @@ export class Cart {
 
   markMerged(): void {
     if (this.params.status !== StatusCart.ACTIVE) {
-      throw new Error('Only active cart can be merged');
+      throw new OnlyActiveCartCanBeMergedError();
     }
 
     this.params.status = StatusCart.MERGED;

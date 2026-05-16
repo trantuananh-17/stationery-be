@@ -10,6 +10,7 @@ import {
 @Injectable()
 export class EventPublisherKafka implements IEventPublisher {
   constructor(private readonly kafkaService: KafkaService) {}
+
   async emitSyncUserSumary(payload: SyncCustomerSummaryDto): Promise<void> {
     await firstValueFrom(this.kafkaService.emit('customer.summary.sync', payload));
   }
@@ -123,6 +124,42 @@ export class EventPublisherKafka implements IEventPublisher {
     await firstValueFrom(
       this.kafkaService.emit(
         'order.cancelled',
+
+        payload,
+      ),
+    );
+  }
+
+  async emitNotificationOrderCreated(payload: {
+    eventId: string;
+    receiverId: string;
+    type: string;
+    title: string;
+    message: string;
+    metadata?: Record<string, any>;
+    createdAt: string;
+  }): Promise<void> {
+    await firstValueFrom(
+      this.kafkaService.emit(
+        'notification.create',
+
+        payload,
+      ),
+    );
+  }
+
+  async emitNotificationPaymentSuccess(payload: {
+    eventId: string;
+    receiverId: string;
+    type: string;
+    title: string;
+    message: string;
+    metadata?: Record<string, any>;
+    createdAt: string;
+  }): Promise<void> {
+    await firstValueFrom(
+      this.kafkaService.emit(
+        'notification.create',
 
         payload,
       ),

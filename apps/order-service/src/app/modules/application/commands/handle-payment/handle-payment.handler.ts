@@ -65,6 +65,26 @@ export class HandlePaymentHandler implements ICommandHandler<HandlePaymentComman
             })),
           }),
         );
+
+        projectionPromises.push(
+          this.eventPublisher.emitNotificationPaymentSuccess({
+            eventId,
+            receiverId: 'e6d14eb9-268c-4a74-88b0-4b0d9731443b',
+            type: 'PAYMENT_SUCCESS',
+            title: 'Thanh toán thành công',
+            message: `Đơn hàng ${order.number} đã được thanh toán thành công`,
+            metadata: {
+              orderId: order.id,
+              orderNumber: order.number,
+              totalAmount: order.total,
+              paymentProvider,
+              paymentTransactionId,
+            },
+
+            createdAt: new Date().toISOString(),
+          }),
+        );
+
         break;
 
       case PaymentStatus.FAILED:
