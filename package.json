@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "prepare": "husky",
+    "prepare": "node -e \"if (process.env.NODE_ENV !== 'production') require('child_process').execSync('husky', {stdio:'inherit'})\"",
     "nx:reset": "nx reset",
     "nx:run-many": "nx run-many",
     "docker:up:provider": "docker compose -f docker/docker-compose.provider.yaml up -d",
@@ -55,6 +55,7 @@
     "sharp": "^0.34.5",
     "socket.io": "^4.8.3",
     "stripe": "^22.1.0",
+    "tslib": "^2.8.1",
     "typeorm": "^0.3.28",
     "uuid": "^13.0.0"
   },
@@ -92,7 +93,6 @@
     "prettier": "~3.6.2",
     "ts-jest": "^29.4.0",
     "ts-node": "10.9.1",
-    "tslib": "^2.3.0",
     "typescript": "~5.9.2",
     "typescript-eslint": "^8.40.0",
     "webpack-cli": "^5.1.4"

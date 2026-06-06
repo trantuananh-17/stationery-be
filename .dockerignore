@@ -1,0 +1,17 @@
+node_modules
+dist
+.tmp
+.nx
+.cache
+.git
+.gitignore
+
+docker/docker_data
+docker_data
+
+.env
+*.log
+
+.DS_Store
+.vscode
+.idea

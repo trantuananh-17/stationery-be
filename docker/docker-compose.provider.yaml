@@ -10,7 +10,7 @@ services:
     image: mongo:latest
     container_name: mongodb
     ports:
-      - 27017:27017
+      - '27017:27017'
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: password
@@ -32,7 +32,7 @@ services:
       - '5432:5432'
     volumes:
       - ./docker_data/postgres_data:/var/lib/postgresql/data
-      - ./docker/postgres/init-pgvector.sql:/docker-entrypoint-initdb.d/init-pgvector.sql
+      - ./postgres/01-init-databases.sql:/docker-entrypoint-initdb.d/01-init-databases.sql
     networks:
       - stationery-nw
 
@@ -46,11 +46,13 @@ services:
     ports:
       - '5050:80'
     depends_on:
-      - postgres
+      postgres:
+        condition: service_started
     volumes:
       - ./docker_data/pgadmin_data:/var/lib/pgadmin
     networks:
       - stationery-nw
+
   ollama:
     image: ollama/ollama:latest
     container_name: ollama_server
@@ -66,20 +68,311 @@ services:
   kafka:
     container_name: kafka_server
     image: bitnamilegacy/kafka
+    restart: unless-stopped
     networks:
       - stationery-nw
     ports:
-      - 9092:9092 # internal Docker network listener (optionally)
-      - 29092:29092 # external listener, host local connect
+      - '9092:9092'
+      - '29092:29092'
     environment:
       - KAFKA_CFG_NODE_ID=0
       - KAFKA_CFG_PROCESS_ROLES=controller,broker
       - KAFKA_CFG_LISTENERS=PLAINTEXT://0.0.0.0:9092,CONTROLLER://:9093,EXTERNAL://0.0.0.0:29092
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
-      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@localhost:9093
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092,EXTERNAL://localhost:29092
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:29092
       - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
     volumes:
       - ./docker_data/kafka_data/bitnami_data:/bitnami/kafka
+    healthcheck:
+      test:
+        ['CMD-SHELL', 'kafka-topics.sh --bootstrap-server localhost:9092 --list > /dev/null 2>&1']
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 10s
+
+  bff:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.provider
+      args:
+        APP_NAME: bff
+    container_name: bff_service
     restart: unless-stopped
+    env_file:
+      - ../.env
+      - ../apps/bff/.env
+    ports:
+      - '3400:3400'
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+      mongo:
+        condition: service_started
+      auth-service:
+        condition: service_started
+      user-service:
+        condition: service_started
+      product-service:
+        condition: service_started
+      cart-service:
+        condition: service_started
+      order-service:
+        condition: service_started
+      payment-service:
+        condition: service_started
+      upload-service:
+        condition: service_started
+      notification-service:
+        condition: service_started
+      analytics-service:
+        condition: service_started
+    networks:
+      - stationery-nw
+
+  auth-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.provider
+      args:
+        APP_NAME: auth-service
+    container_name: auth_service
+    restart: unless-stopped
+    env_file:
+      - ../.env
+      - ../apps/auth-service/.env
+    expose:
+      - '5001'
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+    networks:
+      - stationery-nw
+
+  user-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.provider
+      args:
+        APP_NAME: user-service
+    container_name: user_service
+    restart: unless-stopped
+    env_file:
+      - ../.env
+      - ../apps/user-service/.env
+    expose:
+      - '5002'
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+    networks:
+      - stationery-nw
+
+  product-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.provider
+      args:
+        APP_NAME: product-service
+    container_name: product_service
+    restart: unless-stopped
+    env_file:
+      - ../.env
+      - ../apps/product-service/.env
+    expose:
+      - '5003'
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+      mongo:
+        condition: service_started
+    networks:
+      - stationery-nw
+
+  cart-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.provider
+      args:
+        APP_NAME: cart-service
+    container_name: cart_service
+    restart: unless-stopped
+    env_file:
+      - ../.env
+      - ../apps/cart-service/.env
+    expose:
+      - '5004'
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+    networks:
+      - stationery-nw
+
+  order-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.provider
+      args:
+        APP_NAME: order-service
+    container_name: order_service
+    restart: unless-stopped
+    env_file:
+      - ../.env
+      - ../apps/order-service/.env
+    expose:
+      - '5005'
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+    networks:
+      - stationery-nw
+
+  notification-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.provider
+      args:
+        APP_NAME: notification-service
+    container_name: notification_service
+    restart: unless-stopped
+    env_file:
+      - ../.env
+      - ../apps/notification-service/.env
+    expose:
+      - '5006'
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+    networks:
+      - stationery-nw
+
+  analytics-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.provider
+      args:
+        APP_NAME: analytics-service
+    container_name: analytics_service
+    restart: unless-stopped
+    env_file:
+      - ../.env
+      - ../apps/analytics-service/.env
+    expose:
+      - '5007'
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+      ollama:
+        condition: service_started
+    networks:
+      - stationery-nw
+
+  upload-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.provider
+      args:
+        APP_NAME: upload-service
+    container_name: upload_service
+    restart: unless-stopped
+    env_file:
+      - ../.env
+      - ../apps/upload-service/.env
+    ports:
+      - '3408:3408'
+    expose:
+      - '5008'
+    depends_on:
+      kafka:
+        condition: service_healthy
+      mongo:
+        condition: service_started
+    networks:
+      - stationery-nw
+
+  payment-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.provider
+      args:
+        APP_NAME: payment-service
+    container_name: payment_service
+    restart: unless-stopped
+    env_file:
+      - ../.env
+      - ../apps/payment-service/.env
+    ports:
+      - '3409:3409'
+    expose:
+      - '5009'
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_started
+    networks:
+      - stationery-nw
+
+  user-service-seed:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.provider
+      args:
+        APP_NAME: user-service
+    container_name: user_service_seed
+    env_file:
+      - ../.env
+      - ../apps/user-service/.env
+    command: pnpm exec nx run user-service:seed
+    depends_on:
+      postgres:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    networks:
+      - stationery-nw
+    restart: 'no'
+    profiles:
+      - seed
+
+  product-service-seed:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.provider
+      args:
+        APP_NAME: product-service
+    container_name: product_service_seed
+    env_file:
+      - ../.env
+      - ../apps/product-service/.env
+    command: pnpm exec nx run product-service:seed
+    depends_on:
+      postgres:
+        condition: service_started
+      mongo:
+        condition: service_started
+      kafka:
+        condition: service_healthy
+    networks:
+      - stationery-nw
+    restart: 'no'
+    profiles:
+      - seed

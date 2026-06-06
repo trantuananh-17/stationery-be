@@ -8,18 +8,26 @@ import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 
 import { IngestBodyDto } from '../dto/ingest.dto';
 import { loadPdfAsDocuments } from '../helper/pdf.loader';
+import { OpenAIEmbeddings } from '@langchain/openai';
+import { EmbeddingsInterface } from '@langchain/core/embeddings';
 
 @Injectable()
 export class VectorStoreService implements OnModuleInit {
-  private embeddings!: OllamaEmbeddings;
+  private embeddings!: EmbeddingsInterface;
   private vectorStore!: PGVectorStore;
 
   constructor(private readonly configService: ConfigService) {}
 
   async onModuleInit(): Promise<void> {
-    this.embeddings = new OllamaEmbeddings({
-      model: this.configService.get<string>('OLLAMA_EMBEDDING_MODEL', 'nomic-embed-text'),
-      baseUrl: this.configService.get<string>('OLLAMA_BASE_URL', 'http://localhost:11434'),
+    this.embeddings = new OpenAIEmbeddings({
+      apiKey: this.configService.getOrThrow<string>('OPENROUTER_API_KEY'),
+      model: this.configService.get<string>('EMBEDDING_MODEL', 'perplexity/pplx-embed-v1-0.6b'),
+      configuration: {
+        baseURL: this.configService.get<string>(
+          'OPENROUTER_BASE_URL',
+          'https://openrouter.ai/api/v1',
+        ),
+      },
     });
 
     this.vectorStore = await PGVectorStore.initialize(this.embeddings, {
