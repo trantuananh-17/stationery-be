@@ -1,82 +1,118 @@
-# StationeryBe
+# Dự án Microservices Monorepo
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+## Giới thiệu dự án
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
+Dự án được tổ chức theo mô hình **Nx monorepo**, trong đó mỗi service được đặt trong thư mục `apps/`, còn các module dùng chung được tách riêng trong `libs/`.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/nest?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+Cách tổ chức này giúp hệ thống dễ mở rộng, dễ bảo trì và phù hợp với kiến trúc microservices.
 
-## Finish your remote caching setup
+## Công nghệ sử dụng
 
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/IOb3nCpRrm)
+- **Nx Monorepo**: Quản lý nhiều ứng dụng và thư viện trong cùng một repository.
+- **pnpm**: Quản lý package và workspace.
+- **Docker / Docker Compose**: Hỗ trợ khởi chạy các service hạ tầng.
+- **Kafka**: Xử lý giao tiếp bất đồng bộ giữa các service.
+- **PostgreSQL**: Cơ sở dữ liệu chính.
+- **pgAdmin**: Công cụ quản trị PostgreSQL.
 
+## Chức năng chính
 
-## Run tasks
+- Xác thực người dùng: đăng ký, đăng nhập, quản lý token.
+- Quản lý người dùng.
+- Quản lý sản phẩm, danh mục và tồn kho.
+- Quản lý giỏ hàng.
+- Quản lý đơn hàng.
+- Xử lý thanh toán.
+- Gửi và quản lý thông báo.
+- Thống kê, phân tích dữ liệu.
+- Upload và lưu trữ tệp.
+- Hỗ trợ AI, chatbot và tư vấn sản phẩm.
 
-To run the dev server for your app, use:
+## Hướng dẫn cài đặt
 
-```sh
-npx nx serve stationery-be
+### 1. Clone repository
+
+```bash
+git clone https://github.com/trantuananh-17/stationery-be.git
+cd stationery-be
 ```
 
-To create a production bundle:
+### 2. Cấu hình biến môi trường
 
-```sh
-npx nx build stationery-be
+Tạo các file `.env` theo mẫu `.env.example` cho root project và các service cần thiết.
+
+Ví dụ:
+
+```bash
+cp .env.example .env
 ```
 
-To see all available targets to run for a project, run:
+Với từng service, tạo file `.env` tương ứng dựa trên file `.env.example` nếu có.
 
-```sh
-npx nx show project stationery-be
+### 3. Cài đặt thư viện
+
+```bash
+pnpm install
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+## Cách chạy project
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+### Cách 1: Chạy hạ tầng bằng Docker, sau đó chạy các service bằng Nx
 
-## Add new projects
+Khởi chạy các service hạ tầng:
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
-
-Use the plugin's generator to create new projects.
-
-To generate a new application, use:
-
-```sh
-npx nx g @nx/nest:app demo
+```bash
+docker compose -f docker/docker-compose.provider.yaml up -d kafka postgresql pgadmin
 ```
 
-To generate a new library, use:
+Sau khi Kafka, PostgreSQL và pgAdmin đã chạy, khởi chạy các service trong project:
 
-```sh
-npx nx g @nx/node:lib mylib
+```bash
+pnpm nx:run-many
 ```
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+### Cách 2: Chạy bằng Docker
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Sau khi cấu hình đầy đủ các file `.env`, chạy lệnh:
 
+```bash
+pnpm docker:up:provider
+```
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Cấu trúc thư mục
 
-## Install Nx Console
-
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/nx-api/nest?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+```bash
+.
+├── apps/                         # Chứa các ứng dụng và microservices chính
+│   ├── bff/                      # Backend For Frontend, xử lý API trung gian cho frontend
+│   ├── auth-service/             # Dịch vụ xác thực, đăng nhập, đăng ký, token
+│   ├── user-service/             # Dịch vụ quản lý thông tin người dùng
+│   ├── product-service/          # Dịch vụ quản lý sản phẩm, danh mục, tồn kho
+│   ├── cart-service/             # Dịch vụ quản lý giỏ hàng
+│   ├── order-service/            # Dịch vụ quản lý đơn hàng
+│   ├── payment-service/          # Dịch vụ xử lý thanh toán
+│   ├── notification-service/     # Dịch vụ thông báo
+│   ├── analytics-service/        # Dịch vụ thống kê và phân tích dữ liệu
+│   ├── upload-service/           # Dịch vụ upload và lưu trữ tệp
+│   └── ai-service/               # Dịch vụ AI, chatbot và tư vấn sản phẩm
+│
+├── libs/                         # Các thư viện dùng chung trong toàn hệ thống
+│   ├── configuration/            # Cấu hình dùng chung
+│   ├── databases/                # Cấu hình và kết nối cơ sở dữ liệu
+│   ├── guards/                   # Guard bảo vệ route/API
+│   ├── filters/                  # Bộ lọc xử lý exception
+│   ├── interceptors/             # Interceptor dùng chung
+│   ├── kafka/                    # Cấu hình và xử lý Kafka
+│   ├── constants/                # Hằng số dùng chung
+│   ├── interfaces/               # Interface dùng chung
+│   └── utils/                    # Các hàm tiện ích
+│
+├── docker/                       # Cấu hình Docker và docker-compose
+├── uploads/                      # Thư mục lưu trữ tệp upload
+├── .github/workflows/            # Cấu hình CI/CD
+├── .husky/                       # Git hooks kiểm tra commit
+├── package.json                  # Thông tin package và scripts
+├── pnpm-workspace.yaml           # Cấu hình workspace cho pnpm
+├── nx.json                       # Cấu hình Nx monorepo
+└── tsconfig.base.json            # Cấu hình TypeScript dùng chung
+```
