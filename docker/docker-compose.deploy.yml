@@ -193,6 +193,9 @@ services:
         condition: service_started
     networks:
       - stationery-nw
+    # Chatbot phia FE goi thang ai-service, khong qua BFF (xem api-contract.md).
+    ports:
+      - '127.0.0.1:8094:3413'
 
   fe:
     image: ghcr.io/trantuananh-17/stationery-fe:${IMAGE_TAG_FRONTEND:-latest}
