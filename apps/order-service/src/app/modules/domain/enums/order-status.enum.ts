@@ -4,6 +4,7 @@ export const OrderStatus = {
   SHIPPED: 'SHIPPED',
   DELIVERED: 'DELIVERED',
   CANCELLED: 'CANCELLED',
+  RETURNED: 'RETURNED',
   EXPIRED: 'EXPIRED',
 } as const;
 

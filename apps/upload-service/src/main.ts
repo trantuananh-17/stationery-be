@@ -18,7 +18,7 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
   app.enableCors({
-    origin: '*',
+    origin: process.env.CORS_ORIGIN?.split(',') ?? '*',
   });
 
   const config = new DocumentBuilder()

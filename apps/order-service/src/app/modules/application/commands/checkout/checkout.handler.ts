@@ -1,5 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { CheckoutCommand } from './checkout.command';
+import { ICouponRepository } from '../../ports/repositories/coupon.repo';
+import { CouponNotFoundError, CouponUsageLimitError } from '../../../domain/errors/coupon.error';
+import { calculateShippingFee } from '../../../domain/services/shipping-policy';
 import { IUnitOfWork } from '../../ports/services/unit-of-work.port';
 import { IProductGrpcPort } from '../../ports/grpc/product-grpc.port';
 import { ICartGrpcPort } from '../../ports/grpc/cart-grpc.port';
@@ -43,10 +46,12 @@ export class CheckoutHandler implements ICommandHandler<CheckoutCommand, Checkou
     private readonly dataContext: IUnitOfWork,
     private readonly orderCommandRepo: IOrderCommandRepository,
     private readonly eventPublisher: IEventPublisher,
+    private readonly couponRepo: ICouponRepository,
   ) {}
 
   async execute(command: CheckoutCommand): Promise<CheckoutResult> {
-    const { userId, email, shippingAddress, billingAddress, paymentMethod, notes } = command;
+    const { userId, email, shippingAddress, billingAddress, paymentMethod, notes, couponCode } =
+      command;
 
     const cart = await this.cartGrpcPort.getCartForCheckout({ userId });
 
@@ -75,6 +80,36 @@ export class CheckoutHandler implements ICommandHandler<CheckoutCommand, Checkou
       };
     }
 
+    const subtotal = cart.items.reduce(
+      (total, item) => total + item.unitPriceSnapshot * item.quantity,
+      0,
+    );
+
+    // Áp mã giảm giá trên tổng tiền hàng, trước khi tạo đơn.
+    let discount = 0;
+
+    if (couponCode?.trim()) {
+      const coupon = await this.couponRepo.findByCode(couponCode);
+
+      if (!coupon) {
+        throw new CouponNotFoundError(couponCode);
+      }
+
+      coupon.assertUsableFor(subtotal);
+
+      // Giữ lượt dùng ngay tại đây: điều kiện usage_limit nằm trong câu UPDATE nên
+      // hai đơn đặt cùng lúc không thể cùng tiêu lượt cuối cùng.
+      const reserved = await this.couponRepo.incrementUsage(coupon.id);
+
+      if (!reserved) {
+        throw new CouponUsageLimitError();
+      }
+
+      discount = coupon.calculateDiscount(subtotal);
+    }
+
+    const shippingCost = calculateShippingFee(subtotal - discount);
+
     const number = this.generateOrderNumber();
 
     const order = Order.create({
@@ -85,7 +120,8 @@ export class CheckoutHandler implements ICommandHandler<CheckoutCommand, Checkou
       billingAddress,
       paymentMethod,
       notes,
-      discount: 0,
+      discount,
+      shippingCost,
       items: cart.items.map((item) => ({
         productId: item.productId,
         variantId: item.variantId,

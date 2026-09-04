@@ -2,6 +2,9 @@ import { GRPC_SERVICES, GrpcProvider } from '@common/configuration/grpc.config';
 import { Module } from '@nestjs/common';
 import { ClientsModule } from '@nestjs/microservices';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CouponOrmEntity } from './entities/typeorm-coupon.entity';
+import { ICouponRepository } from '../application/ports/repositories/coupon.repo';
+import { TypeOrmCouponRepository } from './repositories/typeorm-coupon.repo';
 import { ICartGrpcPort } from '../application/ports/grpc/cart-grpc.port';
 import { IProductGrpcPort } from '../application/ports/grpc/product-grpc.port';
 import { IOrderCommandRepository } from '../application/ports/repositories/order-command.repo';
@@ -21,7 +24,7 @@ import { QUEUE_SERVICES } from '@common/constants/enums/queue.enum';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([OrderOrmEntity, OrderItemOrmEntity]),
+    TypeOrmModule.forFeature([OrderOrmEntity, OrderItemOrmEntity, CouponOrmEntity]),
     ClientsModule.registerAsync([
       GrpcProvider(GRPC_SERVICES.PRODUCT_SERVICE),
       GrpcProvider(GRPC_SERVICES.CART_SERVICE),
@@ -56,8 +59,13 @@ import { QUEUE_SERVICES } from '@common/constants/enums/queue.enum';
       provide: IEventPublisher,
       useClass: EventPublisherKafka,
     },
+    {
+      provide: ICouponRepository,
+      useClass: TypeOrmCouponRepository,
+    },
   ],
   exports: [
+    ICouponRepository,
     IProductGrpcPort,
     ICartGrpcPort,
     IOrderCommandRepository,

@@ -3,8 +3,10 @@ import { ICredentialQueryRepository } from '../../ports/repositories/credential-
 import { ICredentialCommandRepository } from '../../ports/repositories/credential-command.repo';
 import { ForgotPasswordCommand } from './forgot-password.command';
 import { ITokenService } from '../../ports/services/token.port';
-import { Logger } from '@nestjs/common';
 import { CredentialNotFoundError } from '../../../domain/errors/credential.error';
+import { IMailSender } from '../../ports/services/mail.port';
+
+const RESET_TOKEN_TTL_MINUTES = 15;
 
 @CommandHandler(ForgotPasswordCommand)
 export class ForgotPasswordHandler implements ICommandHandler<ForgotPasswordCommand> {
@@ -12,6 +14,7 @@ export class ForgotPasswordHandler implements ICommandHandler<ForgotPasswordComm
     private readonly credentialRepoQuery: ICredentialQueryRepository,
     private readonly credentialRepoCommand: ICredentialCommandRepository,
     private readonly tokenService: ITokenService,
+    private readonly mailSender: IMailSender,
   ) {}
 
   async execute(command: ForgotPasswordCommand): Promise<void> {
@@ -25,12 +28,18 @@ export class ForgotPasswordHandler implements ICommandHandler<ForgotPasswordComm
 
     const token = this.tokenService.generateRandomToken();
 
-    const expires = new Date(Date.now() + 15 * 60 * 1000);
+    const expires = new Date(Date.now() + RESET_TOKEN_TTL_MINUTES * 60 * 1000);
 
     credential.setResetPasswordToken(token, expires);
 
-    Logger.log(JSON.stringify(credential));
-
     await this.credentialRepoCommand.save(credential);
+
+    const baseUrl = process.env.FE_BASE_URL ?? 'http://localhost:3000';
+
+    await this.mailSender.sendPasswordReset({
+      email,
+      resetUrl: `${baseUrl}/vi/auth/reset-password?token=${token}`,
+      expiresInMinutes: RESET_TOKEN_TTL_MINUTES,
+    });
   }
 }

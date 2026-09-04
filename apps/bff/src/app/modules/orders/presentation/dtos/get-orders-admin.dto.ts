@@ -8,8 +8,10 @@ const AdminOrderStatus = {
   PENDING: 'pending',
   PROCESSING: 'processing',
   SHIPPED: 'shipped',
-  DELIVERED: 'delevered',
+  DELIVERED: 'delivered',
   CANCELLED: 'cancelled',
+  EXPIRED: 'expired',
+  RETURNED: 'returned',
 } as const;
 
 export type AdminOrderStatus = (typeof AdminOrderStatus)[keyof typeof AdminOrderStatus];

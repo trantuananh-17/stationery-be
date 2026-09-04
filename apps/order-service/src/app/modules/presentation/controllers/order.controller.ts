@@ -4,6 +4,43 @@ import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { OptionalUserData } from '@common/decorators/optional-user-data.decorator';
 import { UserData } from '@common/decorators/user-data.decorator';
 import { CheckoutCommand } from '../../application/commands/checkout/checkout.command';
+import {
+  SHIPPING_FREE_THRESHOLD,
+  calculateShippingFee,
+} from '../../domain/services/shipping-policy';
+import { Coupon, CouponInput } from '../../domain/entities/coupon.entity';
+import { CouponType } from '../../domain/enums/coupon-type.enum';
+import { CreateCouponCommand } from '../../application/commands/coupons/create-coupon/create-coupon.command';
+import { UpdateCouponCommand } from '../../application/commands/coupons/update-coupon/update-coupon.command';
+import { DeleteCouponCommand } from '../../application/commands/coupons/delete-coupon/delete-coupon.command';
+import {
+  GetCouponsQuery,
+} from '../../application/queries/get-coupons/get-coupons.query';
+import {
+  GetCouponsResult,
+  toCouponDto,
+} from '../../application/queries/get-coupons/get-coupons.handler';
+import { ValidateCouponQuery } from '../../application/queries/validate-coupon/validate-coupon.query';
+import {
+  CouponIdDto,
+  CouponInputDto,
+  GetCouponsDto,
+  UpdateCouponDto,
+  ValidateCouponDto,
+} from '../dtos/coupon.dto';
+
+/** gRPC truyền ngày dưới dạng chuỗi ISO; domain cần Date. */
+const toCouponInput = (payload: CouponInputDto): CouponInput => ({
+  code: payload.code,
+  type: payload.type as CouponType,
+  value: payload.value,
+  minOrderAmount: payload.minOrderAmount,
+  maxDiscount: payload.maxDiscount,
+  startsAt: payload.startsAt ? new Date(payload.startsAt) : undefined,
+  expiresAt: payload.expiresAt ? new Date(payload.expiresAt) : undefined,
+  usageLimit: payload.usageLimit,
+  isActive: payload.isActive,
+});
 import { JwtPayload } from '@common/interfaces/common/jwt-payload.interface';
 import { CheckoutDto } from '../dtos/checkout.dto';
 import { EventPattern, GrpcMethod, Payload } from '@nestjs/microservices';
@@ -50,6 +87,57 @@ export class OrderController {
         body.couponCode,
       ),
     );
+  }
+
+  @GrpcMethod('OrderService', 'getCoupons')
+  async getCouponsGrpc(@Payload() payload: GetCouponsDto) {
+    const result: GetCouponsResult = await this.queryBus.execute(
+      new GetCouponsQuery(payload.search, payload.page ?? 1, payload.limit ?? 20),
+    );
+
+    return {
+      data: result.data,
+      total: result.pagination.total,
+      page: result.pagination.page,
+      limit: result.pagination.limit,
+      totalPages: result.pagination.totalPages,
+    };
+  }
+
+  @GrpcMethod('OrderService', 'createCoupon')
+  async createCouponGrpc(@Payload() payload: CouponInputDto) {
+    const coupon: Coupon = await this.commandBus.execute(
+      new CreateCouponCommand(toCouponInput(payload)),
+    );
+
+    return { data: toCouponDto(coupon) };
+  }
+
+  @GrpcMethod('OrderService', 'updateCoupon')
+  async updateCouponGrpc(@Payload() payload: UpdateCouponDto) {
+    const coupon: Coupon = await this.commandBus.execute(
+      new UpdateCouponCommand(payload.couponId, toCouponInput(payload.input)),
+    );
+
+    return { data: toCouponDto(coupon) };
+  }
+
+  @GrpcMethod('OrderService', 'deleteCoupon')
+  async deleteCouponGrpc(@Payload() payload: CouponIdDto) {
+    return this.commandBus.execute(new DeleteCouponCommand(payload.couponId));
+  }
+
+  @GrpcMethod('OrderService', 'validateCoupon')
+  async validateCouponGrpc(@Payload() payload: ValidateCouponDto) {
+    return this.queryBus.execute(new ValidateCouponQuery(payload.code, payload.subtotal));
+  }
+
+  @GrpcMethod('OrderService', 'getShippingQuote')
+  getShippingQuoteGrpc(@Payload() payload: { amount: number }) {
+    return {
+      fee: calculateShippingFee(payload.amount ?? 0),
+      freeThreshold: SHIPPING_FREE_THRESHOLD,
+    };
   }
 
   @GrpcMethod('OrderService', 'checkout')

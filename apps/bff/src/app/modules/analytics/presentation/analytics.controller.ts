@@ -1,6 +1,9 @@
 import { Body, Controller, Get, Logger, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
+import { RoleGuard } from '@common/guards/role.guard';
+import { Roles } from '@common/decorators/role.decorator';
+import { ROLE } from '@common/constants/enums/role.enum';
 import { ResponseDto } from '@common/interfaces/gateway/response.interface';
 
 import {
@@ -27,7 +30,8 @@ export class AnalyticsController {
   constructor(private readonly analyticsPort: AnalyticsPort) {}
 
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles([ROLE.ADMIN])
   @Get('daily-summary')
   @ApiOkResponse({
     type: ResponseDto<DailySummaryResponseDto>,
@@ -39,7 +43,8 @@ export class AnalyticsController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles([ROLE.ADMIN])
   @Get('daily-growth')
   @ApiOkResponse({
     type: ResponseDto<DailyGrowthResponseDto>,
@@ -51,7 +56,8 @@ export class AnalyticsController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles([ROLE.ADMIN])
   @Get('sales-summary')
   @ApiOkResponse({
     type: ResponseDto<SalesSummaryResponseDto>,
@@ -63,7 +69,8 @@ export class AnalyticsController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles([ROLE.ADMIN])
   @Get('sales-chart')
   @ApiOkResponse({
     type: ResponseDto<SalesChartResponseDto>,
@@ -75,7 +82,8 @@ export class AnalyticsController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles([ROLE.ADMIN])
   @Get('top-products')
   @ApiOkResponse({
     type: ResponseDto<TopProductsResponseDto>,
@@ -87,7 +95,8 @@ export class AnalyticsController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles([ROLE.ADMIN])
   @Get('category-revenue')
   @ApiOkResponse({
     type: ResponseDto<CategoryRevenueResponseDto>,
@@ -99,7 +108,8 @@ export class AnalyticsController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles([ROLE.ADMIN])
   @Get('recent-transactions')
   @ApiOkResponse({
     type: ResponseDto<RecentTransactionsResponseDto>,
@@ -111,7 +121,8 @@ export class AnalyticsController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles([ROLE.ADMIN])
   @Get('order-status-summary')
   @ApiOkResponse({
     type: ResponseDto<OrderStatusSummaryResponseDto>,
@@ -123,7 +134,8 @@ export class AnalyticsController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles([ROLE.ADMIN])
   @Get('goal-progress')
   @ApiOkResponse({
     type: ResponseDto<GoalProgressResponseDto>,

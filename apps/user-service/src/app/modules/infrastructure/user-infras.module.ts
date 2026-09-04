@@ -18,6 +18,14 @@ import { ICustomerSummaryCommandRepository } from '../application/ports/reposito
 import { TypeormCustomerSummaryRepository } from './repositories/typeorm-customer-summary.command';
 import { ILastOrderCommandRepository } from '../application/ports/repositories/last-order-command.repo';
 import { TypeormLastOrderRepository } from './repositories/typeorm-lastorder.command';
+import { AddressOrmEntity } from './entities/typeorm-address.entity';
+import { IAddressCommandRepository } from '../application/ports/repositories/address-command.repo';
+import { IAddressQueryRepository } from '../application/ports/repositories/address-query.repo';
+import { TypeOrmAddressCommandRepository } from './repositories/typeorm-address.command';
+import { TypeOrmAddressQueryRepository } from './repositories/typeorm-address.query';
+import { WishlistItemOrmEntity } from './entities/typeorm-wishlist-item.entity';
+import { IWishlistRepository } from '../application/ports/repositories/wishlist.repo';
+import { TypeOrmWishlistRepository } from './repositories/typeorm-wishlist.repo';
 
 @Module({
   imports: [
@@ -27,6 +35,8 @@ import { TypeormLastOrderRepository } from './repositories/typeorm-lastorder.com
       PermissionOrmEntity,
       CustomerSummaryOrmEntity,
       LastOrderOrmEntity,
+      AddressOrmEntity,
+      WishlistItemOrmEntity,
     ]),
   ],
   providers: [
@@ -50,6 +60,18 @@ import { TypeormLastOrderRepository } from './repositories/typeorm-lastorder.com
       provide: ILastOrderCommandRepository,
       useClass: TypeormLastOrderRepository,
     },
+    {
+      provide: IAddressCommandRepository,
+      useClass: TypeOrmAddressCommandRepository,
+    },
+    {
+      provide: IAddressQueryRepository,
+      useClass: TypeOrmAddressQueryRepository,
+    },
+    {
+      provide: IWishlistRepository,
+      useClass: TypeOrmWishlistRepository,
+    },
   ],
   exports: [
     IUserCommandRepository,
@@ -57,6 +79,9 @@ import { TypeormLastOrderRepository } from './repositories/typeorm-lastorder.com
     IUserQueryRepository,
     ICustomerSummaryCommandRepository,
     ILastOrderCommandRepository,
+    IAddressCommandRepository,
+    IAddressQueryRepository,
+    IWishlistRepository,
   ],
 })
 export class UserInfraModule {}

@@ -12,7 +12,7 @@ import {
   GetCartResponse,
   MergeCartRequest,
   UpdateCartItemQuantityRequest,
-} from '../../applications/ports/dtos/cart.dto';
+} from '../../application/ports/dtos/cart.dto';
 
 export interface CartGrpcService {
   getCart(data: GetCartRequest): Observable<GetCartResponse>;

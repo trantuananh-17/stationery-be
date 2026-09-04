@@ -4,6 +4,11 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { OrderInfraModule } from './infrastructure/order-infras.module';
 import { OrderController } from './presentation/controllers/order.controller';
 import { CheckoutHandler } from './application/commands/checkout/checkout.handler';
+import { CreateCouponHandler } from './application/commands/coupons/create-coupon/create-coupon.handler';
+import { UpdateCouponHandler } from './application/commands/coupons/update-coupon/update-coupon.handler';
+import { DeleteCouponHandler } from './application/commands/coupons/delete-coupon/delete-coupon.handler';
+import { GetCouponsHandler } from './application/queries/get-coupons/get-coupons.handler';
+import { ValidateCouponHandler } from './application/queries/validate-coupon/validate-coupon.handler';
 import { UpdateStatusHandler } from './application/commands/update-status/update-status.handler';
 import { GetOrderPaymentHandler } from './application/queries/get-order-checkout/get-order-payment.handler';
 import { GetOrdersByAdminHandler } from './application/queries/get-orders-admin/get-orders-admin.handler';
@@ -24,6 +29,11 @@ import { GetMyOrdersHandler } from './application/queries/get-my-orders/get-my-o
     GetOrderHandler,
     GetMyOrderHandler,
     GetMyOrdersHandler,
+    CreateCouponHandler,
+    UpdateCouponHandler,
+    DeleteCouponHandler,
+    GetCouponsHandler,
+    ValidateCouponHandler,
   ],
   exports: [],
 })

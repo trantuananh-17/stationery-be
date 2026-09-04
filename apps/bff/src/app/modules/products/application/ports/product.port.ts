@@ -1,4 +1,13 @@
 import {
+  CreateReviewBodyDto,
+  DeleteReviewBodyDto,
+  GetReviewsBodyDto,
+  ReviewIdResponse,
+  ReviewsResponse,
+  AdjustStockBodyDto,
+  AdjustStockResponse,
+  GetInventoriesBodyDto,
+  InventoriesResponse,
   CreateProductBodyDto,
   GetProductByIdBodyDto,
   GetProductBySlugBodyDto,
@@ -34,4 +43,14 @@ export abstract class ProductPort {
   abstract deleteProduct(data: GetProductByIdBodyDto): Promise<ProductMutationResponse>;
 
   abstract restoreProduct(data: GetProductByIdBodyDto): Promise<ProductMutationResponse>;
+
+  abstract getInventories(query: GetInventoriesBodyDto): Promise<InventoriesResponse>;
+
+  abstract adjustStock(data: AdjustStockBodyDto): Promise<AdjustStockResponse>;
+
+  abstract getReviews(query: GetReviewsBodyDto): Promise<ReviewsResponse>;
+
+  abstract createReview(data: CreateReviewBodyDto): Promise<ReviewIdResponse>;
+
+  abstract deleteReview(data: DeleteReviewBodyDto): Promise<ProductIdResponse>;
 }

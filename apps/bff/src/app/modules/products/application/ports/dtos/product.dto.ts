@@ -1,3 +1,87 @@
+export interface ReviewDto {
+  id: string;
+  userId: string;
+  userName: string;
+  rating: number;
+  comment: string;
+  createdAt: Date;
+}
+
+export interface ReviewSummaryDto {
+  average: number;
+  count: number;
+}
+
+export interface GetReviewsBodyDto {
+  productId: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface ReviewsResponse {
+  data: ReviewDto[];
+  summary: ReviewSummaryDto;
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface CreateReviewBodyDto {
+  productId: string;
+  userId: string;
+  userName: string;
+  rating: number;
+  comment: string;
+}
+
+export interface ReviewIdResponse {
+  reviewId: string;
+}
+
+export interface DeleteReviewBodyDto {
+  productId: string;
+  userId: string;
+}
+
+export interface InventoryItemDto {
+  variantId: string;
+  variantName: string;
+  sku: string;
+  productId: string;
+  productName: string;
+  thumbnail: string;
+  stock: number;
+  reservedStock: number;
+  isAvailable: boolean;
+}
+
+export interface GetInventoriesBodyDto {
+  search?: string;
+  lowStockThreshold?: number;
+  page?: number;
+  limit?: number;
+}
+
+export interface InventoriesResponse {
+  data: InventoryItemDto[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface AdjustStockBodyDto {
+  variantId: string;
+  stock: number;
+}
+
+export interface AdjustStockResponse {
+  variantId: string;
+  stock: number;
+  reservedStock: number;
+}
+
 export interface ProductBodyDto {
   name: string;
   description: string;

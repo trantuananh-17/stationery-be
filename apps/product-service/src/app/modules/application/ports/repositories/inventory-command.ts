@@ -15,4 +15,7 @@ export abstract class IInventoryCommandRepository {
 
   //return
   abstract restockAtomic(variantId: string, quantity: number): Promise<boolean>;
+
+  /** Admin đặt lại tồn kho tuyệt đối; không đụng tới reservedStock. */
+  abstract setStock(variantId: string, stock: number): Promise<void>;
 }

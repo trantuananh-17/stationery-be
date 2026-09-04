@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductOrmEntity } from './entities/typeorm-product.entity';
-import { SpecificationOrmEntity } from './entities/typeorm-specification.enity';
+import { SpecificationOrmEntity } from './entities/typeorm-specification.entity';
 import { VariantAttributeOrmEntity } from './entities/typeorm-variant-attribute.entity';
 import { VariantOrmEntity } from './entities/typeorm-variant.entity';
 import { IProductCommandRepository } from '../application/ports/repositories/product-command.repo';
@@ -15,7 +15,7 @@ import { TypeOrmUnitOfWork } from './services/unit-of-work.service';
 import { ISkuService } from '../application/ports/services/sku.port';
 import { SkuService } from './services/sku.service';
 import { ICategoryQueryRepository } from '../application/ports/repositories/category-query.repo';
-import { TypeOrmCategoryQueryRepository } from './repositories/typorm-category-query.repo';
+import { TypeOrmCategoryQueryRepository } from './repositories/typeorm-category-query.repo';
 import { CategoryOrmEntity } from './entities/typeorm-category.entity';
 import { AttributeOrmEntity } from './entities/typeorm-attribute.entity';
 import { AttributeValueOrmEntity } from './entities/typeorm-attribute-value.entity';
@@ -23,6 +23,13 @@ import { IBrandQueryRepository } from '../application/ports/repositories/brand-q
 import { TypeOrmBrandQueryRepository } from './repositories/typeorm-brand-query.repo';
 import { BrandOrmEntity } from './entities/typeorm-brand.entity';
 import { IInventoryCommandRepository } from '../application/ports/repositories/inventory-command';
+import { IInventoryQueryRepository } from '../application/ports/repositories/inventory-query.repo';
+import { TypeOrmInventoryQueryRepository } from './repositories/typeorm-inventory-query.repo';
+import { ReviewOrmEntity } from './entities/typeorm-review.entity';
+import { IReviewCommandRepository } from '../application/ports/repositories/review-command.repo';
+import { IReviewQueryRepository } from '../application/ports/repositories/review-query.repo';
+import { TypeOrmReviewCommandRepository } from './repositories/typeorm-review.command.repo';
+import { TypeOrmReviewQueryRepository } from './repositories/typeorm-review.query.repo';
 import { TypeOrmInventoryCommandRepository } from './repositories/typeorm-inventory-command.repo';
 import { IProcessedEventRepository } from '../application/ports/repositories/process-event.repo';
 import { TypeOrmProcessedEventRepository } from './repositories/typeorm-process-event.repo';
@@ -40,6 +47,7 @@ import { InventoryProcessedEventEntity } from './entities/typeorm-process-event.
       AttributeValueOrmEntity,
       BrandOrmEntity,
       InventoryProcessedEventEntity,
+      ReviewOrmEntity,
     ]),
   ],
   providers: [
@@ -55,6 +63,18 @@ import { InventoryProcessedEventEntity } from './entities/typeorm-process-event.
     {
       provide: IBrandQueryRepository,
       useClass: TypeOrmBrandQueryRepository,
+    },
+    {
+      provide: IReviewCommandRepository,
+      useClass: TypeOrmReviewCommandRepository,
+    },
+    {
+      provide: IReviewQueryRepository,
+      useClass: TypeOrmReviewQueryRepository,
+    },
+    {
+      provide: IInventoryQueryRepository,
+      useClass: TypeOrmInventoryQueryRepository,
     },
     {
       provide: IInventoryCommandRepository,
@@ -83,6 +103,9 @@ import { InventoryProcessedEventEntity } from './entities/typeorm-process-event.
     ICategoryQueryRepository,
     IBrandQueryRepository,
     IInventoryCommandRepository,
+    IInventoryQueryRepository,
+    IReviewCommandRepository,
+    IReviewQueryRepository,
     IProcessedEventRepository,
     ISlugService,
     IUnitOfWork,

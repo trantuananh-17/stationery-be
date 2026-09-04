@@ -25,7 +25,7 @@ async function bootstrap() {
     app.useGlobalFilters(new GlobalExceptionFilter());
 
     app.enableCors({
-      origin: '*',
+      origin: process.env.CORS_ORIGIN?.split(',') ?? '*',
     });
 
     const config = new DocumentBuilder()

@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
 import { ProductOrmEntity } from '../entities/typeorm-product.entity';
 import { VariantOrmEntity } from '../entities/typeorm-variant.entity';
-import { SpecificationOrmEntity } from '../entities/typeorm-specification.enity';
+import { SpecificationOrmEntity } from '../entities/typeorm-specification.entity';
 import { VariantAttributeOrmEntity } from '../entities/typeorm-variant-attribute.entity';
 import { Variant } from '../../domain/entities/variant.entity';
 import { Specification } from '../../domain/entities/specification.entity';

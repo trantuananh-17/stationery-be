@@ -1,14 +1,16 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsIn, IsInt, IsOptional, Min } from 'class-validator';
-import { OrderStatus } from '../../applications/ports/dtos/order.dto';
+import { OrderStatus } from '../../application/ports/dtos/order.dto';
 
 const AdminOrderStatus = {
   PENDING: 'pending',
   PROCESSING: 'processing',
   SHIPPED: 'shipped',
-  DELIVERED: 'delevered',
+  DELIVERED: 'delivered',
   CANCELLED: 'cancelled',
+  EXPIRED: 'expired',
+  RETURNED: 'returned',
 } as const;
 
 export type AdminOrderStatus = (typeof AdminOrderStatus)[keyof typeof AdminOrderStatus];

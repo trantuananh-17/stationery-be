@@ -9,8 +9,13 @@ import {
   Param,
   Patch,
   Query,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
+import { RoleGuard } from '@common/guards/role.guard';
+import { Roles } from '@common/decorators/role.decorator';
+import { ROLE } from '@common/constants/enums/role.enum';
 
 import { GetProductsResponseDto } from '../dtos/get-products-response.dto';
 import { GetAdminProductsQueryDto } from '../dtos/products-by-admin.dto';
@@ -29,6 +34,9 @@ export class AdminProductController {
   ) {}
 
   @Get()
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles([ROLE.ADMIN])
   @ApiOkResponse({ type: ResponseDto<GetProductsResponseDto> })
   @ApiOperation({ summary: 'Get products by admin' })
   @HttpCode(HttpStatus.OK)
@@ -44,6 +52,9 @@ export class AdminProductController {
   }
 
   @Delete(':id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles([ROLE.ADMIN])
   @ApiOperation({ summary: 'Soft delete product' })
   @ApiOkResponse({
     schema: {
@@ -63,6 +74,9 @@ export class AdminProductController {
   }
 
   @Patch(':id/restore')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles([ROLE.ADMIN])
   @ApiOperation({ summary: 'Restore deleted product' })
   @ApiOkResponse({
     schema: {

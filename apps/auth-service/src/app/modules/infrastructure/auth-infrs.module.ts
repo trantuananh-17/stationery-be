@@ -18,6 +18,8 @@ import { KafkaModule } from '@common/kafka/kafka.module';
 import { QUEUE_SERVICES } from '@common/constants/enums/queue.enum';
 import { IEventPublisher } from '../application/ports/producers/event-publisher.port';
 import { EventPublisherKafka } from './kafka/event-publisher.kafka';
+import { IMailSender } from '../application/ports/services/mail.port';
+import { LogMailSender } from './services/log-mail-sender.service';
 
 @Module({
   imports: [
@@ -49,6 +51,11 @@ import { EventPublisherKafka } from './kafka/event-publisher.kafka';
       useClass: TokenService,
     },
     {
+      // Đổi sang adapter SMTP thật ở đây khi có thư viện gửi mail.
+      provide: IMailSender,
+      useClass: LogMailSender,
+    },
+    {
       provide: IEventPublisher,
       useClass: EventPublisherKafka,
     },
@@ -60,6 +67,7 @@ import { EventPublisherKafka } from './kafka/event-publisher.kafka';
     IPasswordService,
     ITokenService,
     IEventPublisher,
+    IMailSender,
   ],
 })
 export class AuthInfraModule {}

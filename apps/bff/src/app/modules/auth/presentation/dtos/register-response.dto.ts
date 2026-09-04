@@ -1,3 +1,3 @@
-export interface RegisterReponseDto {
+export interface RegisterResponseDto {
   userId: string;
 }

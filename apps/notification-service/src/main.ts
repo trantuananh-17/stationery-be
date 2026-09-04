@@ -61,7 +61,7 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: '*',
+    origin: process.env.CORS_ORIGIN?.split(',') ?? '*',
   });
 
   const config = new DocumentBuilder()

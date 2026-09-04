@@ -84,6 +84,18 @@ export class GrpcConfiguration {
   @IsNotEmpty()
   GRPC_PRODUCT_SERVICE: GrpcOptions & { name: string };
 
+  @IsObject()
+  @IsNotEmpty()
+  GRPC_PAYMENT_SERVICE: GrpcOptions & { name: string };
+
+  @IsObject()
+  @IsNotEmpty()
+  GRPC_NOTIFICATION_SERVICE: GrpcOptions & { name: string };
+
+  @IsObject()
+  @IsNotEmpty()
+  GRPC_ANALYTICS_SERVICE: GrpcOptions & { name: string };
+
   constructor() {
     (Object.keys(GRPC_SERVICE_CONFIG) as (keyof typeof GRPC_SERVICE_CONFIG)[]).forEach((key) => {
       const value = GRPC_SERVICE_CONFIG[key];
