@@ -46,4 +46,11 @@ jobs:
 
       # Prepend any command with "nx record --" to record its logs to Nx Cloud
       # - run: pnpm exec nx record -- echo Hello World
-      - run: pnpm exec nx run-many -t lint test build
+      - run: pnpm exec nx run-many -t lint
+
+      # 13 lib/app chua co file spec nao; jest thoat 1 voi "No tests found" nen
+      # ca job do du khong co test nao that su hong. Xem muc U12 trong
+      # .claude/rules/upgrade-plan.md — viec viet test that la mot muc rieng.
+      - run: pnpm exec nx run-many -t test --passWithNoTests
+
+      - run: pnpm exec nx run-many -t build
