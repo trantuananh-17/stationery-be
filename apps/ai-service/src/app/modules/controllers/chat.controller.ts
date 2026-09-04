@@ -1,4 +1,16 @@
-import { Body, Controller, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Query,
+  UploadedFiles,
+  UseInterceptors,
+} from '@nestjs/common';
+import { ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -41,5 +53,29 @@ export class ChatController {
   @Post('ask')
   async ask(@Body() body: { question: string }) {
     return this.chatService.query(body?.question || '');
+  }
+
+  @Get('documents')
+  @ApiOperation({ summary: 'List ingested document sources and their chunk counts' })
+  @HttpCode(HttpStatus.OK)
+  async documents() {
+    const items = await this.chatService.listDocumentSources();
+
+    return { items };
+  }
+
+  @Delete('documents')
+  @ApiOperation({ summary: 'Drop every chunk that came from one source' })
+  @ApiQuery({ name: 'source', required: true })
+  @HttpCode(HttpStatus.OK)
+  removeDocument(@Query('source') source: string) {
+    return this.chatService.removeDocumentSource(source);
+  }
+
+  @Get('documents/stats')
+  @ApiOperation({ summary: 'Report how many document chunks are indexed' })
+  @HttpCode(HttpStatus.OK)
+  documentStats() {
+    return this.chatService.documentStats();
   }
 }

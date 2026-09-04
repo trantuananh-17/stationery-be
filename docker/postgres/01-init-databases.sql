@@ -15,7 +15,6 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 \connect product_db;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS vector;
 
 \connect cart_db;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

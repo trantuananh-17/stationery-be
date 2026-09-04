@@ -1,57 +1,76 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { randomUUID } from 'node:crypto';
 
-import { OllamaEmbeddings } from '@langchain/ollama';
-import { PGVectorStore } from '@langchain/community/vectorstores/pgvector';
 import { Document } from '@langchain/core/documents';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 import { IngestBodyDto } from '../dto/ingest.dto';
 import { loadPdfAsDocuments } from '../helper/pdf.loader';
-import { OpenAIEmbeddings } from '@langchain/openai';
-import { EmbeddingsInterface } from '@langchain/core/embeddings';
+import { EmbeddingService } from './embedding.service';
+import { QdrantPayload, QdrantPoint, QdrantService } from './qdrant.service';
 
-/** PGVectorStore có sẵn connection pool nhưng không khai trong type public. */
-type PgVectorStoreWithPool = {
-  pool: { query(sql: string, params: unknown[]): Promise<unknown> };
-};
+const CHUNK_SIZE = 2000;
+const CHUNK_OVERLAP = 100;
 
+/** Trần số chunk trả về khi liệt kê nguồn tài liệu đã nạp. */
+const SOURCE_SCAN_LIMIT = 5000;
+
+type DocumentPayload = QdrantPayload & { content: string; source: string };
+
+/**
+ * Kho tài liệu của chatbot (PDF chính sách, hướng dẫn...).
+ *
+ * Tách hẳn collection với index sản phẩm: trộn chung thì câu hỏi chính sách sẽ
+ * lôi về mô tả sản phẩm và ngược lại.
+ */
 @Injectable()
 export class VectorStoreService implements OnModuleInit {
-  private embeddings!: EmbeddingsInterface;
-  private vectorStore!: PGVectorStore;
+  private readonly collection: string;
 
-  constructor(private readonly configService: ConfigService) {}
+  private ready?: Promise<void>;
 
-  async onModuleInit(): Promise<void> {
-    this.embeddings = new OpenAIEmbeddings({
-      apiKey: this.configService.getOrThrow<string>('OPENROUTER_API_KEY'),
-      model: this.configService.get<string>('EMBEDDING_MODEL', 'perplexity/pplx-embed-v1-0.6b'),
-      configuration: {
-        baseURL: this.configService.get<string>(
-          'OPENROUTER_BASE_URL',
-          'https://openrouter.ai/api/v1',
-        ),
-      },
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly qdrant: QdrantService,
+    private readonly embedding: EmbeddingService,
+  ) {
+    this.collection = this.configService.get<string>(
+      'QDRANT_DOCS_COLLECTION',
+      'chatbot_documents',
+    );
+  }
+
+  /**
+   * Chuẩn bị collection ở nền, nhưng KHÔNG để lỗi làm sập tiến trình: số chiều
+   * vector phải hỏi nhà cung cấp embedding, mà dịch vụ đó chết hay hết hạn key
+   * thì cả ai-service không được vì thế mà crash-loop.
+   */
+  onModuleInit(): void {
+    this.ensureReady().catch((error) => {
+      Logger.warn(
+        `Chưa dựng được collection "${this.collection}": ${error}`,
+        VectorStoreService.name,
+      );
+    });
+  }
+
+  private ensureReady(): Promise<void> {
+    this.ready ??= this.initCollection().catch((error) => {
+      // Quên kết quả hỏng để lần gọi sau còn thử lại được.
+      this.ready = undefined;
+
+      throw error;
     });
 
-    this.vectorStore = await PGVectorStore.initialize(this.embeddings, {
-      postgresConnectionOptions: {
-        type: 'postgres',
-        host: this.configService.get<string>('POSTGRES_HOST', 'localhost'),
-        port: Number(this.configService.get<string>('POSTGRES_PORT', '5432')),
-        user: this.configService.get<string>('POSTGRES_USER', 'postgres'),
-        password: this.configService.get<string>('POSTGRES_PASSWORD', 'postgres'),
-        database: this.configService.get<string>('POSTGRES_DB', 'chatbot_db'),
-      },
-      tableName: this.configService.get<string>('PGVECTOR_TABLE', 'chatbot_documents'),
-      columns: {
-        idColumnName: 'id',
-        vectorColumnName: 'embedding',
-        contentColumnName: 'content',
-        metadataColumnName: 'metadata',
-      },
-    });
+    return this.ready;
+  }
+
+  private async initCollection(): Promise<void> {
+    await this.qdrant.ensureCollection(this.collection, await this.embedding.getDimension());
+    await this.qdrant.ensurePayloadIndex(this.collection, 'source');
+
+    Logger.log(`Qdrant document index "${this.collection}" sẵn sàng`, VectorStoreService.name);
   }
 
   async handleFileUpload(files: Express.Multer.File[]) {
@@ -80,25 +99,13 @@ export class VectorStoreService implements OnModuleInit {
   }
 
   async insertPdfToVectorDb(filePath: string) {
-    console.time('INSERT_PDF_TO_VECTOR_DB');
-
     const documents = await loadPdfAsDocuments(filePath);
 
-    const splitter = new RecursiveCharacterTextSplitter({
-      chunkSize: 2000,
-      chunkOverlap: 100,
-    });
+    const chunks = await this.splitDocuments(documents);
 
-    const chunks = await splitter.splitDocuments(documents);
-
-    await (this.vectorStore as unknown as PgVectorStoreWithPool).pool.query(
-      `DELETE FROM chatbot_documents WHERE metadata->>'source' = $1`,
-      [filePath],
-    );
-
-    await this.vectorStore.addDocuments(chunks);
-
-    console.timeEnd('INSERT_PDF_TO_VECTOR_DB');
+    // Nạp lại cùng một file phải thay thế bản cũ, không cộng dồn chunk trùng.
+    await this.removeSource(filePath);
+    await this.addDocuments(chunks);
 
     return {
       success: true,
@@ -122,6 +129,7 @@ export class VectorStoreService implements OnModuleInit {
 
     for (const pdfPath of body.pdfPaths || []) {
       const docs = await loadPdfAsDocuments(pdfPath);
+
       pdfDocs.push(...docs);
     }
 
@@ -134,14 +142,9 @@ export class VectorStoreService implements OnModuleInit {
       };
     }
 
-    const splitter = new RecursiveCharacterTextSplitter({
-      chunkSize: 2000,
-      chunkOverlap: 100,
-    });
+    const finalChunks = await this.splitDocuments(allDocs);
 
-    const finalChunks = await splitter.splitDocuments(allDocs);
-
-    await this.vectorStore.addDocuments(finalChunks);
+    await this.addDocuments(finalChunks);
 
     return {
       success: true,
@@ -149,26 +152,90 @@ export class VectorStoreService implements OnModuleInit {
     };
   }
 
-  async similaritySearch(searchQuery: string, k = 8, limit = 4) {
-    console.time('vectorSearch');
+  /**
+   * Qdrant trả về độ tương đồng cosine (càng cao càng gần), khác pgvector trả
+   * khoảng cách — kết quả đã sắp sẵn giảm dần nên chỉ cần cắt bớt.
+   */
+  async similaritySearch(searchQuery: string, k = 8, limit = 4): Promise<Document[]> {
+    if (!searchQuery?.trim()) return [];
 
-    const results = await this.vectorStore.similaritySearchWithScore(searchQuery, k);
+    await this.ensureReady();
 
-    console.timeEnd('vectorSearch');
+    const vector = await this.embedding.embedQuery(searchQuery);
 
-    console.table(
-      results.map(([doc, score], index) => ({
-        index,
-        score,
-        preview: doc.pageContent.slice(0, 160),
-      })),
-    );
+    const hits = await this.qdrant.search(this.collection, vector, { limit: k });
 
-    const docs = results
-      .sort((a, b) => a[1] - b[1])
-      .map(([doc]) => doc)
-      .slice(0, limit);
+    return hits.slice(0, limit).map((hit) => {
+      const { content, ...metadata } = hit.payload as DocumentPayload;
 
-    return docs;
+      return new Document({
+        pageContent: String(content ?? ''),
+        metadata: { ...metadata, score: hit.score },
+      });
+    });
+  }
+
+  /** Gỡ toàn bộ chunk sinh ra từ một file/nguồn. */
+  async removeSource(source: string): Promise<{ success: boolean; source: string }> {
+    await this.qdrant.deleteByFilter(this.collection, {
+      must: [{ key: 'source', match: { value: source } }],
+    });
+
+    return { success: true, source };
+  }
+
+  /** Danh sách nguồn đã nạp kèm số chunk — để biết cần nạp lại cái nào. */
+  async listSources(): Promise<{ source: string; chunks: number }[]> {
+    const payloads = await this.qdrant.scrollPayloads(this.collection, {
+      limit: SOURCE_SCAN_LIMIT,
+    });
+
+    const counter = new Map<string, number>();
+
+    for (const payload of payloads) {
+      const source = String(payload.source ?? 'unknown');
+
+      counter.set(source, (counter.get(source) ?? 0) + 1);
+    }
+
+    return [...counter.entries()]
+      .map(([source, chunks]) => ({ source, chunks }))
+      .sort((a, b) => b.chunks - a.chunks);
+  }
+
+  async stats(): Promise<{ collection: string; chunks: number }> {
+    return {
+      collection: this.collection,
+      chunks: await this.qdrant.countPoints(this.collection),
+    };
+  }
+
+  private splitDocuments(documents: Document[]): Promise<Document[]> {
+    const splitter = new RecursiveCharacterTextSplitter({
+      chunkSize: CHUNK_SIZE,
+      chunkOverlap: CHUNK_OVERLAP,
+    });
+
+    return splitter.splitDocuments(documents);
+  }
+
+  private async addDocuments(chunks: Document[]): Promise<void> {
+    if (!chunks.length) return;
+
+    await this.ensureReady();
+
+    const vectors = await this.embedding.embedDocuments(chunks.map((chunk) => chunk.pageContent));
+
+    const points: QdrantPoint[] = chunks.map((chunk, index) => ({
+      id: randomUUID(),
+      vector: vectors[index],
+      payload: {
+        ...chunk.metadata,
+        content: chunk.pageContent,
+        source: String(chunk.metadata?.source ?? 'inline'),
+      },
+    }));
+
+    await this.qdrant.upsert(this.collection, points);
   }
 }

@@ -1,7 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
 
-import { AiPort, SemanticProductDto } from '../../application/ports/ai.port';
+import {
+  AiPort,
+  ProductIndexResultDto,
+  ProductIndexStatsDto,
+  SemanticProductDto,
+} from '../../application/ports/ai.port';
 
 /**
  * ai-service chỉ có HTTP (không dựng gRPC server), nên adapter này dùng axios.
@@ -46,6 +51,32 @@ export class AiHttpAdapter implements AiPort {
     const response = await this.client.post<{ indexed: number }>('/product-search/reindex');
 
     return response.data ?? { indexed: 0 };
+  }
+
+  /**
+   * Các thao tác index là hành động chủ động của admin: hỏng thì phải báo lỗi,
+   * không nuốt như đường đọc ở dưới.
+   */
+  async indexProducts(productIds: string[]): Promise<ProductIndexResultDto> {
+    const response = await this.client.post<ProductIndexResultDto>('/product-search/index', {
+      productIds,
+    });
+
+    return response.data ?? { indexed: [], removed: [] };
+  }
+
+  async removeProductFromIndex(productId: string): Promise<{ removed: string }> {
+    const response = await this.client.delete<{ removed: string }>(
+      `/product-search/index/${productId}`,
+    );
+
+    return response.data ?? { removed: productId };
+  }
+
+  async indexStats(): Promise<ProductIndexStatsDto> {
+    const response = await this.client.get<ProductIndexStatsDto>('/product-search/stats');
+
+    return response.data ?? { collection: '', indexed: 0 };
   }
 
   /**

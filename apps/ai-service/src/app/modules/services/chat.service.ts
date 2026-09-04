@@ -24,6 +24,18 @@ export class ChatService {
     return this.vectorStoreService.ingest(body);
   }
 
+  async listDocumentSources() {
+    return this.vectorStoreService.listSources();
+  }
+
+  async removeDocumentSource(source: string) {
+    return this.vectorStoreService.removeSource(source);
+  }
+
+  async documentStats() {
+    return this.vectorStoreService.stats();
+  }
+
   async query(question: string): Promise<ChatToolResponseDto> {
     console.time('TOTAL');
 

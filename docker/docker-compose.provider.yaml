@@ -65,6 +65,18 @@ services:
     networks:
       - stationery-nw
 
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant_server
+    restart: unless-stopped
+    ports:
+      - '6333:6333'
+      - '6334:6334'
+    volumes:
+      - ./docker_data/qdrant_data:/qdrant/storage
+    networks:
+      - stationery-nw
+
   kafka:
     container_name: kafka_server
     image: bitnamilegacy/kafka
@@ -325,13 +337,13 @@ services:
     environment:
       # .env cua ai-service tro localhost (dung cho dev ngoai docker);
       # trong mang compose phai tro ten service.
-      POSTGRES_HOST: postgres
+      QDRANT_URL: http://qdrant:6333
       OLLAMA_BASE_URL: http://ollama:11434
       PRODUCT_SERVICE_HOST: product-service
     ports:
       - '3413:3413'
     depends_on:
-      postgres:
+      qdrant:
         condition: service_started
       ollama:
         condition: service_started

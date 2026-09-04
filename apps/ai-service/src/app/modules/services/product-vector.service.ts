@@ -1,11 +1,10 @@
-import { PGVectorStore } from '@langchain/community/vectorstores/pgvector';
-import { Document } from '@langchain/core/documents';
-import { EmbeddingsInterface } from '@langchain/core/embeddings';
-import { OpenAIEmbeddings } from '@langchain/openai';
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+import { IndexableProduct } from '../dto/product-ai.dto';
+import { EmbeddingService } from './embedding.service';
 import { ProductAiGrpcClientService } from './product-ai.service';
+import { QdrantPoint, QdrantService } from './qdrant.service';
 
 export type SemanticProduct = {
   productId: string;
@@ -18,128 +17,197 @@ export type SemanticProduct = {
   score: number;
 };
 
-type ProductMetadata = Omit<SemanticProduct, 'score'>;
+type ProductPayload = Omit<SemanticProduct, 'score'>;
 
-/** Số sản phẩm kéo về mỗi lần index lại. */
+/** Số sản phẩm kéo về mỗi lần index lại toàn bộ. */
 const REINDEX_LIMIT = 500;
 
 /**
- * Tìm kiếm sản phẩm theo ngữ nghĩa.
+ * Tìm kiếm sản phẩm theo ngữ nghĩa trên Qdrant.
  *
- * Dùng bảng pgvector RIÊNG với bảng tài liệu của chatbot (`chatbot_documents`):
- * trộn chung thì kết quả tìm sản phẩm sẽ lẫn các đoạn PDF đã ingest.
+ * Điểm trong collection dùng chính `productId` (UUID) làm id, nên cập nhật một
+ * sản phẩm chỉ là ghi đè đúng điểm đó — không cần index lại cả kho.
  */
 @Injectable()
 export class ProductVectorService implements OnModuleInit {
-  private embeddings!: EmbeddingsInterface;
-  private vectorStore!: PGVectorStore;
+  private readonly collection: string;
+
+  private ready?: Promise<void>;
 
   constructor(
     private readonly configService: ConfigService,
     private readonly productGrpc: ProductAiGrpcClientService,
-  ) {}
+    private readonly qdrant: QdrantService,
+    private readonly embedding: EmbeddingService,
+  ) {
+    this.collection = this.configService.get<string>(
+      'QDRANT_PRODUCT_COLLECTION',
+      'product_embeddings',
+    );
+  }
 
-  async onModuleInit(): Promise<void> {
-    this.embeddings = new OpenAIEmbeddings({
-      apiKey: this.configService.getOrThrow<string>('OPENROUTER_API_KEY'),
-      model: this.configService.get<string>('EMBEDDING_MODEL', 'perplexity/pplx-embed-v1-0.6b'),
-      configuration: {
-        baseURL: this.configService.get<string>(
-          'OPENROUTER_BASE_URL',
-          'https://openrouter.ai/api/v1',
-        ),
-      },
+  /**
+   * Chuẩn bị collection ở nền, nhưng KHÔNG để lỗi làm sập tiến trình: số chiều
+   * vector phải hỏi nhà cung cấp embedding, mà dịch vụ đó chết hay hết hạn key
+   * thì cả ai-service không được vì thế mà crash-loop.
+   */
+  onModuleInit(): void {
+    this.ensureReady().catch((error) => {
+      Logger.warn(
+        `Chưa dựng được collection "${this.collection}": ${error}`,
+        ProductVectorService.name,
+      );
+    });
+  }
+
+  private ensureReady(): Promise<void> {
+    this.ready ??= this.initCollection().catch((error) => {
+      // Quên kết quả hỏng để lần gọi sau còn thử lại được.
+      this.ready = undefined;
+
+      throw error;
     });
 
-    this.vectorStore = await PGVectorStore.initialize(this.embeddings, {
-      postgresConnectionOptions: {
-        type: 'postgres',
-        host: this.configService.get<string>('POSTGRES_HOST', 'localhost'),
-        port: Number(this.configService.get<string>('POSTGRES_PORT', '5432')),
-        user: this.configService.get<string>('POSTGRES_USER', 'postgres'),
-        password: this.configService.get<string>('POSTGRES_PASSWORD', 'postgres'),
-        database: this.configService.get<string>('POSTGRES_DB', 'chatbot_db'),
-      },
-      tableName: this.configService.get<string>('PGVECTOR_PRODUCT_TABLE', 'product_embeddings'),
-      columns: {
-        idColumnName: 'id',
-        vectorColumnName: 'embedding',
-        contentColumnName: 'content',
-        metadataColumnName: 'metadata',
-      },
-    });
+    return this.ready;
+  }
 
-    Logger.log('PGVector product index ready', 'ProductVectorService');
+  private async initCollection(): Promise<void> {
+    await this.qdrant.ensureCollection(this.collection, await this.embedding.getDimension());
+
+    Logger.log(`Qdrant product index "${this.collection}" sẵn sàng`, ProductVectorService.name);
   }
 
   /**
    * Nạp lại toàn bộ sản phẩm vào index.
-   * Gọi lại sau khi thêm/sửa sản phẩm — hiện là thao tác thủ công của admin.
+   * Tạo lại collection để index không giữ sản phẩm đã bị xoá hoặc ẩn.
    */
   async reindexAll(): Promise<{ indexed: number }> {
-    const products = await this.productGrpc.searchProductsForAdvisor({
-      keyword: '',
-      limit: REINDEX_LIMIT,
-    });
+    const products = await this.productGrpc.listProductsForIndex(REINDEX_LIMIT);
+
+    await this.qdrant.recreateCollection(this.collection, await this.embedding.getDimension());
+
+    this.ready = Promise.resolve();
 
     if (!products.length) {
       return { indexed: 0 };
     }
 
-    const documents = products.map(
-      (product) =>
-        new Document({
-          pageContent: [
-            product.product_name,
-            product.brand_name,
-            product.category_name,
-            product.short_description,
-            product.description,
-          ]
-            .filter(Boolean)
-            .join('\n'),
-          metadata: {
-            productId: product.product_id,
-            name: product.product_name,
-            slug: product.slug,
-            thumbnail: product.thumbnail || '',
-            price: Number(product.price ?? 0),
-            brandName: product.brand_name ?? '',
-            categoryName: product.category_name ?? '',
-          } satisfies ProductMetadata,
-        }),
-    );
+    await this.upsertProducts(products);
 
-    // Xoá trước rồi nạp lại để index không giữ sản phẩm đã bị xoá/ẩn.
-    await this.vectorStore.delete({ filter: {} }).catch(() => undefined);
-    await this.vectorStore.addDocuments(documents);
+    Logger.log(`Đã index ${products.length} sản phẩm`, ProductVectorService.name);
 
-    Logger.log(`Đã index ${documents.length} sản phẩm`, 'ProductVectorService');
+    return { indexed: products.length };
+  }
 
-    return { indexed: documents.length };
+  /**
+   * Đồng bộ index cho một vài sản phẩm cụ thể — dùng sau khi admin tạo/sửa/ẩn
+   * sản phẩm, thay vì nạp lại cả kho.
+   *
+   * Sản phẩm không còn bán (bị xoá, chuyển draft/archived) thì phải bị gỡ khỏi
+   * index chứ không chỉ bỏ qua, nếu không nó vẫn hiện trong tìm kiếm ngữ nghĩa.
+   */
+  async indexProducts(productIds: string[]): Promise<{ indexed: string[]; removed: string[] }> {
+    const indexed: string[] = [];
+    const removed: string[] = [];
+    const products: IndexableProduct[] = [];
+
+    for (const productId of productIds) {
+      const product = await this.productGrpc.getProductForIndex(productId);
+
+      if (!product) {
+        removed.push(productId);
+
+        continue;
+      }
+
+      products.push(product);
+      indexed.push(productId);
+    }
+
+    await this.upsertProducts(products);
+    await this.qdrant.deleteByIds(this.collection, removed);
+
+    return { indexed, removed };
+  }
+
+  /** Gỡ sản phẩm khỏi index — gọi khi sản phẩm bị xoá hoặc chuyển sang ẩn. */
+  async removeProduct(productId: string): Promise<{ removed: string }> {
+    await this.qdrant.deleteByIds(this.collection, [productId]);
+
+    return { removed: productId };
   }
 
   async search(query: string, limit = 8): Promise<SemanticProduct[]> {
     if (!query.trim()) return [];
 
-    const results = await this.vectorStore.similaritySearchWithScore(query, limit);
+    await this.ensureReady();
 
-    return results.map(([doc, score]) => ({ ...(doc.metadata as ProductMetadata), score }));
+    const vector = await this.embedding.embedQuery(query);
+
+    const hits = await this.qdrant.search(this.collection, vector, { limit });
+
+    return hits.map((hit) => ({ ...(hit.payload as ProductPayload), score: hit.score }));
   }
 
-  /** Sản phẩm tương tự: tìm hàng xóm gần nhất rồi bỏ chính nó ra. */
+  /**
+   * Sản phẩm tương tự: lấy lại chính vector đã lưu của sản phẩm rồi tìm hàng
+   * xóm gần nhất, bỏ chính nó ra.
+   */
   async similarTo(productId: string, limit = 8): Promise<SemanticProduct[]> {
-    const seed = await this.vectorStore.similaritySearchWithScore('', 1, { productId });
+    const vector = await this.qdrant.retrieveVector(this.collection, productId);
 
-    const seedDoc = seed[0]?.[0];
+    if (!vector) return [];
 
-    if (!seedDoc) return [];
+    const hits = await this.qdrant.search(this.collection, vector, { limit: limit + 1 });
 
-    const results = await this.vectorStore.similaritySearchWithScore(seedDoc.pageContent, limit + 1);
+    return hits
+      .filter((hit) => hit.id !== productId)
+      .slice(0, limit)
+      .map((hit) => ({ ...(hit.payload as ProductPayload), score: hit.score }));
+  }
 
-    return results
-      .map(([doc, score]) => ({ ...(doc.metadata as ProductMetadata), score }))
-      .filter((item) => item.productId !== productId)
-      .slice(0, limit);
+  async stats(): Promise<{ collection: string; indexed: number }> {
+    return {
+      collection: this.collection,
+      indexed: await this.qdrant.countPoints(this.collection),
+    };
+  }
+
+  private async upsertProducts(products: IndexableProduct[]): Promise<void> {
+    if (!products.length) return;
+
+    await this.ensureReady();
+
+    const vectors = await this.embedding.embedDocuments(
+      products.map((product) => this.buildEmbeddingText(product)),
+    );
+
+    const points: QdrantPoint[] = products.map((product, index) => ({
+      id: product.productId,
+      vector: vectors[index],
+      payload: {
+        productId: product.productId,
+        name: product.name,
+        slug: product.slug,
+        thumbnail: product.thumbnail,
+        price: product.price,
+        brandName: product.brandName,
+        categoryName: product.categoryName,
+      } satisfies ProductPayload,
+    }));
+
+    await this.qdrant.upsert(this.collection, points);
+  }
+
+  private buildEmbeddingText(product: IndexableProduct): string {
+    return [
+      product.name,
+      product.brandName,
+      product.categoryName,
+      product.shortDescription,
+      product.description,
+    ]
+      .filter(Boolean)
+      .join('\n');
   }
 }

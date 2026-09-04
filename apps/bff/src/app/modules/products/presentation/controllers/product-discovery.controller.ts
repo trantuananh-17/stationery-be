@@ -4,6 +4,7 @@ import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { RoleGuard } from '@common/guards/role.guard';
 import {
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -50,9 +51,41 @@ export class ProductDiscoveryController {
   @UseGuards(JwtAuthGuard, RoleGuard)
   @Roles([ROLE.ADMIN])
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Rebuild the product embedding index' })
+  @ApiOperation({ summary: 'Rebuild the whole product embedding index' })
   @HttpCode(HttpStatus.OK)
   async reindex() {
     return this.aiPort.reindexProducts();
+  }
+
+  @Get('admin/products/index-stats')
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles([ROLE.ADMIN])
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Report how many products are currently indexed' })
+  @HttpCode(HttpStatus.OK)
+  async indexStats() {
+    return this.aiPort.indexStats();
+  }
+
+  @Post('admin/products/:productId/index')
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles([ROLE.ADMIN])
+  @ApiBearerAuth()
+  @ApiParam({ name: 'productId', type: String, format: 'uuid' })
+  @ApiOperation({ summary: 'Refresh one product in the embedding index' })
+  @HttpCode(HttpStatus.OK)
+  async indexProduct(@Param('productId', new ParseUUIDPipe()) productId: string) {
+    return this.aiPort.indexProducts([productId]);
+  }
+
+  @Delete('admin/products/:productId/index')
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles([ROLE.ADMIN])
+  @ApiBearerAuth()
+  @ApiParam({ name: 'productId', type: String, format: 'uuid' })
+  @ApiOperation({ summary: 'Drop one product from the embedding index' })
+  @HttpCode(HttpStatus.OK)
+  async removeProductFromIndex(@Param('productId', new ParseUUIDPipe()) productId: string) {
+    return this.aiPort.removeProductFromIndex(productId);
   }
 }

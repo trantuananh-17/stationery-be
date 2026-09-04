@@ -12,12 +12,16 @@ import { RagToolService } from './services/rag-tool.service';
 import { ProductAdvisorToolService } from './services/product-advisor-tool.service';
 import { ProductVectorService } from './services/product-vector.service';
 import { ProductSearchController } from './controllers/product-search.controller';
+import { QdrantService } from './services/qdrant.service';
+import { EmbeddingService } from './services/embedding.service';
 
 @Module({
   imports: [ClientsModule.registerAsync([GrpcProvider(GRPC_SERVICES.PRODUCT_SERVICE)])],
   controllers: [ChatController, ProductAiController, ProductSearchController],
   providers: [
     ChatService,
+    QdrantService,
+    EmbeddingService,
     AiLlmService,
     VectorStoreService,
     ToolRouterService,

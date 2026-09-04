@@ -22,7 +22,7 @@ apps/
   analytics-service/    :3407  gRPC :5007  — báo cáo doanh thu
   upload-service/       :3408         — upload S3 (FE gọi thẳng)
   payment-service/      :3409  gRPC :5009  — Stripe
-  ai-service/           :3413         — RAG chatbot (LangChain + Ollama/OpenAI)
+  ai-service/           :3413         — RAG chatbot (LangChain + OpenRouter, vector store Qdrant)
 
 libs/                   # dùng chung, import qua alias @common/*
   configuration constants databases decorators filters
@@ -37,7 +37,7 @@ libs/                   # dùng chung, import qua alias @common/*
 
 ```powershell
 pnpm install                 # ⚠️ node_modules hiện CHƯA được cài
-pnpm docker:up:provider      # Postgres(pgvector) + Mongo + Kafka + Ollama + pgAdmin
+pnpm docker:up:provider      # Postgres + Mongo + Kafka + Qdrant + Ollama + pgAdmin
 pnpm dev                     # nx run-many -t serve — tất cả service
 pnpm dev-lite                # bff,auth,user,cart,product,order,payment
 pnpm dev-user                # bff,auth,user
