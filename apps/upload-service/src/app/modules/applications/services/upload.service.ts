@@ -7,7 +7,7 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 import { ConfigService } from '@nestjs/config';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'node:crypto';
 import sharp from 'sharp';
 import { S3_CLIENT } from '@common/configuration/s3.config';
 
@@ -29,7 +29,7 @@ export class UploadService {
       .webp({ quality: 75 })
       .toBuffer();
 
-    const id = uuidv4();
+    const id = randomUUID();
     const key = `uploads/${id}-${file.originalname.split('.')[0]}.webp`;
 
     await this.s3.send(

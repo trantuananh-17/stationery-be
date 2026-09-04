@@ -1,5 +1,5 @@
-import { v4 } from 'uuid';
+import { randomUUID } from 'node:crypto';
 
 export const getProcessId = (prefix?: string) => {
-  return prefix ? `${prefix}-${v4()}` : v4();
+  return prefix ? `${prefix}-${randomUUID()}` : randomUUID();
 };

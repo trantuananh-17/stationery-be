@@ -1,6 +1,21 @@
 import { Document } from '@langchain/core/documents';
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
-import * as fs from 'fs';
+import * as fs from 'node:fs';
+
+/**
+ * pdfjs-dist chỉ phát hành bản ESM, còn service này biên dịch ra CommonJS,
+ * nên phải nạp động thay vì import tĩnh. Nạp một lần rồi dùng lại.
+ */
+type PdfjsModule = typeof import('pdfjs-dist/legacy/build/pdf.mjs', {
+  with: { 'resolution-mode': 'import' },
+});
+
+let pdfjsModule: Promise<PdfjsModule> | undefined;
+
+const loadPdfjs = (): Promise<PdfjsModule> => {
+  pdfjsModule ??= import('pdfjs-dist/legacy/build/pdf.mjs');
+
+  return pdfjsModule;
+};
 
 type PdfSection = {
   title: string;
@@ -171,6 +186,8 @@ ${section.content}
 
 export async function loadPdfAsDocuments(filePath: string): Promise<Document[]> {
   console.time('LOAD_PDF_TOTAL');
+
+  const pdfjsLib = await loadPdfjs();
 
   const data = new Uint8Array(fs.readFileSync(filePath));
   const pdf = await pdfjsLib.getDocument({ data }).promise;

@@ -1,7 +1,11 @@
 const { NxAppWebpackPlugin } = require('@nx/webpack/app-plugin');
 const { join } = require('path');
+const { tsconfigAliases } = require('../../webpack.aliases');
 
 module.exports = {
+  resolve: {
+    alias: tsconfigAliases,
+  },
   output: {
     path: join(__dirname, '../../dist/apps/bff'),
     clean: true,
