@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { HumanMessage, SystemMessage } from '@langchain/core/messages';
+import { extractTokenUsage } from '../helper/token.helper';
 import { AiLlmService } from './ai-llm.service';
 import { ChatTokenUsageDto } from '../dto/product-ai.dto';
-import { extractTokenUsage } from '../helper/token.helper';
 
 export type ChatToolName = 'ask_rag' | 'get_product_advisor';
 
@@ -87,8 +87,6 @@ Intent:
 
     const routerTokenUsage = extractTokenUsage(toolChoiceMessage);
 
-    console.log('TOOL_ROUTER_TOKEN_USAGE:', routerTokenUsage);
-
     const toolCall = toolChoiceMessage.tool_calls?.[0];
 
     if (!toolCall) {
@@ -98,9 +96,6 @@ Intent:
         tokenUsage: routerTokenUsage,
       };
     }
-
-    console.log('GPT SELECTED TOOL:', toolCall.name);
-    console.log('TOOL ARGS:', toolCall.args);
 
     const selectedToolName = this.normalizeToolName(toolCall.name);
 

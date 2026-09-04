@@ -47,8 +47,6 @@ export class VectorStoreService implements OnModuleInit {
         metadataColumnName: 'metadata',
       },
     });
-
-    console.log('PGVector ready');
   }
 
   async handleFileUpload(files: Express.Multer.File[]) {
@@ -87,8 +85,6 @@ export class VectorStoreService implements OnModuleInit {
     });
 
     const chunks = await splitter.splitDocuments(documents);
-
-    console.log('TOTAL PDF CHUNKS TO INSERT:', chunks.length);
 
     await (this.vectorStore as any).pool.query(
       `DELETE FROM chatbot_documents WHERE metadata->>'source' = $1`,

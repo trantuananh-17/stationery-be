@@ -25,11 +25,10 @@ export class AppController {
   @UseGuards(JwtAuthGuard, OwnerGuard, PermissionGuard)
   @Get('test-owner/:id')
   testOwner(@UserData() user: JwtPayload, @Param('id') id: string) {
-    console.log('JWT USER:', user);
-    console.log('PARAM ID:', id);
-
     return {
       message: 'OwnerGuard passed',
+      userId: user.userId,
+      id,
     };
   }
 

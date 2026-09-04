@@ -76,8 +76,6 @@ export class PaymentController {
     },
   })
   async createPaymentIntent(@Body() body: CreatePaymentRequest) {
-    console.log(body);
-
     const data = await this.paymentService.createPaymentIntent(body);
 
     return data;

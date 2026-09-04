@@ -23,8 +23,6 @@ export class GetCartCheckoutHandler
       throw new CartNotFoundError();
     }
 
-    console.log(cart);
-
     return cart;
   }
 }

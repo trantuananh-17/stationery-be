@@ -340,8 +340,6 @@ export class ProductController {
       limit?: number;
     },
   ) {
-    console.log(payload.status);
-
     const result: PaginatedResult<ProductReadModel> = await this.queryBus.execute(
       new GetProductsByAdminQuery(
         payload.search,

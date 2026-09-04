@@ -303,8 +303,6 @@ services:
       - ../apps/upload-service/.env
     ports:
       - '3408:3408'
-    expose:
-      - '5008'
     depends_on:
       kafka:
         condition: service_healthy

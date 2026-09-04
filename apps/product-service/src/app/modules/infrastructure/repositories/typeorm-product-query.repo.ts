@@ -55,8 +55,6 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
       .where('v.id = :variantId', { variantId })
       .getRawMany();
 
-    console.log(JSON.stringify(rows, null, 2));
-
     if (!rows.length) return null;
 
     const first = rows[0];
@@ -946,23 +944,6 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
 
     const keywordTerms = variantFilter.productTerms;
     const variantNames = variantFilter.variantNames;
-
-    console.log('AI_PRODUCT_SEARCH_DEBUG:', {
-      keyword: filters.keyword,
-      advisorIntent,
-      originalKeywordTerms,
-      comboKeywordTerms,
-      rawKeywordTerms,
-      keywordTerms,
-      variantNames,
-      audience: filters.audience,
-      need: filters.need,
-      category: filters.category,
-      brand: filters.brand,
-      budgetMin: filters.budgetMin,
-      budgetMax: filters.budgetMax,
-      sortBy: filters.sortBy,
-    });
 
     const qb = this.productRepo
       .createQueryBuilder('product')

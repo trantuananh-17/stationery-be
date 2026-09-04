@@ -35,8 +35,6 @@ export class RefreshTokenHandler implements ICommandHandler<RefreshTokenCommand>
 
     const credential = await this.credentialRepo.findByUserId(decoded.userId);
 
-    console.log(credential);
-
     if (!credential) {
       throw new InvalidCredentialError();
     }

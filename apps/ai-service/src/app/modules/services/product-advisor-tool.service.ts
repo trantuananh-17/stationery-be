@@ -77,11 +77,7 @@ export class ProductAdvisorToolService {
   ): Promise<ChatToolResponseDto> {
     const normalizedIntent = this.normalizeAdvisorIntent(advisorIntent);
 
-    console.log('PRODUCT ADVISOR INTENT:', normalizedIntent);
-
     const filter = this.normalizeProductSearchFilter(advisorFilter, normalizedIntent, question);
-
-    console.log('PRODUCT FILTER:', filter);
 
     const candidateLimit = this.getCandidateLimit(normalizedIntent);
 
@@ -100,9 +96,6 @@ export class ProductAdvisorToolService {
 
       advisorIntent: normalizedIntent,
     } as any);
-
-    console.log('GRPC PRODUCTS LENGTH:', products.length);
-    console.log('FIRST PRODUCT RAW:', JSON.stringify(products[0] || null, null, 2));
 
     if (!products.length) {
       return {
@@ -123,8 +116,6 @@ export class ProductAdvisorToolService {
       const selectedProducts = this.mapProductsWithoutAi(products, filter, normalizedIntent);
       const items = selectedProducts.map((product) => this.toProductAdvisorResponseItem(product));
 
-      console.log('FINAL_PRODUCT_ITEMS_DIRECT:', JSON.stringify(items, null, 2));
-
       return {
         success: true,
         tool: 'get_product_advisor',
@@ -141,8 +132,6 @@ export class ProductAdvisorToolService {
 
     const promptProducts = products.map((product) => this.toPromptProduct(product));
 
-    console.log('PRODUCTS_SENT_TO_AI_COUNT:', promptProducts.length);
-
     const aiResult = await this.selectBestProductsByAi(
       question,
       normalizedIntent,
@@ -157,8 +146,6 @@ export class ProductAdvisorToolService {
     );
 
     const items = selectedProducts.map((product) => this.toProductAdvisorResponseItem(product));
-
-    console.log('FINAL_PRODUCT_ITEMS_AI:', JSON.stringify(items, null, 2));
 
     return {
       success: true,
@@ -243,8 +230,6 @@ Products:
       filter: filterJson,
       products: productsJson,
     })) as ProductAdvisorAiResult;
-
-    console.log('PRODUCT_ADVISOR_AI_RAW_RESULT:', JSON.stringify(result, null, 2));
 
     return {
       response: result.response || this.buildDefaultAiResponse(advisorIntent),

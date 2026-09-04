@@ -19,8 +19,6 @@ export class GetOrderPaymentHandler
   async execute(query: GetOrderPaymentQuery): Promise<OrderPaymentDto> {
     const payment = await this.orderQueryRepository.getPayment(query.userId, query.orderId);
 
-    console.log(payment);
-
     if (!payment) {
       throw new NotFoundException('Order payment not found');
     }

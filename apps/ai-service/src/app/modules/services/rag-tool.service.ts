@@ -5,7 +5,6 @@ import { VectorStoreService } from './vector-store.service';
 import { AiLlmService } from './ai-llm.service';
 import { rewriteQuery } from '../helper/query-rewrite';
 import type { ChatResponseIntent, ChatToolResponseDto } from '../dto/chat-tool-response.dto';
-import { extractTokenUsage } from '../helper/token.helper';
 
 type RagChatResponse = {
   response?: string;
@@ -31,9 +30,6 @@ export class RagToolService {
     }
 
     const searchQuery = rewriteQuery(question);
-
-    console.log('RAG_ORIGINAL_QUESTION:', question);
-    console.log('RAG_SEARCH_QUERY:', searchQuery);
 
     const docs = await this.vectorStoreService.similaritySearch(searchQuery, 8, 4);
 
@@ -96,21 +92,10 @@ Context:
       ],
     ]);
 
-    const formattedPrompt = await prompt.format({
-      question,
-      context,
-    });
-
-    console.log('RAG_FINAL_PROMPT:\n', formattedPrompt);
-
     const llmMessage = await prompt.pipe(this.aiLlmService.client).invoke({
       question,
       context,
     });
-
-    const ragTokenUsage = extractTokenUsage(llmMessage);
-
-    console.log('RAG_TOKEN_USAGE:', ragTokenUsage);
 
     const result = (await new JsonOutputParser().invoke(llmMessage)) as RagChatResponse;
 

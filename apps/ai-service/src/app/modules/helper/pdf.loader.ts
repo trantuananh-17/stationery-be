@@ -191,17 +191,7 @@ export async function loadPdfAsDocuments(filePath: string): Promise<Document[]> 
 
   const cleaned = cleanText(fullText);
 
-  console.log('PDF TEXT PREVIEW:', cleaned.slice(0, 2000));
-
   const sections = splitByHeadings(cleaned);
-
-  console.log('TOTAL SECTIONS:', sections.length);
-
-  sections.forEach((section, index) => {
-    const config = getHeadingConfig(section.title);
-
-    console.log(`${index + 1}. [${config?.type ?? 'general'}] ${section.title}`);
-  });
 
   const documents = sections.map((section, index) => {
     const config = getHeadingConfig(section.title);

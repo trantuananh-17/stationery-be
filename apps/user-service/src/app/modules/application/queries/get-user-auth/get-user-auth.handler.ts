@@ -11,8 +11,6 @@ export class GetUserAuthHandler implements IQueryHandler<GetUserAuthQuery> {
   async execute(query: GetUserAuthQuery): Promise<GetUserAuthDto | null> {
     const { userId } = query;
 
-    console.log('Executing GetUserHandler with userId:', userId);
-
     const payload = await this.userRepo.getPayload(userId);
 
     if (!payload) {

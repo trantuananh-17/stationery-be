@@ -57,9 +57,6 @@ export class OrderController {
   @ApiOkResponse({ type: ResponseDto<CheckoutGrpcResponse> })
   @HttpCode(HttpStatus.OK)
   async checkout(@UserData() user: any, @Body() body: CheckoutDto) {
-    console.log(user.userId);
-    console.log(user.email);
-
     const result = await this.checkoutUseCase.execute({
       userId: user.userId,
       email: user.email,
@@ -77,7 +74,8 @@ export class OrderController {
 
   @Put('/:orderId/status')
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles([ROLE.ADMIN])
   @ApiOperation({ summary: 'Update order status' })
   @ApiOkResponse({ type: ResponseDto<boolean> })
   @HttpCode(HttpStatus.OK)
