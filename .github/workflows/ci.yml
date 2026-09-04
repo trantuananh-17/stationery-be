@@ -13,6 +13,10 @@ permissions:
 jobs:
   main:
     runs-on: ubuntu-latest
+    env:
+      # nx.json khai nxCloudId nhưng workspace chưa được claim, nên mọi lệnh nx
+      # kết thúc bằng lỗi 401 của Nx Cloud và làm đỏ cả job. Chạy hoàn toàn cục bộ.
+      NX_NO_CLOUD: 'true'
     steps:
       - uses: actions/checkout@v4
         with:
