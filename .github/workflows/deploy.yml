@@ -55,6 +55,6 @@ jobs:
       # Phải khớp release.yml, nếu không quay lui sẽ ghim một biến khác với
       # biến mà release đã ghi và chẳng thay đổi được gì.
       tag_var: IMAGE_TAG_BACKEND
-      services: auth-service user-service product-service cart-service order-service payment-service notification-service analytics-service upload-service bff
+      services: auth-service user-service product-service cart-service order-service payment-service notification-service analytics-service upload-service ai-service bff
       sync_compose: true
     secrets: inherit

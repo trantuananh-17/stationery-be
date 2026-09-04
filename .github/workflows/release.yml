@@ -70,7 +70,7 @@ jobs:
       version: ${{ needs.build.outputs.version }}
       image: ${{ needs.build.outputs.image }}:${{ needs.build.outputs.version }}
       tag_var: IMAGE_TAG_BACKEND
-      services: auth-service user-service product-service cart-service order-service payment-service notification-service analytics-service upload-service bff
+      services: auth-service user-service product-service cart-service order-service payment-service notification-service analytics-service upload-service ai-service bff
       # Repo backend sở hữu file compose nên nó là repo kéo lại file đó về VM.
       sync_compose: true
     secrets: inherit
