@@ -1,7 +1,7 @@
 import { QueryResult } from '@common/interfaces/common/pagination.interface';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Brackets, Repository } from 'typeorm';
+import { Brackets, Repository, SelectQueryBuilder } from 'typeorm';
 import { IProductQueryRepository } from '../../application/ports/repositories/product-query.repo';
 import { ProductInfoReadModel } from '../../application/read-models/product-info.read-model';
 import { ProductItemReadModel } from '../../application/read-models/product-item.read.model';
@@ -1106,7 +1106,7 @@ export class TypeOrmProductQueryRepository implements IProductQueryRepository {
   }
 
   private applyAiAdvisorOrdering(
-    qb: any,
+    qb: SelectQueryBuilder<ProductOrmEntity>,
     filters: GetProductAiDto,
     advisorIntent: ProductAiAdvisorIntent,
   ): void {

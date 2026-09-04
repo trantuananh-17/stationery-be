@@ -30,7 +30,7 @@ export class NotificationOrmEntity extends BaseEntity {
     type: 'jsonb',
     nullable: true,
   })
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 
   @Column({
     name: 'read_at',

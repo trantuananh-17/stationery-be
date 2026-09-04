@@ -11,12 +11,13 @@ import { ConfigService } from '@nestjs/config';
 import { CONFIGURATION } from './configuration';
 import { QUEUE_GROUPS } from '@common/constants/enums/queue.enum';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { SwaggerOperation } from '@common/interfaces/gateway/swagger-operation.interface';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const CONFIG = CONFIGURATION();
 
-  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
 
   const configService = app.get(ConfigService);
   const globalPrefix = CONFIG.GLOBAL_PREFIX;
@@ -74,21 +75,24 @@ async function bootstrap() {
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup(`${globalPrefix}/docs`, app, documentFactory, {
-    swaggerOptions: {
-      operationsSorter: (a: any, b: any): number => {
-        const order: Record<string, number> = {
-          post: 1,
-          get: 2,
-          put: 3,
-          patch: 4,
-          delete: 5,
-        };
+  // Swagger phơi toàn bộ schema API — chỉ dựng ngoài production.
+  if (process.env.NODE_ENV !== 'production') {
+    SwaggerModule.setup(`${globalPrefix}/docs`, app, documentFactory, {
+      swaggerOptions: {
+        operationsSorter: (a: SwaggerOperation, b: SwaggerOperation): number => {
+          const order: Record<string, number> = {
+            post: 1,
+            get: 2,
+            put: 3,
+            patch: 4,
+            delete: 5,
+          };
 
-        return (order[a.get('method')] ?? 99) - (order[b.get('method')] ?? 99);
+          return (order[a.get('method')] ?? 99) - (order[b.get('method')] ?? 99);
+        },
       },
-    },
-  });
+    });
+  }
 
   // const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);

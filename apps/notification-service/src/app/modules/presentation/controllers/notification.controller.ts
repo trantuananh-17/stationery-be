@@ -17,6 +17,7 @@ import { MarkReadCommand } from '../../application/commands/mark-read/mark-read.
 import { MarkAllAsReadCommand } from '../../application/commands/mark-read-all/mark-read-all.command';
 import { GetNotificationsQuery } from '../../application/queries/get-notifications/get-notifications.query';
 import { GetUnreadCountQuery } from '../../application/queries/get-unread-count/get-unread-count.query';
+import { CreateNotificationDto } from '../dtos/create-notification.dto';
 import { NotificationType } from '../../domain/enums/notification-type.enum';
 import { NotificationStatus } from '../../domain/enums/notification-status.enum';
 
@@ -65,7 +66,7 @@ export class NotificationController {
       },
     },
   })
-  async createNotification(@Body() body: any) {
+  async createNotification(@Body() body: CreateNotificationDto) {
     return this.commandBus.execute(
       new CreateNotificationCommand(
         body.receiverId,
@@ -183,7 +184,7 @@ export class NotificationController {
       type: NotificationType;
       title: string;
       message: string;
-      metadata?: Record<string, any>;
+      metadata?: Record<string, unknown>;
     },
   ) {
     return this.commandBus.execute(

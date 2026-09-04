@@ -54,7 +54,7 @@ export class EventPublisherKafka implements IEventPublisher {
     type: string;
     title: string;
     message: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
     createdAt: string;
   }): Promise<void> {
     await firstValueFrom(this.kafkaService.emit('notification.create', payload));

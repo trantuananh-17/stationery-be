@@ -19,6 +19,39 @@ type ProductSearchFilter = {
   limit: number;
 };
 
+/**
+ * gRPC trả snake_case, một vài nguồn khác trả camelCase — khai cả hai để không rơi field.
+ * Tất cả đều optional vì tuỳ nguồn mà chỉ một trong hai cách đặt tên có mặt.
+ */
+type ProductFieldAliases = Partial<{
+  id: string;
+  productId: string;
+  variantId: string;
+  productName: string;
+  name: string;
+  baseName: string;
+  base_name: string;
+  categoryName: string;
+  brandName: string;
+  variantName: string;
+  productSlug: string;
+  product_slug: string;
+  productThumbnail: string;
+  product_thumbnail: string;
+  productUrl: string;
+  variantImage: string;
+  variant_image: string;
+  price: number;
+  compareAtPrice: number;
+  variantPrice: number;
+  variant_price: number;
+  variantCompareAtPrice: number;
+  variant_compare_at_price: number;
+  stock: number;
+  variantStock: number;
+  variant_stock: number;
+}>;
+
 type PromptProduct = {
   id: string;
   variantId: string;
@@ -95,7 +128,7 @@ export class ProductAdvisorToolService {
       limit: candidateLimit,
 
       advisorIntent: normalizedIntent,
-    } as any);
+    });
 
     if (!products.length) {
       return {
@@ -379,7 +412,7 @@ Products:
   }
 
   private toPromptProduct(product: AdvisorProduct): PromptProduct {
-    const p = product as any;
+    const p = product as AdvisorProduct & ProductFieldAliases;
 
     return {
       id: p.id || p.productId || p.product_id || '',
@@ -403,7 +436,7 @@ Products:
     const productMap = new Map<string, AdvisorProduct>();
 
     for (const product of products) {
-      const p = product as any;
+      const p = product as AdvisorProduct & ProductFieldAliases;
 
       const keys = [p.variantId, p.variant_id, p.sku, p.id, p.productId, p.product_id].filter(
         Boolean,
@@ -427,7 +460,7 @@ Products:
       }
 
       mapped.push({
-        ...(product as any),
+        ...product,
         aiReason: selected.reason || 'Phù hợp với yêu cầu tìm kiếm.',
         aiScore: Number(selected.score || 0.5),
       });
@@ -438,7 +471,7 @@ Products:
     }
 
     return products.slice(0, filter.limit).map((product) => ({
-      ...(product as any),
+      ...product,
       aiReason: 'Sản phẩm phù hợp nhất trong danh sách tìm được.',
       aiScore: 0.5,
     }));
@@ -450,14 +483,14 @@ Products:
     advisorIntent: ProductAdvisorIntent,
   ): ProductAdvisorItem[] {
     return products.slice(0, filter.limit).map((product, index) => ({
-      ...(product as any),
+      ...product,
       aiReason: this.buildDefaultItemReason(advisorIntent),
       aiScore: Number(Math.max(0.5, 0.85 - index * 0.05).toFixed(2)),
     }));
   }
 
   private toProductAdvisorResponseItem(product: ProductAdvisorItem): ProductAdvisorResponseItem {
-    const p = product as any;
+    const p = product as ProductAdvisorItem & ProductFieldAliases;
 
     const productName =
       p.productName || p.name || p.product_name || p.baseName || p.base_name || '';

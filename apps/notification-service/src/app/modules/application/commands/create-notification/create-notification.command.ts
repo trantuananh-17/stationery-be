@@ -7,6 +7,6 @@ export class CreateNotificationCommand implements ICommand {
     public readonly type: NotificationType,
     public readonly title: string,
     public readonly message: string,
-    public readonly metadata?: Record<string, any>,
+    public readonly metadata?: Record<string, unknown>,
   ) {}
 }

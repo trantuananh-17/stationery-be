@@ -53,7 +53,7 @@ export class CartController {
   }
 
   @Post('cart/merge')
-  async mergeCart(@OptionalUserData() user: JwtPayload, @Req() req: any) {
+  async mergeCart(@OptionalUserData() user: JwtPayload, @Req() req: Request) {
     await this.commandBus.execute(
       new MergeCartCommand(
         '550e8400-e29b-41d4-a716-446655440001',

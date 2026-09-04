@@ -24,6 +24,7 @@ export class ProductAiGrpcClientService implements OnModuleInit {
     budgetMax?: number;
     sortBy?: ProductAiSortBy;
     limit?: number;
+    advisorIntent?: string;
   }): Promise<AdvisorProduct[]> {
     const response = await firstValueFrom(
       this.productService.searchProductsForAdvisor({
@@ -36,6 +37,7 @@ export class ProductAiGrpcClientService implements OnModuleInit {
         budget_max: Number(input.budgetMax || 0),
         sort_by: input.sortBy || 'relevant',
         limit: Number(input.limit || 8),
+        advisor_intent: input.advisorIntent || '',
       }),
     );
 

@@ -4,6 +4,7 @@ import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { OptionalUserData } from '@common/decorators/optional-user-data.decorator';
 import { UserData } from '@common/decorators/user-data.decorator';
 import { CheckoutCommand } from '../../application/commands/checkout/checkout.command';
+import { CheckoutGrpcRequest } from '../dtos/checkout.dto';
 import {
   SHIPPING_FREE_THRESHOLD,
   calculateShippingFee,
@@ -141,7 +142,7 @@ export class OrderController {
   }
 
   @GrpcMethod('OrderService', 'checkout')
-  async checkout(data: any) {
+  async checkout(data: CheckoutGrpcRequest) {
     return this.commandBus.execute(
       new CheckoutCommand(
         data.userId,

@@ -21,7 +21,7 @@ async function bootstrap() {
 
     app.setGlobalPrefix(globalPrefix);
     // Điều kiện để validate và chuyển đổi kiểu dữ liệu
-    app.useGlobalPipes(new ValidationPipe({ transform: true }));
+    app.useGlobalPipes(new ValidationPipe({ transform: true, whitelist: true }));
     app.useGlobalFilters(new GlobalExceptionFilter());
 
     app.enableCors({
@@ -43,7 +43,10 @@ async function bootstrap() {
       .build();
 
     const documentFactory = () => SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup(`${globalPrefix}/docs`, app, documentFactory);
+    // Swagger phơi toàn bộ schema API — chỉ dựng ngoài production.
+    if (process.env.NODE_ENV !== 'production') {
+      SwaggerModule.setup(`${globalPrefix}/docs`, app, documentFactory);
+    }
 
     const port = CONFIG.APP_CONFIG.PORT;
     // await app.listen(port);

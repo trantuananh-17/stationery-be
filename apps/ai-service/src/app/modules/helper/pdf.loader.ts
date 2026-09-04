@@ -182,7 +182,7 @@ export async function loadPdfAsDocuments(filePath: string): Promise<Document[]> 
     const content = await page.getTextContent();
 
     const pageText = content.items
-      .map((item: any) => item.str)
+      .map((item) => ('str' in item ? item.str : ''))
       .join('\n')
       .normalize('NFC');
 

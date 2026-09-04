@@ -1,17 +1,20 @@
 import { Catch, RpcExceptionFilter } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
 import { status } from '@grpc/grpc-js';
+import { GrpcErrorLike } from '@common/interfaces/grpc/grpc-error.interface';
 
 import { EmailAlreadyExistsError } from '../../domain/errors/email-already-exists.error';
 import { InvalidEmail } from '../../domain/errors/email-invalid.error';
 
 @Catch()
 export class UserGrpcExceptionFilter implements RpcExceptionFilter {
-  catch(exception: any): Observable<any> {
-    if (exception?.code && typeof exception.code === 'number') {
+  catch(exception: unknown): Observable<never> {
+    const grpcError = exception as GrpcErrorLike;
+
+    if (typeof grpcError?.code === 'number') {
       return throwError(() => ({
-        code: exception.code,
-        message: exception.details || exception.message,
+        code: grpcError.code,
+        message: grpcError.details || grpcError.message,
       }));
     }
 
@@ -31,7 +34,7 @@ export class UserGrpcExceptionFilter implements RpcExceptionFilter {
 
     return throwError(() => ({
       code: status.INTERNAL,
-      message: exception?.message || 'Internal error',
+      message: grpcError?.message || 'Internal error',
     }));
   }
 }

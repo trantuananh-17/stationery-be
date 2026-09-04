@@ -3,7 +3,7 @@ import { Observable, tap } from 'rxjs';
 
 @Injectable()
 export class GrpcLoggingInterceptor implements NestInterceptor {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const now = Date.now();
 
     const handler = context.getHandler();
@@ -13,9 +13,6 @@ export class GrpcLoggingInterceptor implements NestInterceptor {
 
     // payload request
     const data = rpcContext.getData();
-
-    // metadata grpc (token, headers...)
-    const metadata = rpcContext.getContext();
 
     Logger.log(
       `gRPC >> Start process >> method: '${handlerName}' at '${now}' >> payload: ${JSON.stringify(data)}`,

@@ -35,7 +35,7 @@ export const GRPC_HTTP_STATUS: Record<number, HttpStatus> = {
 export class ExceptionInterceptor implements NestInterceptor {
   private readonly logger = new Logger(ExceptionInterceptor.name);
 
-  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const ctx = context.switchToHttp();
 
     const request: Request & {

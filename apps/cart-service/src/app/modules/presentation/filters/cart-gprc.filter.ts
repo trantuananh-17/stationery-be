@@ -2,6 +2,7 @@
 
 import { Catch, RpcExceptionFilter } from '@nestjs/common';
 import { status } from '@grpc/grpc-js';
+import { GrpcErrorLike } from '@common/interfaces/grpc/grpc-error.interface';
 import { Observable, throwError } from 'rxjs';
 
 import {
@@ -23,11 +24,13 @@ import {
 
 @Catch()
 export class CartGrpcExceptionFilter implements RpcExceptionFilter {
-  catch(exception: any): Observable<any> {
-    if (exception?.code && typeof exception.code === 'number') {
+  catch(exception: unknown): Observable<never> {
+    const grpcError = exception as GrpcErrorLike;
+
+    if (typeof grpcError?.code === 'number') {
       return throwError(() => ({
-        code: exception.code,
-        message: exception.details || exception.message,
+        code: grpcError.code,
+        message: grpcError.details || grpcError.message,
       }));
     }
 
@@ -77,7 +80,7 @@ export class CartGrpcExceptionFilter implements RpcExceptionFilter {
 
     return throwError(() => ({
       code: status.INTERNAL,
-      message: exception?.message || 'Internal error',
+      message: grpcError?.message || 'Internal error',
     }));
   }
 }

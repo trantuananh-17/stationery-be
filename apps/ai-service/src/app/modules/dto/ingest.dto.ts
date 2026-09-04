@@ -7,7 +7,7 @@ class IngestDocDto {
 
   @IsOptional()
   @IsObject()
-  meta?: Record<string, any>;
+  meta?: Record<string, unknown>;
 }
 
 export class IngestBodyDto {

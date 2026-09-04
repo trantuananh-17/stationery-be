@@ -1,5 +1,21 @@
 import { ChatTokenUsageDto } from '../dto/product-ai.dto';
 
+/**
+ * Chỉ khai những field thật sự được đọc. Mỗi provider LLM đặt tên một kiểu
+ * (snake_case của OpenAI, camelCase của LangChain) nên phải chấp nhận cả hai.
+ */
+type TokenUsageSource = {
+  usage_metadata?: {
+    input_tokens?: number;
+    output_tokens?: number;
+    total_tokens?: number;
+  };
+  response_metadata?: {
+    tokenUsage?: Record<string, number | undefined>;
+    token_usage?: Record<string, number | undefined>;
+  };
+};
+
 export function emptyTokenUsage(): ChatTokenUsageDto {
   return {
     inputTokens: 0,
@@ -8,7 +24,7 @@ export function emptyTokenUsage(): ChatTokenUsageDto {
   };
 }
 
-export function extractTokenUsage(message: any): ChatTokenUsageDto {
+export function extractTokenUsage(message?: TokenUsageSource | null): ChatTokenUsageDto {
   const usageMetadata = message?.usage_metadata;
 
   if (usageMetadata) {

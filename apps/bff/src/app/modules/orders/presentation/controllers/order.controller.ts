@@ -56,7 +56,7 @@ export class OrderController {
   @ApiOperation({ summary: 'Checkout order' })
   @ApiOkResponse({ type: ResponseDto<CheckoutGrpcResponse> })
   @HttpCode(HttpStatus.OK)
-  async checkout(@UserData() user: any, @Body() body: CheckoutDto) {
+  async checkout(@UserData() user: JwtPayload, @Body() body: CheckoutDto) {
     const result = await this.checkoutUseCase.execute({
       userId: user.userId,
       email: user.email,

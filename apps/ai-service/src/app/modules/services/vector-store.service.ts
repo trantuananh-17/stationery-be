@@ -11,6 +11,11 @@ import { loadPdfAsDocuments } from '../helper/pdf.loader';
 import { OpenAIEmbeddings } from '@langchain/openai';
 import { EmbeddingsInterface } from '@langchain/core/embeddings';
 
+/** PGVectorStore có sẵn connection pool nhưng không khai trong type public. */
+type PgVectorStoreWithPool = {
+  pool: { query(sql: string, params: unknown[]): Promise<unknown> };
+};
+
 @Injectable()
 export class VectorStoreService implements OnModuleInit {
   private embeddings!: EmbeddingsInterface;
@@ -86,7 +91,7 @@ export class VectorStoreService implements OnModuleInit {
 
     const chunks = await splitter.splitDocuments(documents);
 
-    await (this.vectorStore as any).pool.query(
+    await (this.vectorStore as unknown as PgVectorStoreWithPool).pool.query(
       `DELETE FROM chatbot_documents WHERE metadata->>'source' = $1`,
       [filePath],
     );

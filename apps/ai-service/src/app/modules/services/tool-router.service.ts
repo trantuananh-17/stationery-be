@@ -47,7 +47,7 @@ export class ToolRouterService {
 
     const llmWithTools = this.aiLlmService.client.bindTools(tools, {
       tool_choice: 'required',
-    } as any);
+    });
 
     const toolChoiceMessage = await llmWithTools.invoke([
       new SystemMessage(
@@ -382,6 +382,6 @@ Intent:
           },
         },
       },
-    ] as any[];
+    ];
   }
 }

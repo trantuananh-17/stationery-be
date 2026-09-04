@@ -5,8 +5,8 @@ import { Observable, tap } from 'rxjs';
 export class TcpLoggingInterceptor implements NestInterceptor {
   intercept(
     context: ExecutionContext,
-    next: CallHandler<any>,
-  ): Observable<any> | Promise<Observable<any>> {
+    next: CallHandler,
+  ): Observable<unknown> | Promise<Observable<unknown>> {
     const now = Date.now();
     const handler = context.getHandler();
     const handlerName = handler.name;

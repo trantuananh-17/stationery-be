@@ -1,11 +1,12 @@
 import { Injectable, Logger, NestMiddleware } from '@nestjs/common';
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
+import { RequestWithMetadata } from '@common/interfaces/common/request-with-metadata.interface';
 import { getProcessId } from '@common/utils/string.util';
 import { MetadataKeys } from '@common/constants/common.constant';
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
-  use(req: Request, res: Response, next: NextFunction) {
+  use(req: RequestWithMetadata, res: Response, next: NextFunction) {
     const startTime = Date.now();
     const { method, originalUrl, body } = req;
 
@@ -16,10 +17,8 @@ export class LoggerMiddleware implements NestMiddleware {
 
     // Truyền metadate xuống req để log trong các service sau này
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (req as any)[MetadataKeys.PROCESS_ID] = processId;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (req as any)[MetadataKeys.START_TIME] = startTime;
+    req[MetadataKeys.PROCESS_ID] = processId;
+    req[MetadataKeys.START_TIME] = startTime;
 
     Logger.log(
       `HTTP >> Start process '${processId}' >> path: '${originalUrl}' >> method: '${method}' at '${now}' >> input: ${JSON.stringify(

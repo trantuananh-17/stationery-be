@@ -1,12 +1,13 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { RequestWithMetadata } from '@common/interfaces/common/request-with-metadata.interface';
 
 @Injectable()
 export class OptionalJwtAuthGuard implements CanActivate {
   constructor(private readonly jwtService: JwtService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<RequestWithMetadata>();
 
     const token = this.extractToken(request);
 
@@ -27,7 +28,7 @@ export class OptionalJwtAuthGuard implements CanActivate {
     }
   }
 
-  private extractToken(request: any): string | null {
+  private extractToken(request: RequestWithMetadata): string | null {
     const authHeader = request.headers?.authorization;
 
     if (!authHeader) return null;

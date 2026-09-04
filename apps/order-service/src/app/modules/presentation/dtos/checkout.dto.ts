@@ -1,3 +1,4 @@
+import { OrderAddress } from '../../domain/entities/order.entity';
 import { Type } from 'class-transformer';
 import { IsNotEmpty, IsOptional, IsString, ValidateNested } from 'class-validator';
 
@@ -52,3 +53,14 @@ export class CheckoutDto {
   @IsString()
   couponCode?: string;
 }
+
+/** Payload của rpc `checkout` — userId/email do BFF lấy từ JWT rồi gửi kèm. */
+export type CheckoutGrpcRequest = {
+  userId: string;
+  email: string;
+  shippingAddress: OrderAddress;
+  billingAddress: OrderAddress;
+  paymentMethod: string;
+  notes?: string;
+  couponCode?: string;
+};

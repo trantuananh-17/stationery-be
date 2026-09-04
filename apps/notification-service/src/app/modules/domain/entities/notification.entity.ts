@@ -8,7 +8,7 @@ export type NotificationParams = {
   type: NotificationType;
   status: NotificationStatus;
   receiverId: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   readonly createdAt: Date;
   updatedAt: Date;
   readAt?: Date;
@@ -22,7 +22,7 @@ export class Notification {
     type: NotificationType,
     title: string,
     message: string,
-    metadata?: Record<string, any>,
+    metadata?: Record<string, unknown>,
   ) {
     const now = new Date();
 
@@ -87,7 +87,7 @@ export class Notification {
     return this.params.receiverId;
   }
 
-  get metadata(): Record<string, any> | undefined {
+  get metadata(): Record<string, unknown> | undefined {
     return this.params.metadata;
   }
 

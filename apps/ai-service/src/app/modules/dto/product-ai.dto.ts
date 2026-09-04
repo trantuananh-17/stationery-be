@@ -12,6 +12,7 @@ export interface SearchProductsForAdvisorRequest {
   budget_max?: number;
   sort_by?: ProductAiSortBy;
   limit?: number;
+  advisor_intent?: string;
 }
 
 export interface AdvisorProduct {
