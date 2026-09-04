@@ -2,6 +2,18 @@ import { Observable } from 'rxjs';
 import {
   CheckoutGrpcRequest,
   CheckoutGrpcResponse,
+  CouponGrpcDto,
+  CouponIdGrpcRequest,
+  CouponIdGrpcResponse,
+  CouponInputGrpcRequest,
+  CouponResponse,
+  CouponsResponse,
+  GetCouponsGrpcRequest,
+  UpdateCouponGrpcRequest,
+  ValidateCouponGrpcRequest,
+  ValidateCouponGrpcResponse,
+  ShippingQuoteGrpcRequest,
+  ShippingQuoteGrpcResponse,
   GetMyOrderGrpcRequest,
   GetOrderGrpcRequest,
   GetOrdersAdminGrpcRequest,
@@ -10,7 +22,7 @@ import {
   OrdersAdminGrpcResponse,
   OrdersByUserIdGrpcResponse,
   UpdateOrderStatusRequest,
-} from '../../applications/ports/dtos/order.dto';
+} from '../../application/ports/dtos/order.dto';
 
 export interface OrderGrpcService {
   checkout(data: CheckoutGrpcRequest): Observable<CheckoutGrpcResponse>;
@@ -18,5 +30,17 @@ export interface OrderGrpcService {
   getOrder(data: GetOrderGrpcRequest): Observable<OrderDetailGrpcResponse>;
   getMyOrder(data: GetMyOrderGrpcRequest): Observable<OrderDetailGrpcResponse>;
   updateOrderStatus(data: UpdateOrderStatusRequest): Observable<void>;
+  getCoupons(data: GetCouponsGrpcRequest): Observable<CouponsResponse>;
+
+  createCoupon(data: CouponInputGrpcRequest): Observable<CouponResponse>;
+
+  updateCoupon(data: UpdateCouponGrpcRequest): Observable<CouponResponse>;
+
+  deleteCoupon(data: CouponIdGrpcRequest): Observable<CouponIdGrpcResponse>;
+
+  validateCoupon(data: ValidateCouponGrpcRequest): Observable<ValidateCouponGrpcResponse>;
+
+  getShippingQuote(data: ShippingQuoteGrpcRequest): Observable<ShippingQuoteGrpcResponse>;
+
   getOrdersByUserId(data: GetOrdersByUserIdGrpcRequest): Observable<OrdersByUserIdGrpcResponse>;
 }

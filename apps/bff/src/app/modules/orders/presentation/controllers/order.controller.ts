@@ -19,23 +19,23 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
-import { CheckoutUseCase } from '../../applications/checkout.usecase';
-import { GetMyOrderUseCase } from '../../applications/get-my-order.usecase';
-import { GetOrderUseCase } from '../../applications/get-order.usecase';
-import { GetOrdersAdminUseCase } from '../../applications/get-orders-admin.usecase';
+import { CheckoutUseCase } from '../../application/checkout.usecase';
+import { GetMyOrderUseCase } from '../../application/get-my-order.usecase';
+import { GetOrderUseCase } from '../../application/get-order.usecase';
+import { GetOrdersAdminUseCase } from '../../application/get-orders-admin.usecase';
 import {
   CheckoutGrpcResponse,
   OrderDetailGrpcResponse,
   OrdersAdminGrpcResponse,
   OrdersByUserIdGrpcResponse,
-} from '../../applications/ports/dtos/order.dto';
+} from '../../application/ports/dtos/order.dto';
 import { CheckoutDto } from '../dtos/checkout.dto';
 import { GetOrderDto } from '../dtos/get-order.dto';
 import { GetOrdersAdminDto } from '../dtos/get-orders-admin.dto';
 import { OrderUpdateStatusDto } from '../dtos/update-status.dto';
-import { UpdateOrderStatusUseCase } from '../../applications/update-order-status.usecase';
+import { UpdateOrderStatusUseCase } from '../../application/update-order-status.usecase';
 import { UserPort } from '../../../user/application/ports/user.port';
-import { GetOrdersByUserIdUseCase } from '../../applications/get-orders-userid.usecase';
+import { GetOrdersByUserIdUseCase } from '../../application/get-orders-userid.usecase';
 import { GetOrdersByUserIdDto } from '../dtos/get-orders-by-user-id.dto';
 
 @ApiTags('Orders')

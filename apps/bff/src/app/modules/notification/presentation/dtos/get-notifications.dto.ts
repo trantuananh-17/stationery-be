@@ -4,7 +4,7 @@ import { IsEnum, IsNumberString, IsOptional, IsUUID } from 'class-validator';
 import {
   NotificationStatus,
   NotificationType,
-} from '../../applications/ports/dtos/notification.dto';
+} from '../../application/ports/dtos/notification.dto';
 
 export class GetNotificationsDto {
   @ApiPropertyOptional({

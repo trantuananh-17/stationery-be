@@ -9,7 +9,7 @@ import { ProductReadModel } from '../../application/read-models/product.read-mod
 import { AdminProductOrderBy, ProductOrderBy } from '../../domain/enum/product-orderby.enum';
 import { ProductStatus } from '../../domain/enum/product-status.enum';
 import { ProductOrmEntity } from '../entities/typeorm-product.entity';
-import { SpecificationOrmEntity } from '../entities/typeorm-specification.enity';
+import { SpecificationOrmEntity } from '../entities/typeorm-specification.entity';
 import { VariantOrmEntity } from '../entities/typeorm-variant.entity';
 import {
   GetProductAiDto,

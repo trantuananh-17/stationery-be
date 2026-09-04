@@ -1,6 +1,6 @@
 import { Column, Entity, OneToMany } from 'typeorm';
 import { BaseEntity } from '@common/databases/base.entity';
-import { SpecificationOrmEntity } from './typeorm-specification.enity';
+import { SpecificationOrmEntity } from './typeorm-specification.entity';
 import { AttributeValueOrmEntity } from './typeorm-attribute-value.entity';
 
 @Entity({ name: 'attributes' })

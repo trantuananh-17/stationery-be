@@ -10,10 +10,12 @@ import { VectorStoreService } from './services/vector-store.service';
 import { ToolRouterService } from './services/tool-router.service';
 import { RagToolService } from './services/rag-tool.service';
 import { ProductAdvisorToolService } from './services/product-advisor-tool.service';
+import { ProductVectorService } from './services/product-vector.service';
+import { ProductSearchController } from './controllers/product-search.controller';
 
 @Module({
   imports: [ClientsModule.registerAsync([GrpcProvider(GRPC_SERVICES.PRODUCT_SERVICE)])],
-  controllers: [ChatController, ProductAiController],
+  controllers: [ChatController, ProductAiController, ProductSearchController],
   providers: [
     ChatService,
     AiLlmService,
@@ -22,6 +24,7 @@ import { ProductAdvisorToolService } from './services/product-advisor-tool.servi
     RagToolService,
     ProductAdvisorToolService,
     ProductAiGrpcClientService,
+    ProductVectorService,
   ],
   exports: [ChatService],
 })

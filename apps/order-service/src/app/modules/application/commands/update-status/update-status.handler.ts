@@ -47,6 +47,20 @@ export class UpdateStatusHandler implements ICommandHandler<UpdateStatusCommand,
 
       case OrderStatus.DELIVERED:
         order.markDelivered();
+
+        // Đơn COD chốt kho ở bước giao thành công; đơn Stripe đã chốt lúc thanh toán.
+        if (order.paymentMethod === 'cod') {
+          projectionPromises.push(
+            this.eventPublisher.emitOrderConfirmed({
+              eventId: crypto.randomUUID(),
+              items: order.items.map((item) => ({
+                variantId: item.variantId,
+                quantity: item.quantity,
+              })),
+            }),
+          );
+        }
+
         if (order.paymentMethod === 'cod' && order.paymentStatus !== PaymentStatus.PAID) {
           order.markPaid();
 
@@ -78,8 +92,40 @@ export class UpdateStatusHandler implements ICommandHandler<UpdateStatusCommand,
         );
         break;
 
+      case OrderStatus.RETURNED:
+        order.markReturned();
+
+        // Trả hàng: hoàn kho phần đã trừ thật (khác 'order.canceled' vốn chỉ nhả phần đang giữ).
+        projectionPromises.push(
+          this.eventPublisher.emitOrderReturned({
+            eventId: crypto.randomUUID(),
+            items: order.items.map((item) => ({
+              variantId: item.variantId,
+              quantity: item.quantity,
+            })),
+          }),
+        );
+
+        // Đơn đã thanh toán thì đánh dấu hoàn tiền; đơn COD chưa thu tiền thì không.
+        if (order.paymentStatus === PaymentStatus.PAID) {
+          order.refund(order.paymentTransactionId);
+        }
+
+        break;
+
       case OrderStatus.CANCELLED:
         order.cancel();
+
+        projectionPromises.push(
+          this.eventPublisher.emitOrderCanceled({
+            eventId: crypto.randomUUID(),
+            items: order.items.map((item) => ({
+              variantId: item.variantId,
+              quantity: item.quantity,
+            })),
+          }),
+        );
+
         projectionPromises.push(
           this.eventPublisher.emitOrderCancelled({
             eventId: crypto.randomUUID(),

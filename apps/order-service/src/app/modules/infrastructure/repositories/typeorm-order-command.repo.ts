@@ -80,6 +80,7 @@ export class TypeOrmOrderCommandRepository implements IOrderCommandRepository {
         shippedAt: orm.shippedAt ?? undefined,
         deliveredAt: orm.deliveredAt ?? undefined,
         cancelledAt: orm.cancelledAt ?? undefined,
+        returnedAt: orm.returnedAt ?? undefined,
         paidAt: orm.paidAt ?? undefined,
         estimatedDelivery: orm.estimatedDelivery ?? undefined,
         createdAt: orm.createdAt,
@@ -167,6 +168,7 @@ export class TypeOrmOrderCommandRepository implements IOrderCommandRepository {
     orm.shippedAt = order.shippedAt ?? undefined;
     orm.deliveredAt = order.deliveredAt ?? undefined;
     orm.cancelledAt = order.cancelledAt ?? undefined;
+    orm.returnedAt = order.returnedAt ?? undefined;
     orm.estimatedDelivery = order.estimatedDelivery ?? undefined;
     orm.createdAt = order.createdAt;
     orm.updatedAt = order.updatedAt;

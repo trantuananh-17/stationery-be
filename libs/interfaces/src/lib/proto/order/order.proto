@@ -13,6 +13,91 @@ service OrderService {
   rpc getMyOrder (GetOrderRequest) returns (OrderDetailResponse);
   rpc updateOrderStatus (UpdateOrderStatusRequest) returns (google.protobuf.Empty);
   rpc getOrdersByUserId (GetOrdersByUserIdRequest) returns (OrdersByUserIdResponse);
+
+  rpc getCoupons (GetCouponsRequest) returns (CouponsResponse);
+  rpc createCoupon (CouponInputRequest) returns (CouponResponse);
+  rpc updateCoupon (UpdateCouponRequest) returns (CouponResponse);
+  rpc deleteCoupon (CouponIdRequest) returns (CouponIdResponse);
+  rpc validateCoupon (ValidateCouponRequest) returns (ValidateCouponResponse);
+  rpc getShippingQuote (ShippingQuoteRequest) returns (ShippingQuoteResponse);
+}
+
+message ShippingQuoteRequest {
+  double amount = 1;
+}
+
+message ShippingQuoteResponse {
+  double fee = 1;
+  double free_threshold = 2;
+}
+
+message CouponGrpcDto {
+  string id = 1;
+  string code = 2;
+  string type = 3;
+  double value = 4;
+  double min_order_amount = 5;
+  double max_discount = 6;
+  google.protobuf.Timestamp starts_at = 7;
+  google.protobuf.Timestamp expires_at = 8;
+  int32 usage_limit = 9;
+  int32 used_count = 10;
+  bool is_active = 11;
+}
+
+message GetCouponsRequest {
+  optional string search = 1;
+  optional int32 page = 2;
+  optional int32 limit = 3;
+}
+
+message CouponsResponse {
+  repeated CouponGrpcDto data = 1;
+
+  int32 total = 2;
+  int32 page = 3;
+  int32 limit = 4;
+  int32 total_pages = 5;
+}
+
+message CouponResponse {
+  CouponGrpcDto data = 1;
+}
+
+message CouponInputRequest {
+  string code = 1;
+  string type = 2;
+  double value = 3;
+  optional double min_order_amount = 4;
+  optional double max_discount = 5;
+  optional string starts_at = 6;
+  optional string expires_at = 7;
+  optional int32 usage_limit = 8;
+  optional bool is_active = 9;
+}
+
+message UpdateCouponRequest {
+  string coupon_id = 1;
+  CouponInputRequest input = 2;
+}
+
+message CouponIdRequest {
+  string coupon_id = 1;
+}
+
+message CouponIdResponse {
+  string coupon_id = 1;
+}
+
+message ValidateCouponRequest {
+  string code = 1;
+  double subtotal = 2;
+}
+
+message ValidateCouponResponse {
+  string code = 1;
+  string type = 2;
+  double discount = 3;
 }
 
 message GetOrderRequest {

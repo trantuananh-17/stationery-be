@@ -104,6 +104,9 @@ services:
     env_file:
       - ../.env
       - ../apps/bff/.env
+    environment:
+      # .env của bff trỏ localhost; trong mạng compose phải trỏ tên service.
+      AI_SERVICE_URL: http://ai-service:3413/api/v1
     ports:
       - '3400:3400'
     depends_on:
@@ -252,6 +255,8 @@ services:
     env_file:
       - ../.env
       - ../apps/notification-service/.env
+    ports:
+      - '3406:3406'
     expose:
       - '5006'
     depends_on:
@@ -308,6 +313,33 @@ services:
     networks:
       - stationery-nw
 
+  ai-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.provider
+      args:
+        APP_NAME: ai-service
+    container_name: ai_service
+    restart: unless-stopped
+    env_file:
+      - ../.env
+      - ../apps/ai-service/.env
+    environment:
+      # .env cua ai-service tro localhost (dung cho dev ngoai docker);
+      # trong mang compose phai tro ten service.
+      POSTGRES_HOST: postgres
+      OLLAMA_BASE_URL: http://ollama:11434
+      PRODUCT_SERVICE_HOST: product-service
+    ports:
+      - '3413:3413'
+    depends_on:
+      postgres:
+        condition: service_started
+      ollama:
+        condition: service_started
+    networks:
+      - stationery-nw
+
   payment-service:
     build:
       context: ..
@@ -322,7 +354,7 @@ services:
     ports:
       - '3409:3409'
     expose:
-      - '5009'
+      - '5008'
     depends_on:
       kafka:
         condition: service_healthy

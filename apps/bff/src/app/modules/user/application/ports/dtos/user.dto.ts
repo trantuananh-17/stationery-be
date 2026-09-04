@@ -1,4 +1,86 @@
 import { GrpcTimestamp } from '@common/interfaces/grpc/common/timestamp.interface';
+export interface WishlistItemDto {
+  id: string;
+  productId: string;
+  productName: string;
+  productSlug: string;
+  thumbnail: string;
+  price: number;
+}
+
+export interface WishlistResponse {
+  data: WishlistItemDto[];
+}
+
+export interface AddWishlistItemRequest {
+  userId: string;
+  productId: string;
+  productName: string;
+  productSlug: string;
+  thumbnail: string;
+  price: number;
+}
+
+export interface RemoveWishlistItemRequest {
+  userId: string;
+  productId: string;
+}
+
+export interface WishlistActionResponse {
+  productId: string;
+  added: boolean;
+}
+
+export interface AddressResponseDto {
+  id: string;
+  userId: string;
+  fullName: string;
+  phone: string;
+  address1: string;
+  address2?: string;
+  ward: string;
+  district: string;
+  city: string;
+  isDefault: boolean;
+  createdAt: GrpcTimestamp;
+}
+
+export interface AddressesResponse {
+  data: AddressResponseDto[];
+}
+
+export interface AddressResponse {
+  data: AddressResponseDto;
+}
+
+export interface AddressIdResponse {
+  addressId: string;
+}
+
+export interface AddressInputRequest {
+  fullName: string;
+  phone: string;
+  address1: string;
+  address2?: string;
+  ward: string;
+  district: string;
+  city: string;
+  isDefault: boolean;
+}
+
+export interface CreateAddressRequest extends AddressInputRequest {
+  userId: string;
+}
+
+export interface UpdateAddressRequest extends CreateAddressRequest {
+  addressId: string;
+}
+
+export interface AddressActionRequest {
+  userId: string;
+  addressId: string;
+}
+
 export interface CreateUserRequest {
   email: string;
   firstName: string;

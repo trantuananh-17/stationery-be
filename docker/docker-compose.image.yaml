@@ -160,6 +160,8 @@ services:
     env_file:
       - ../.env
       - ../apps/notification-service/.env
+    ports:
+      - '3406:3406'
     expose:
       - '5006'
     networks:
@@ -201,6 +203,6 @@ services:
     ports:
       - '3409:3409'
     expose:
-      - '5009'
+      - '5008'
     networks:
       - stationery-nw

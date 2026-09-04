@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ClientsModule } from '@nestjs/microservices';
 import { GRPC_SERVICES, GrpcProvider } from '@common/configuration/grpc.config';
 import { CartGrpcAdapter } from './grpc/cart-grpc.adapter';
-import { CartPort } from '../applications/ports/cart.port';
+import { CartPort } from '../application/ports/cart.port';
 
 @Module({
   imports: [ClientsModule.registerAsync([GrpcProvider(GRPC_SERVICES.CART_SERVICE)])],

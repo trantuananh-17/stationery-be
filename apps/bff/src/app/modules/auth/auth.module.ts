@@ -6,11 +6,21 @@ import { LoginUserUseCase } from './application/login-user.usecase';
 import { JwtProvider } from '@common/configuration/jwt.config';
 import { GuardsModule } from '@common/guards/guards.module';
 import { RefreshTokenUseCase } from './application/refresh-token.usecase';
+import {
+  ForgotPasswordUseCase,
+  ResetPasswordUseCase,
+} from './application/password-reset.usecase';
 
 @Module({
   imports: [AuthInfrasModule, JwtProvider, GuardsModule],
   controllers: [AuthController],
-  providers: [RegisterUserUseCase, LoginUserUseCase, RefreshTokenUseCase],
+  providers: [
+    RegisterUserUseCase,
+    LoginUserUseCase,
+    RefreshTokenUseCase,
+    ForgotPasswordUseCase,
+    ResetPasswordUseCase,
+  ],
   exports: [JwtProvider, GuardsModule],
 })
 export class AuthModule {}

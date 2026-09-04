@@ -35,6 +35,17 @@ export class HandlePaymentHandler implements ICommandHandler<HandlePaymentComman
 
         order.markPaid(paymentTransactionId, paymentProvider);
 
+        // Chốt kho: chuyển phần đang giữ thành đã trừ thật.
+        projectionPromises.push(
+          this.eventPublisher.emitOrderConfirmed({
+            eventId,
+            items: order.items.map((item) => ({
+              variantId: item.variantId,
+              quantity: item.quantity,
+            })),
+          }),
+        );
+
         projectionPromises.push(
           this.eventPublisher.emitSyncUserSumary({
             userId: order.userId,

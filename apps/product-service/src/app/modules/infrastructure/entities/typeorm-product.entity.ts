@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from '@common/databases/base.entity';
 import { VariantOrmEntity } from './typeorm-variant.entity';
 import { ProductStatus } from '../../domain/enum/product-status.enum';
-import { SpecificationOrmEntity } from './typeorm-specification.enity';
+import { SpecificationOrmEntity } from './typeorm-specification.entity';
 import { CategoryOrmEntity } from './typeorm-category.entity';
 import { BrandOrmEntity } from './typeorm-brand.entity';
 

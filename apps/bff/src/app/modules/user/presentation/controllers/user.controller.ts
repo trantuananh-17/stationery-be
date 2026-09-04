@@ -12,12 +12,15 @@ import {
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { UserData } from '@common/decorators/user-data.decorator';
 import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
+import { RoleGuard } from '@common/guards/role.guard';
+import { Roles } from '@common/decorators/role.decorator';
+import { ROLE } from '@common/constants/enums/role.enum';
 import { ResponseDto } from '@common/interfaces/gateway/response.interface';
 import { UserAdminDetailResponse, UsersResponse } from '../../application/ports/dtos/user.dto';
 import { UserPort } from '../../application/ports/user.port';
 import { CreateUserDto } from '../dtos/create-user.dto';
 import { GetUsersDto } from '../dtos/get-users.dto';
-import { RegisterReponseDto } from '../dtos/register-response.dto';
+import { RegisterResponseDto } from '../dtos/register-response.dto';
 
 @ApiTags('User')
 @Controller('users')
@@ -27,7 +30,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Post()
   @ApiOkResponse({
-    type: ResponseDto<RegisterReponseDto>,
+    type: ResponseDto<RegisterResponseDto>,
   })
   @ApiOperation({
     summary: 'Create a new user',
@@ -55,7 +58,8 @@ export class UserController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles([ROLE.ADMIN])
   @Get()
   @ApiOperation({
     summary: 'Get users for admin',
@@ -76,7 +80,8 @@ export class UserController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles([ROLE.ADMIN])
   @Get(':userId')
   @ApiOperation({
     summary: 'Get user detail for admin',

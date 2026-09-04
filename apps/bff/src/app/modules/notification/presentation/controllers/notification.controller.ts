@@ -19,11 +19,11 @@ import { UserData } from '@common/decorators/user-data.decorator';
 import { ResponseDto } from '@common/interfaces/gateway/response.interface';
 
 import { GetNotificationsDto } from '../dtos/get-notifications.dto';
-import { NotificationPort } from '../../applications/ports/notification.port';
+import { NotificationPort } from '../../application/ports/notification.port';
 import {
   GetNotificationsResponse,
   GetUnreadCountResponse,
-} from '../../applications/ports/dtos/notification.dto';
+} from '../../application/ports/dtos/notification.dto';
 
 @ApiTags('Notifications')
 @Controller('notifications')

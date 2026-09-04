@@ -97,6 +97,9 @@ export class OrderOrmEntity extends BaseEntity {
   @Column({ name: 'cancelled_at', type: 'timestamp', nullable: true })
   cancelledAt?: Date | null;
 
+  @Column({ name: 'returned_at', type: 'timestamp', nullable: true })
+  returnedAt?: Date | null;
+
   @Column({ name: 'estimated_delivery', type: 'timestamp', nullable: true })
   estimatedDelivery?: Date | null;
 

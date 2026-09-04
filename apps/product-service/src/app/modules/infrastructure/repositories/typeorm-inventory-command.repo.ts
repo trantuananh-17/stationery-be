@@ -112,4 +112,8 @@ export class TypeOrmInventoryCommandRepository implements IInventoryCommandRepos
 
     return !!result.affected;
   }
+
+  async setStock(variantId: string, stock: number): Promise<void> {
+    await this.variantRepo.update({ id: variantId }, { stock });
+  }
 }

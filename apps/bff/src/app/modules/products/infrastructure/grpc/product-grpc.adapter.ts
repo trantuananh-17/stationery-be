@@ -5,6 +5,15 @@ import { firstValueFrom } from 'rxjs';
 
 import { ProductPort } from '../../application/ports/product.port';
 import {
+  CreateReviewBodyDto,
+  DeleteReviewBodyDto,
+  GetReviewsBodyDto,
+  ReviewIdResponse,
+  ReviewsResponse,
+  AdjustStockBodyDto,
+  AdjustStockResponse,
+  GetInventoriesBodyDto,
+  InventoriesResponse,
   CreateProductBodyDto,
   GetProductByIdBodyDto,
   GetProductBySlugBodyDto,
@@ -74,6 +83,26 @@ export class ProductGrpcAdapter implements ProductPort, OnModuleInit {
   deleteProduct(data: GetProductByIdBodyDto): Promise<ProductMutationResponse> {
     return firstValueFrom(this.productService.deleteProduct(data));
   }
+  getInventories(query: GetInventoriesBodyDto): Promise<InventoriesResponse> {
+    return firstValueFrom(this.productService.getInventories(query));
+  }
+
+  adjustStock(data: AdjustStockBodyDto): Promise<AdjustStockResponse> {
+    return firstValueFrom(this.productService.adjustStock(data));
+  }
+
+  getReviews(query: GetReviewsBodyDto): Promise<ReviewsResponse> {
+    return firstValueFrom(this.productService.getReviews(query));
+  }
+
+  createReview(data: CreateReviewBodyDto): Promise<ReviewIdResponse> {
+    return firstValueFrom(this.productService.createReview(data));
+  }
+
+  deleteReview(data: DeleteReviewBodyDto): Promise<ProductIdResponse> {
+    return firstValueFrom(this.productService.deleteReview(data));
+  }
+
   restoreProduct(data: GetProductByIdBodyDto): Promise<ProductMutationResponse> {
     return firstValueFrom(this.productService.restoreProduct(data));
   }

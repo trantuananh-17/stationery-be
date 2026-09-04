@@ -14,6 +14,15 @@ export interface LoginUserBodyDto {
   password: string;
 }
 
+export interface ForgotPasswordBodyDto {
+  email: string;
+}
+
+export interface ResetPasswordBodyDto {
+  token: string;
+  password: string;
+}
+
 export interface RefreshTokenBodyDto {
   refreshToken: string;
 }

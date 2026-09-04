@@ -10,8 +10,13 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
+import { RoleGuard } from '@common/guards/role.guard';
+import { Roles } from '@common/decorators/role.decorator';
+import { ROLE } from '@common/constants/enums/role.enum';
 import { GetProductByIdUseCase } from '../../application/get-product-id.usecase';
 import { ProductResponseDto } from '../dtos/product-response.dto';
 import { GetProductsResponseDto } from '../dtos/get-products-response.dto';
@@ -35,6 +40,9 @@ export class ProductController {
   ) {}
 
   @Post()
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles([ROLE.ADMIN])
   @ApiOkResponse({ type: ResponseDto<ProductResponseDto> })
   @ApiOperation({ summary: 'Create a new product' })
   @HttpCode(HttpStatus.CREATED)
@@ -47,6 +55,9 @@ export class ProductController {
   }
 
   @Patch(':id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RoleGuard)
+  @Roles([ROLE.ADMIN])
   @ApiOkResponse({ type: ResponseDto<ProductResponseDto> })
   @ApiOperation({ summary: 'Update product' })
   @HttpCode(HttpStatus.OK)

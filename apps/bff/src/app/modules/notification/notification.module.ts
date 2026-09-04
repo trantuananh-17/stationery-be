@@ -3,8 +3,8 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { ClientsModule } from '@nestjs/microservices';
 import { GRPC_SERVICES, GrpcProvider } from '@common/configuration/grpc.config';
 import { AuthModule } from '../auth/auth.module';
-import { NotificationPort } from './applications/ports/notification.port';
-import { NotificationGrpcAdapter } from './infrastructure/grpc/notifcation-grpc.adapter';
+import { NotificationPort } from './application/ports/notification.port';
+import { NotificationGrpcAdapter } from './infrastructure/grpc/notification-grpc.adapter';
 import { NotificationController } from './presentation/controllers/notification.controller';
 
 @Module({

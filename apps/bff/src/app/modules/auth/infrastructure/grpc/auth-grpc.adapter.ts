@@ -9,6 +9,8 @@ import {
   RegisterUserBodyDto,
   UserResponse,
   RefreshTokenBodyDto,
+  ForgotPasswordBodyDto,
+  ResetPasswordBodyDto,
 } from '../../application/ports/dtos/auth.dto';
 import { AuthGrpcService } from './auth-grpc.interface';
 
@@ -31,6 +33,14 @@ export class AuthGrpcAdapter implements AuthPort, OnModuleInit {
 
   loginUser(data: LoginUserBodyDto): Promise<AuthTokenResponse> {
     return firstValueFrom(this.authService.loginUser(data));
+  }
+
+  forgotPassword(data: ForgotPasswordBodyDto): Promise<void> {
+    return firstValueFrom(this.authService.forgotPassword(data));
+  }
+
+  resetPassword(data: ResetPasswordBodyDto): Promise<void> {
+    return firstValueFrom(this.authService.resetPassword(data));
   }
 
   refreshToken(data: RefreshTokenBodyDto): Promise<AuthTokenResponse> {

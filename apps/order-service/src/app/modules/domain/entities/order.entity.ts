@@ -40,6 +40,7 @@ export type OrderParams = {
   shippedAt?: Date;
   deliveredAt?: Date;
   cancelledAt?: Date;
+  returnedAt?: Date;
   estimatedDelivery?: Date;
   readonly createdAt: Date;
   updatedAt: Date;
@@ -240,6 +241,17 @@ export class Order {
     this.setUpdatedAt();
   }
 
+  markReturned(): void {
+    if (this.params.status !== OrderStatus.DELIVERED) {
+      throw new Error('Only delivered order can be returned');
+    }
+
+    this.params.status = OrderStatus.RETURNED;
+    this.params.returnedAt = new Date();
+
+    this.setUpdatedAt();
+  }
+
   markPaid(transactionId?: string, provider?: string): void {
     this.params.paymentStatus = PaymentStatus.PAID;
     this.params.paymentTransactionId = transactionId;
@@ -377,6 +389,10 @@ export class Order {
 
   get cancelledAt(): Date | undefined {
     return this.params.cancelledAt;
+  }
+
+  get returnedAt(): Date | undefined {
+    return this.params.returnedAt;
   }
 
   get estimatedDelivery(): Date | undefined {

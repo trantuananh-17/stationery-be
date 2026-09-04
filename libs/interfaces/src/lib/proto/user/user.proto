@@ -8,7 +8,117 @@ service UserService {
   rpc createUser (CreateUserRequest) returns (UserIdResponse);
   rpc getUserAuth (UserAuthRequest) returns (UserAuthResponse);
   rpc getUser (GetUserAdminRequest) returns (UserAdminDetailGrpcDto);
-  rpc getUsers (GetUsersAdminRequest) returns (UsersResponse);}
+  rpc getUsers (GetUsersAdminRequest) returns (UsersResponse);
+
+  rpc getAddresses (GetAddressesRequest) returns (AddressesResponse);
+  rpc createAddress (CreateAddressRequest) returns (AddressResponse);
+  rpc updateAddress (UpdateAddressRequest) returns (AddressResponse);
+  rpc deleteAddress (AddressActionRequest) returns (AddressIdResponse);
+  rpc setDefaultAddress (AddressActionRequest) returns (AddressResponse);
+
+  rpc getWishlist (GetWishlistRequest) returns (WishlistResponse);
+  rpc addWishlistItem (AddWishlistItemRequest) returns (WishlistActionResponse);
+  rpc removeWishlistItem (RemoveWishlistItemRequest) returns (WishlistActionResponse);
+}
+
+message WishlistItemGrpcDto {
+  string id = 1;
+  string product_id = 2;
+  string product_name = 3;
+  string product_slug = 4;
+  string thumbnail = 5;
+  double price = 6;
+
+  google.protobuf.Timestamp created_at = 7;
+}
+
+message GetWishlistRequest {
+  string user_id = 1;
+}
+
+message WishlistResponse {
+  repeated WishlistItemGrpcDto data = 1;
+}
+
+message AddWishlistItemRequest {
+  string user_id = 1;
+  string product_id = 2;
+  string product_name = 3;
+  string product_slug = 4;
+  string thumbnail = 5;
+  double price = 6;
+}
+
+message RemoveWishlistItemRequest {
+  string user_id = 1;
+  string product_id = 2;
+}
+
+message WishlistActionResponse {
+  string product_id = 1;
+  bool added = 2;
+}
+
+message AddressGrpcDto {
+  string id = 1;
+  string user_id = 2;
+  string full_name = 3;
+  string phone = 4;
+  string address1 = 5;
+  optional string address2 = 6;
+  string ward = 7;
+  string district = 8;
+  string city = 9;
+  bool is_default = 10;
+
+  google.protobuf.Timestamp created_at = 11;
+}
+
+message GetAddressesRequest {
+  string user_id = 1;
+}
+
+message AddressesResponse {
+  repeated AddressGrpcDto data = 1;
+}
+
+message AddressResponse {
+  AddressGrpcDto data = 1;
+}
+
+message AddressIdResponse {
+  string address_id = 1;
+}
+
+message CreateAddressRequest {
+  string user_id = 1;
+  string full_name = 2;
+  string phone = 3;
+  string address1 = 4;
+  optional string address2 = 5;
+  string ward = 6;
+  string district = 7;
+  string city = 8;
+  bool is_default = 9;
+}
+
+message UpdateAddressRequest {
+  string user_id = 1;
+  string address_id = 2;
+  string full_name = 3;
+  string phone = 4;
+  string address1 = 5;
+  optional string address2 = 6;
+  string ward = 7;
+  string district = 8;
+  string city = 9;
+  bool is_default = 10;
+}
+
+message AddressActionRequest {
+  string user_id = 1;
+  string address_id = 2;
+}
 
 message GetUsersAdminRequest {
   optional string search = 1;  

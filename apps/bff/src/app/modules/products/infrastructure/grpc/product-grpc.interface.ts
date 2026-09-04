@@ -1,5 +1,14 @@
 import { Observable } from 'rxjs';
 import {
+  CreateReviewBodyDto,
+  DeleteReviewBodyDto,
+  GetReviewsBodyDto,
+  ReviewIdResponse,
+  ReviewsResponse,
+  AdjustStockBodyDto,
+  AdjustStockResponse,
+  GetInventoriesBodyDto,
+  InventoriesResponse,
   CreateProductBodyDto,
   GetProductByIdBodyDto,
   GetProductBySlugBodyDto,
@@ -35,4 +44,14 @@ export interface ProductGrpcService {
   deleteProduct(data: GetProductByIdBodyDto): Observable<ProductMutationResponse>;
 
   restoreProduct(data: GetProductByIdBodyDto): Observable<ProductMutationResponse>;
+
+  getInventories(query: GetInventoriesBodyDto): Observable<InventoriesResponse>;
+
+  adjustStock(data: AdjustStockBodyDto): Observable<AdjustStockResponse>;
+
+  getReviews(query: GetReviewsBodyDto): Observable<ReviewsResponse>;
+
+  createReview(data: CreateReviewBodyDto): Observable<ReviewIdResponse>;
+
+  deleteReview(data: DeleteReviewBodyDto): Observable<ProductIdResponse>;
 }

@@ -16,8 +16,8 @@ import {
   MergeCartRequest,
   UpdateCartItemQuantityRequest,
   RemoveCartItemRequest,
-} from '../../applications/ports/dtos/cart.dto';
-import { CartPort } from '../../applications/ports/cart.port';
+} from '../../application/ports/dtos/cart.dto';
+import { CartPort } from '../../application/ports/cart.port';
 
 @Injectable()
 export class CartGrpcAdapter implements CartPort, OnModuleInit {

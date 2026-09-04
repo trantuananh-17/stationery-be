@@ -19,14 +19,14 @@ import { JwtAuthGuard } from '@common/guards/jwt-auth.guard';
 import { UserData } from '@common/decorators/user-data.decorator';
 import { ResponseDto } from '@common/interfaces/gateway/response.interface';
 
-import { AddToCartUseCase } from '../../applications/add-to-cart.usecase';
-import { GetCartUseCase } from '../../applications/get-cart.usecase';
-import { GetCartCountUseCase } from '../../applications/get-cart-count.usecase';
-import { RemoveCartItemUseCase } from '../../applications/remove-cart-item.usecase';
-import { MergeCartUseCase } from '../../applications/merge-cart.usecase';
-import { UpdateCartItemQuantityUseCase } from '../../applications/update-cart-item-quantity.usecase';
-import { ClearCartUseCase } from '../../applications/clear-cart.usecase';
-import { GetCartForCheckoutUseCase } from '../../applications/get-cart-for-checkout.usecase';
+import { AddToCartUseCase } from '../../application/add-to-cart.usecase';
+import { GetCartUseCase } from '../../application/get-cart.usecase';
+import { GetCartCountUseCase } from '../../application/get-cart-count.usecase';
+import { RemoveCartItemUseCase } from '../../application/remove-cart-item.usecase';
+import { MergeCartUseCase } from '../../application/merge-cart.usecase';
+import { UpdateCartItemQuantityUseCase } from '../../application/update-cart-item-quantity.usecase';
+import { ClearCartUseCase } from '../../application/clear-cart.usecase';
+import { GetCartForCheckoutUseCase } from '../../application/get-cart-for-checkout.usecase';
 
 import { AddToCartDto } from '../dtos/add-to-cart.dto';
 import { UpdateQuantityDto } from '../dtos/update-quantity.dto';

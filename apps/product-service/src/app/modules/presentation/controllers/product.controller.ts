@@ -20,7 +20,7 @@ import { AdminProductOrderBy, ProductOrderBy } from '../../domain/enum/product-o
 import { GetProductsQuery } from '../../application/queries/get-products/get-products.query';
 import { GetProductsDto } from '../dtos/get-product.dto';
 import { GetProductInfoQuery } from '../../application/queries/get-product-id/get-product-info.query';
-import { GetFeaturedDto } from '../dtos/get-fetured.dto';
+import { GetFeaturedDto } from '../dtos/get-featured.dto';
 import { GetFeaturedQuery } from '../../application/queries/get-featured/get-featured.query';
 import { GetRelatedProductsDto } from '../dtos/get-related.dto';
 import { GetRelatedQuery } from '../../application/queries/get-related/get-related.query';
@@ -29,11 +29,22 @@ import { EventPattern, GrpcMethod, Payload } from '@nestjs/microservices';
 import { ReserveStockDto } from '../dtos/reserve-stock.dto';
 import { ReserveStockCommand } from '../../application/commands/products/reserve-stock/reserve-stock.command';
 import { PaginatedResult } from '@common/interfaces/common/pagination.interface';
+import { GetInventoriesQuery } from '../../application/queries/get-inventories/get-inventories.query';
+import { GetInventoriesResult } from '../../application/queries/get-inventories/get-inventories.handler';
+import { AdjustStockCommand } from '../../application/commands/products/adjust-stock/adjust-stock.command';
+import { AdjustStockDto, GetInventoriesDto } from '../dtos/inventory.dto';
+import { GetReviewsQuery } from '../../application/queries/get-reviews/get-reviews.query';
+import { GetReviewsResult } from '../../application/queries/get-reviews/get-reviews.handler';
+import { CreateReviewCommand } from '../../application/commands/reviews/create-review/create-review.command';
+import { DeleteReviewCommand } from '../../application/commands/reviews/delete-review/delete-review.command';
+import { CreateReviewDto, DeleteReviewDto, GetReviewsDto } from '../dtos/review.dto';
 import { ProductReadModel } from '../../application/read-models/product.read-model';
 import { ProductStatus } from '../../domain/enum/product-status.enum';
 import { GetProductsByAdminQuery } from '../../application/queries/get-products-admin/get-products-admin.query';
 import { OrderEventDto } from '../dtos/order-event.dto';
 import { ConfirmStockEventCommand } from '../../application/commands/products/confirm-stock-event/confirm-stock-event.command';
+import { CancelStockEventCommand } from '../../application/commands/products/cancel-stock-event/cancel-stock-event.command';
+import { ReturnStockEventCommand } from '../../application/commands/products/return-stock-event/return-stock-event.command';
 import { DeleteProductCommand } from '../../application/commands/products/delete-product/delete-product.command';
 import { RestoreProductCommand } from '../../application/commands/products/restore-product/restore-product.handler';
 import { GrpcLoggingInterceptor } from '@common/interceptors/grpcLogging.interceptor';
@@ -89,6 +100,65 @@ export class ProductController {
   async getFeaturedProducts(@Query() query: GetFeaturedDto) {
     const { page, limit } = query;
     return this.queryBus.execute(new GetFeaturedQuery(Number(page), Number(limit)));
+  }
+
+  @GrpcMethod('ProductService', 'getReviews')
+  async getReviewsGrpc(@Payload() payload: GetReviewsDto) {
+    const result: GetReviewsResult = await this.queryBus.execute(
+      new GetReviewsQuery(payload.productId, payload.page ?? 1, payload.limit ?? 10),
+    );
+
+    return {
+      data: result.data,
+      summary: result.summary,
+      total: result.pagination.total,
+      page: result.pagination.page,
+      limit: result.pagination.limit,
+      totalPages: result.pagination.totalPages,
+    };
+  }
+
+  @GrpcMethod('ProductService', 'createReview')
+  async createReviewGrpc(@Payload() payload: CreateReviewDto) {
+    return this.commandBus.execute(
+      new CreateReviewCommand(
+        payload.productId,
+        payload.userId,
+        payload.userName,
+        payload.rating,
+        payload.comment,
+      ),
+    );
+  }
+
+  @GrpcMethod('ProductService', 'deleteReview')
+  async deleteReviewGrpc(@Payload() payload: DeleteReviewDto) {
+    return this.commandBus.execute(new DeleteReviewCommand(payload.productId, payload.userId));
+  }
+
+  @GrpcMethod('ProductService', 'getInventories')
+  async getInventoriesGrpc(@Payload() payload: GetInventoriesDto) {
+    const result: GetInventoriesResult = await this.queryBus.execute(
+      new GetInventoriesQuery(
+        payload.search,
+        payload.lowStockThreshold,
+        payload.page ?? 1,
+        payload.limit ?? 20,
+      ),
+    );
+
+    return {
+      data: result.data,
+      total: result.pagination.total,
+      page: result.pagination.page,
+      limit: result.pagination.limit,
+      totalPages: result.pagination.totalPages,
+    };
+  }
+
+  @GrpcMethod('ProductService', 'adjustStock')
+  async adjustStockGrpc(@Payload() payload: AdjustStockDto) {
+    return this.commandBus.execute(new AdjustStockCommand(payload.variantId, payload.stock));
   }
 
   @GrpcMethod('ProductService', 'getProductCartItem')
@@ -306,17 +376,13 @@ export class ProductController {
     await this.commandBus.execute(new ConfirmStockEventCommand(payload.eventId, payload.items));
   }
 
-  // @EventPattern('order.canceled')
-  // async handlePaymentSucceeded(@Payload() payload: OrderUpdateStatusEventDto) {
-  //   await this.commandBus.execute(
-  //     new UpdateStatusCommand(
-  //       payload.eventId,
-  //       payload.orderId,
-  //       payload.status,
-  //       payload.paymentStatus,
-  //       payload.paymentTransactionId,
-  //       payload.paymentProvider,
-  //     ),
-  //   );
-  // }
+  @EventPattern('order.canceled')
+  async handleCanceled(@Payload() payload: OrderEventDto) {
+    await this.commandBus.execute(new CancelStockEventCommand(payload.eventId, payload.items));
+  }
+
+  @EventPattern('order.returned')
+  async handleReturned(@Payload() payload: OrderEventDto) {
+    await this.commandBus.execute(new ReturnStockEventCommand(payload.eventId, payload.items));
+  }
 }

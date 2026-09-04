@@ -47,3 +47,30 @@ export class ConfirmStockFailedError extends BaseError {
     super('CONFIRM_STOCK_FAILED', `Xác nhận tồn kho thất bại cho biến thể ${variantId}`);
   }
 }
+
+export class VariantNotFoundError extends BaseError {
+  constructor(variantId: string) {
+    super('VARIANT_NOT_FOUND', `Biến thể không tồn tại: ${variantId}`);
+  }
+}
+
+export class StockBelowReservedError extends BaseError {
+  constructor(variantId: string, stock: number, reservedStock: number) {
+    super(
+      'STOCK_BELOW_RESERVED',
+      `Không thể đặt tồn kho ${stock} cho biến thể ${variantId} vì đang giữ ${reservedStock} cho đơn chưa hoàn tất`,
+    );
+  }
+}
+
+export class InvalidRatingError extends BaseError {
+  constructor(rating: number) {
+    super('INVALID_RATING', `Điểm đánh giá phải từ 1 đến 5, nhận được: ${rating}`);
+  }
+}
+
+export class ReviewNotFoundError extends BaseError {
+  constructor() {
+    super('REVIEW_NOT_FOUND', 'Đánh giá không tồn tại');
+  }
+}
