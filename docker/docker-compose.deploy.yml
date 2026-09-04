@@ -1,0 +1,167 @@
+# Stack triển khai trên VM. Khác hai file compose còn lại trong thư mục này:
+#
+#   docker-compose.provider.yaml  build từ source, dùng khi dev ở máy local
+#   docker-compose.image.yaml     kéo ảnh Docker Hub, mỗi service một ảnh
+#   docker-compose.deploy.yml     ← file này: một ảnh GHCR cho toàn bộ backend,
+#                                   chọn service bằng APP_NAME
+#
+# File này KHÔNG khai postgres: môi trường triển khai đã có sẵn một Postgres
+# dùng chung, các service nối vào nó qua network `ragenta-dev-infra_default`
+# (alias `postgres`). Kafka là hạ tầng duy nhất còn thiếu nên chỉ nó được dựng
+# ở đây. Mongo cũng không có mặt: `MongoProvider` trong libs/configuration
+# không được app nào import, hai file compose kia dựng mongo nhưng không ai nối
+# vào.
+#
+# ai-service không có mặt: nó cần pgvector, Postgres dùng chung không có
+# extension đó. `AiPort` phía BFF đã tự trả mảng rỗng khi ai-service chết nên
+# tìm kiếm ngữ nghĩa và gợi ý sản phẩm chỉ đơn giản là không có kết quả.
+#
+# Đặt tại /srv/stationery/docker-compose.yml trên VM. Biến IMAGE_TAG_* nằm
+# trong /srv/stationery/.env và do workflow deploy ghi lại.
+
+name: stationery
+
+networks:
+  stationery-nw:
+    name: stationery-nw
+  # Network của stack hạ tầng có sẵn — Postgres nằm trong đó.
+  shared-infra:
+    external: true
+    name: ragenta-dev-infra_default
+
+volumes:
+  kafka_data:
+
+x-backend: &backend
+  image: ghcr.io/trantuananh-17/stationery-be:${IMAGE_TAG_BACKEND:-latest}
+  restart: unless-stopped
+  env_file:
+    - ./env/root.env
+  networks:
+    - stationery-nw
+    - shared-infra
+  depends_on:
+    kafka:
+      condition: service_healthy
+
+services:
+  kafka:
+    image: bitnamilegacy/kafka
+    restart: unless-stopped
+    environment:
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://0.0.0.0:9092,CONTROLLER://:9093
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+    volumes:
+      - kafka_data:/bitnami/kafka
+    healthcheck:
+      test: ['CMD-SHELL', 'kafka-topics.sh --bootstrap-server localhost:9092 --list > /dev/null 2>&1']
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 20s
+    networks:
+      - stationery-nw
+
+  auth-service:
+    <<: *backend
+    environment:
+      APP_NAME: auth-service
+    env_file:
+      - ./env/root.env
+      - ./env/auth-service.env
+
+  user-service:
+    <<: *backend
+    environment:
+      APP_NAME: user-service
+    env_file:
+      - ./env/root.env
+      - ./env/user-service.env
+
+  product-service:
+    <<: *backend
+    environment:
+      APP_NAME: product-service
+    env_file:
+      - ./env/root.env
+      - ./env/product-service.env
+
+  cart-service:
+    <<: *backend
+    environment:
+      APP_NAME: cart-service
+    env_file:
+      - ./env/root.env
+      - ./env/cart-service.env
+
+  order-service:
+    <<: *backend
+    environment:
+      APP_NAME: order-service
+    env_file:
+      - ./env/root.env
+      - ./env/order-service.env
+
+  payment-service:
+    <<: *backend
+    environment:
+      APP_NAME: payment-service
+    env_file:
+      - ./env/root.env
+      - ./env/payment-service.env
+
+  notification-service:
+    <<: *backend
+    environment:
+      APP_NAME: notification-service
+    env_file:
+      - ./env/root.env
+      - ./env/notification-service.env
+    # WebSocket: FE nối thẳng vào gateway của service này qua nginx.
+    ports:
+      - '127.0.0.1:8092:3406'
+
+  analytics-service:
+    <<: *backend
+    environment:
+      APP_NAME: analytics-service
+    env_file:
+      - ./env/root.env
+      - ./env/analytics-service.env
+
+  upload-service:
+    <<: *backend
+    environment:
+      APP_NAME: upload-service
+    env_file:
+      - ./env/root.env
+      - ./env/upload-service.env
+    # FE gọi thẳng service này, không qua BFF (xem known-issues.md mục B).
+    ports:
+      - '127.0.0.1:8093:3408'
+
+  bff:
+    <<: *backend
+    environment:
+      APP_NAME: bff
+    env_file:
+      - ./env/root.env
+      - ./env/bff.env
+    ports:
+      - '127.0.0.1:8090:3400'
+
+  fe:
+    image: ghcr.io/trantuananh-17/stationery-fe:${IMAGE_TAG_FRONTEND:-latest}
+    restart: unless-stopped
+    env_file:
+      - ./env/fe.env
+    ports:
+      - '127.0.0.1:8091:3000'
+    networks:
+      - stationery-nw

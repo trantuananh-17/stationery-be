@@ -1,0 +1,76 @@
+# Gắn tag vX.Y.Z là phát hành: build một ảnh chứa toàn bộ backend, đẩy lên
+# GHCR, rồi triển khai lên môi trường tương ứng.
+#
+# Tag có hậu tố rc (v1.2.0rc1) đi staging; tag sạch (v1.2.0) đi production.
+# Ảnh là bất biến theo version — muốn quay lui thì chạy deploy.yml với tag cũ,
+# không cần build lại, không cần commit revert.
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    name: Build and push image
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+      version: ${{ steps.meta.outputs.version }}
+      environment: ${{ steps.meta.outputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve image and environment
+        id: meta
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          IMAGE="ghcr.io/$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')"
+          case "$VERSION" in
+            *rc*) ENVIRONMENT=staging ;;
+            *)    ENVIRONMENT=production ;;
+          esac
+          {
+            echo "version=$VERSION"
+            echo "image=$IMAGE"
+            echo "environment=$ENVIRONMENT"
+          } >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile.release
+          push: true
+          tags: |
+            ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.version }}
+            ${{ steps.meta.outputs.image }}:latest
+          # Build 10 app NestJS mỗi lần là quá lâu nếu không có cache.
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build
+    uses: ./.github/workflows/deploy-template.yml
+    with:
+      environment: ${{ needs.build.outputs.environment }}
+      version: ${{ needs.build.outputs.version }}
+      image: ${{ needs.build.outputs.image }}:${{ needs.build.outputs.version }}
+      tag_var: IMAGE_TAG_BACKEND
+      services: auth-service user-service product-service cart-service order-service payment-service notification-service analytics-service upload-service bff
+      # Repo backend sở hữu file compose nên nó là repo kéo lại file đó về VM.
+      sync_compose: true
+    secrets: inherit

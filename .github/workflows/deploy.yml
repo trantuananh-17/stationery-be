@@ -1,0 +1,60 @@
+# Triển khai lại một version đã build sẵn.
+#
+# Đây là nút quay lui: mỗi release là một tag bất biến trên GHCR, nên lùi lại
+# chỉ là deploy tag trước đó — không build lại, không commit revert, không chờ.
+#
+# Cũng dùng để chạy lại một lần deploy đã fail sau khi ảnh đã được đẩy lên.
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Môi trường đích
+        required: true
+        type: choice
+        options: [staging, production]
+      version:
+        description: Tag version cần deploy, ví dụ v1.2.0 hoặc v1.2.0rc1
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+    steps:
+      - name: Resolve image reference
+        id: meta
+        run: |
+          IMAGE="ghcr.io/$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')"
+          echo "image=$IMAGE:${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+
+      # Deploy một version chưa từng build sẽ để VM kéo một tag không tồn tại
+      # giữa chừng. Fail ở đây, nơi chưa có gì bị đụng tới.
+      - name: Ảnh có trên GHCR chưa?
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          if ! docker manifest inspect "${{ steps.meta.outputs.image }}" > /dev/null 2>&1; then
+            echo "::error::${{ steps.meta.outputs.image }} không tồn tại. ${{ inputs.version }} đã từng được release chưa?"
+            exit 1
+          fi
+
+  deploy:
+    needs: resolve
+    uses: ./.github/workflows/deploy-template.yml
+    with:
+      environment: ${{ inputs.environment }}
+      version: ${{ inputs.version }}
+      image: ${{ needs.resolve.outputs.image }}
+      # Phải khớp release.yml, nếu không quay lui sẽ ghim một biến khác với
+      # biến mà release đã ghi và chẳng thay đổi được gì.
+      tag_var: IMAGE_TAG_BACKEND
+      services: auth-service user-service product-service cart-service order-service payment-service notification-service analytics-service upload-service bff
+      sync_compose: true
+    secrets: inherit

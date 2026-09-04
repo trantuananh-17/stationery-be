@@ -1,0 +1,49 @@
+# Ảnh release: build MỘT lần cho toàn bộ service, chạy nhiều container từ cùng
+# một ảnh và chọn service bằng biến môi trường APP_NAME lúc chạy.
+#
+# Khác `Dockerfile.provider` (build từng app một, dùng cho compose local): ở đây
+# 10 app dùng chung `pnpm install` và chung cây `dist`, nên CI chỉ phải cài
+# dependency một lần thay vì mười lần.
+#
+# ai-service không nằm trong danh sách — nó cần pgvector, mà Postgres của môi
+# trường triển khai hiện tại không có extension đó.
+
+FROM node:22-alpine AS builder
+
+WORKDIR /app
+
+RUN corepack enable
+
+ENV NX_DAEMON=false
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY nx.json tsconfig.base.json tsconfig.json ./
+
+RUN pnpm config set dangerouslyAllowAllBuilds true
+RUN pnpm install --frozen-lockfile
+
+COPY apps ./apps
+COPY libs ./libs
+
+ARG APPS="bff,auth-service,user-service,product-service,cart-service,order-service,notification-service,analytics-service,upload-service,payment-service"
+RUN pnpm exec nx run-many -t build --projects=$APPS
+
+
+FROM node:22-alpine AS runner
+
+WORKDIR /app
+
+RUN corepack enable
+
+ENV NX_DAEMON=false
+ENV NODE_ENV=production
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY --from=builder /app/dist ./dist
+
+RUN pnpm config set dangerouslyAllowAllBuilds true
+RUN pnpm install --prod --frozen-lockfile
+
+# APP_NAME do compose đặt cho từng container. Không đặt mặc định: thiếu nó thì
+# container phải chết ngay chứ không được im lặng chạy nhầm service.
+CMD ["sh", "-c", "test -n \"$APP_NAME\" || { echo 'APP_NAME chưa được đặt'; exit 1; }; exec node dist/apps/$APP_NAME/main.js"]

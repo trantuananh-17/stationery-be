@@ -1,0 +1,170 @@
+# Deploy dùng chung. release.yml gọi khi có tag, deploy.yml gọi khi cần triển
+# khai lại hoặc quay lui một version đã build.
+#
+# Đích đến là một VM Linux chạy Docker Compose. File compose nằm trong repo này
+# (docker/docker-compose.deploy.yml) và được sao sang thư mục triển khai mỗi
+# lần deploy; workflow chỉ ghi lại version cần chạy.
+#
+# Backend và frontend phát hành độc lập, nên mỗi repo chỉ ghi đúng dòng
+# `tag_var` của mình và chỉ dựng lại các service trong `services`. Deploy bên
+# này không đụng tới version bên kia.
+#
+# Cấu hình lấy từ GitHub Environment tên `environment`:
+#   secrets  SSH_HOST  SSH_USER  SSH_KEY   (private key, không passphrase)
+#   vars     DEPLOY_PATH                    (thư mục chứa docker-compose.yml)
+#
+# Chưa đặt secret thì deploy tự bỏ qua kèm notice, không fail — để việc gắn tag
+# vẫn chạy được trước khi có VM.
+name: Deploy Template
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+      image:
+        required: true
+        type: string
+      tag_var:
+        description: Biến trong .env mà repo này sở hữu, ví dụ IMAGE_TAG_BACKEND.
+        required: true
+        type: string
+      services:
+        description: Danh sách service compose repo này sở hữu, cách nhau bởi dấu cách.
+        required: true
+        type: string
+      health_url:
+        required: false
+        type: string
+        default: http://127.0.0.1:8090/api/v1/docs
+      sync_compose:
+        description: >-
+          Kéo lại repo trên VM và sao docker-compose.deploy.yml sang thư mục
+          triển khai. Chỉ repo sở hữu file compose bật cái này.
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Môi trường này đã cấu hình chưa?
+        id: target
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          if [ -z "$SSH_HOST" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Chưa có SSH_HOST cho '${{ inputs.environment }}'. Ảnh ${{ inputs.image }} đã đẩy lên, bỏ qua bước deploy."
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy qua SSH
+        if: steps.target.outputs.ready == 'true'
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          command_timeout: 20m
+          envs: VERSION,DEPLOY_PATH,TAG_VAR,SERVICES,SYNC_COMPOSE
+          script: |
+            set -euo pipefail
+            cd "$DEPLOY_PATH"
+
+            # TAG_VAR được nhét vào một pattern grep và một phép gán shell nên
+            # buộc phải có dạng tên biến, không gì khác.
+            case "$TAG_VAR" in
+              [A-Z_]*[!A-Z0-9_]*|"") echo "::error::tag_var phải là định danh in hoa, nhận được '$TAG_VAR'."; exit 1 ;;
+            esac
+
+            # File compose sống trong repo backend. Không kéo lại thì deploy sẽ
+            # chạy ảnh mới trên một file compose cũ, và hai thứ đó chỉ lệch nhau
+            # theo cách không ai nhận ra cho tới khi hỏng.
+            # --ff-only, không bao giờ reset: clone đã phân nhánh nghĩa là có
+            # người sửa tay trên VM, và đó không phải thứ mình được phép xoá.
+            if [ "$SYNC_COMPOSE" = "true" ] && [ -d stationery-be/.git ]; then
+              git -C stationery-be fetch --prune origin
+              git -C stationery-be pull --ff-only
+              cp stationery-be/docker/docker-compose.deploy.yml docker-compose.yml
+              echo "Compose ở $(git -C stationery-be rev-parse --short HEAD)"
+            fi
+
+            # Từ chối chứ không tự tạo: .env trên VM giữ toàn bộ cấu hình của
+            # stack, một lần deploy âm thầm ghi đè nó bằng một dòng duy nhất sẽ
+            # làm sập môi trường mà vẫn báo thành công.
+            if [ ! -f .env ]; then
+              echo "::error::Không có .env trong $DEPLOY_PATH. Provision môi trường trước khi deploy."
+              exit 1
+            fi
+
+            # Chỉ ghi lại đúng dòng của repo này. `|| true` vì grep trả về 1 khi
+            # lọc hết sạch, mà dưới `set -e` thì điều đó sẽ huỷ một lần deploy
+            # hoàn toàn hợp lệ.
+            #
+            # umask và chmod không thừa: redirect của shell tạo .env.next theo
+            # quyền mặc định của tài khoản, rồi `mv` truyền quyền đó cho file
+            # chứa mọi biến của môi trường.
+            ( umask 077; grep -v "^${TAG_VAR}=" .env > .env.next || true )
+            echo "${TAG_VAR}=${VERSION}" >> .env.next
+            chmod 600 .env.next
+            mv .env.next .env
+            echo "Đã ghim ${TAG_VAR}=${VERSION}"
+
+            # shellcheck disable=SC2086 — SERVICES là danh sách từ, cố ý tách.
+            docker compose pull $SERVICES
+            docker compose up -d $SERVICES
+            docker compose ps
+        env:
+          VERSION: ${{ inputs.version }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+          TAG_VAR: ${{ inputs.tag_var }}
+          SERVICES: ${{ inputs.services }}
+          SYNC_COMPOSE: ${{ inputs.sync_compose }}
+
+      - name: Health check
+        if: steps.target.outputs.ready == 'true'
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          envs: HEALTH_URL
+          script: |
+            set -euo pipefail
+            # Chờ service bind cổng rồi mới đòi câu trả lời. Fail ở đây là tín
+            # hiệu để quay lui về tag trước.
+            for attempt in $(seq 1 20); do
+              if curl -fsS -o /dev/null "$HEALTH_URL"; then
+                echo "Khoẻ sau ${attempt} lần thử."
+                exit 0
+              fi
+              sleep 5
+            done
+            echo "::error::$HEALTH_URL không trả lời. Quay lui bằng tag trước đó."
+            exit 1
+        env:
+          HEALTH_URL: ${{ inputs.health_url }}
+
+      - name: Summary
+        run: |
+          {
+            echo "### ${{ inputs.environment }}"
+            echo
+            echo "Version: \`${{ inputs.version }}\`"
+            echo "Image: \`${{ inputs.image }}\`"
+            echo "Ghim: \`${{ inputs.tag_var }}\`"
+            echo "Services: \`${{ inputs.services }}\`"
+            if [ "${{ steps.target.outputs.ready }}" != "true" ]; then
+              echo
+              echo "Bỏ qua deploy — môi trường này chưa có secret \`SSH_HOST\`."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
