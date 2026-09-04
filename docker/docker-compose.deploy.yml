@@ -5,16 +5,12 @@
 #   docker-compose.deploy.yml     ← file này: một ảnh GHCR cho toàn bộ backend,
 #                                   chọn service bằng APP_NAME
 #
-# File này KHÔNG khai postgres: môi trường triển khai đã có sẵn một Postgres
-# dùng chung, các service nối vào nó qua network `ragenta-dev-infra_default`
-# (alias `postgres`). Kafka là hạ tầng duy nhất còn thiếu nên chỉ nó được dựng
-# ở đây. Mongo cũng không có mặt: `MongoProvider` trong libs/configuration
-# không được app nào import, hai file compose kia dựng mongo nhưng không ai nối
-# vào.
+# Stack này tự đứng một mình: Postgres, Kafka và Qdrant đều dựng ngay tại đây,
+# không mượn hạ tầng của stack khác nữa. Mongo vẫn không có mặt vì
+# `MongoProvider` trong libs/configuration không được app nào import.
 #
-# ai-service không có mặt: nó cần pgvector, Postgres dùng chung không có
-# extension đó. `AiPort` phía BFF đã tự trả mảng rỗng khi ai-service chết nên
-# tìm kiếm ngữ nghĩa và gợi ý sản phẩm chỉ đơn giản là không có kết quả.
+# Không service nào publish cổng datastore ra ngoài: chỉ 4 cổng loopback của
+# bff/fe/ws/upload là để nginx với tới.
 #
 # Đặt tại /srv/stationery/docker-compose.yml trên VM. Biến IMAGE_TAG_* nằm
 # trong /srv/stationery/.env và do workflow deploy ghi lại.
@@ -24,13 +20,11 @@ name: stationery
 networks:
   stationery-nw:
     name: stationery-nw
-  # Network của stack hạ tầng có sẵn — Postgres nằm trong đó.
-  shared-infra:
-    external: true
-    name: ragenta-dev-infra_default
 
 volumes:
   kafka_data:
+  postgres_data:
+  qdrant_data:
 
 x-backend: &backend
   image: ghcr.io/trantuananh-17/stationery-be:${IMAGE_TAG_BACKEND:-latest}
@@ -39,12 +33,40 @@ x-backend: &backend
     - ./env/root.env
   networks:
     - stationery-nw
-    - shared-infra
   depends_on:
     kafka:
       condition: service_healthy
+    postgres:
+      condition: service_healthy
 
 services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    env_file:
+      - ./env/postgres.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Tạo sẵn 8 database của các service; TypeORM `synchronize` lo phần schema.
+      # Lấy thẳng từ clone repo trên VM để script chỉ có một bản duy nhất.
+      - ./stationery-be/docker/postgres/01-init-databases.sql:/docker-entrypoint-initdb.d/01-init-databases.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 15s
+    networks:
+      - stationery-nw
+
+  qdrant:
+    image: qdrant/qdrant:v1.19.0
+    restart: unless-stopped
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - stationery-nw
+
   kafka:
     image: bitnamilegacy/kafka
     restart: unless-stopped
@@ -155,6 +177,22 @@ services:
       - ./env/bff.env
     ports:
       - '127.0.0.1:8090:3400'
+
+  # Không dùng anchor *backend: ai-service không đụng Postgres, và nó phải chờ
+  # qdrant thay vì kafka.
+  ai-service:
+    image: ghcr.io/trantuananh-17/stationery-be:${IMAGE_TAG_BACKEND:-latest}
+    restart: unless-stopped
+    environment:
+      APP_NAME: ai-service
+    env_file:
+      - ./env/root.env
+      - ./env/ai-service.env
+    depends_on:
+      qdrant:
+        condition: service_started
+    networks:
+      - stationery-nw
 
   fe:
     image: ghcr.io/trantuananh-17/stationery-fe:${IMAGE_TAG_FRONTEND:-latest}
