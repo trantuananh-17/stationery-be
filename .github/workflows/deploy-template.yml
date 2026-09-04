@@ -40,7 +40,9 @@ on:
       health_url:
         required: false
         type: string
-        default: http://127.0.0.1:8090/api/v1/docs
+        # Không dùng /api/v1/docs: Swagger đã bị tắt khi NODE_ENV=production.
+        # /products là route public, không guard, nên gọi được mà không cần token.
+        default: http://127.0.0.1:8090/api/v1/products?limit=1
       sync_compose:
         description: >-
           Kéo lại repo trên VM và sao docker-compose.deploy.yml sang thư mục
