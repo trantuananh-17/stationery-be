@@ -9,8 +9,10 @@
 # không mượn hạ tầng của stack khác nữa. Mongo vẫn không có mặt vì
 # `MongoProvider` trong libs/configuration không được app nào import.
 #
-# Không service nào publish cổng datastore ra ngoài: chỉ 4 cổng loopback của
-# bff/fe/ws/upload là để nginx với tới.
+# Các service ứng dụng chỉ publish cổng loopback cho nginx (8090-8094). Riêng
+# postgres publish thẳng 5432 ra ngoài theo yêu cầu: cần nối bằng GUI từ máy
+# lập trình. Đổi lại thì mật khẩu trong env/postgres.env là thứ duy nhất chặn
+# người lạ, đừng thay bằng chuỗi dễ đoán.
 #
 # Đặt tại /srv/stationery/docker-compose.yml trên VM. Biến IMAGE_TAG_* nằm
 # trong /srv/stationery/.env và do workflow deploy ghi lại.
@@ -56,6 +58,10 @@ services:
       timeout: 5s
       retries: 12
       start_period: 15s
+    # Mo ra Internet de noi bang GUI tu ben ngoai. Day la cong duy nhat cua
+    # datastore khong bo o loopback: ai quet duoc IP cung thu duoc mat khau.
+    ports:
+      - '5432:5432'
     networks:
       - stationery-nw
 
